@@ -1,0 +1,295 @@
+source_id,target_id,source_title,target_title,reference_text
+2310.11703,2402.16827,,a survey on data selection for language models,A survey on data selection for language models
+2310.11703,1306.1547,,beyond locality-sensitive hashing,Beyond Locality-Sensitive Hashing
+2310.11703,2603.19724,,locality sensitive hashing in hyperbolic space,Locality sensitive hashing (lsh) home page
+2310.11703,2402.15319,,gptvq: the blessing of dimensionality for llm quantization,Gptvq: The blessing of dimensionality for llm quantization
+2310.11703,1612.07545,,a revisit of hashing algorithms for approximate nearest neighbor search,A revisit of hashing algorithms for approximate nearest neighbor search
+2310.11703,2211.03536,,knowledge graph embedding: a survey from the perspective of representation spaces,Knowledge graph embedding: A survey from the perspective of representation spaces
+2310.11703,2305.11853,,"how to prompt llms for text-to-sql: a study in zero-shot, single-domain, and cross-domain settings","How to prompt llms for text-to- sql: A study in zero-shot, single-domain, and cross-domain settings"
+2310.11703,2103.06875,,"for manifold learning, deep neural networks can be locality sensitive hash functions","For manifold learn- ing, deep neural networks can be locality sensitive hash functions"
+2310.11703,1511.00628,,ball*-tree: efficient spatial indexing for constrained nearest-neighbor search in metric spaces,Ball*- tree: Efficient spatial indexing for constrained nearest-neighbor search in metric spaces
+2310.11703,1803.00904,,hardness of approximate nearest neighbor search,Annoy (approximate nearest neighbors oh yeah).
+2310.11703,1907.06146,,"high dimensional similarity search with satellite system graph: efficiency, scalability, and unindexed query compatibility","High dimensional similarity search with satellite system graph: Efficiency, scalability, and unindexed query compatibility"
+2310.11703,2303.09855,,high-dimensional approximate nearest neighbor search: with reliable and efficient distance comparison operations,High-dimensional approximate nearest neighbor search: with reliable and efficient distance comparison operations
+2310.11703,2405.12497,,rabitq: quantizing high-dimensional vectors with a theoretical error bound for approximate nearest neighbor search,Rabitq: Quantizing high-dimensional vec- tors with a theoretical error bound for approximate nearest neighbor search
+2310.11703,1612.07545,,a revisit of hashing algorithms for approximate nearest neighbor search,A revisit of hashing algorithms for approximate nearest neighbor search
+2310.11703,2211.03536,,knowledge graph embedding: a survey from the perspective of representation spaces,Knowledge graph embedding: A survey from the perspective of representation spaces
+2310.11703,2305.11853,,"how to prompt llms for text-to-sql: a study in zero-shot, single-domain, and cross-domain settings","How to prompt llms for text-to- sql: A study in zero-shot, single-domain, and cross-domain settings"
+2310.11703,2103.06875,,"for manifold learning, deep neural networks can be locality sensitive hash functions","For manifold learn- ing, deep neural networks can be locality sensitive hash functions"
+2310.11703,1511.00628,,ball*-tree: efficient spatial indexing for constrained nearest-neighbor search in metric spaces,Ball*- tree: Efficient spatial indexing for constrained nearest-neighbor search in metric spaces
+2310.11703,1803.00904,,hardness of approximate nearest neighbor search,Annoy (approximate nearest neighbors oh yeah).
+2310.11703,1907.06146,,"high dimensional similarity search with satellite system graph: efficiency, scalability, and unindexed query compatibility","High dimensional similarity search with satellite system graph: Efficiency, scalability, and unindexed query compatibility"
+2310.11703,2303.09855,,high-dimensional approximate nearest neighbor search: with reliable and efficient distance comparison operations,High-dimensional approximate nearest neighbor search: with reliable and efficient distance comparison operations
+2310.11703,2405.12497,,rabitq: quantizing high-dimensional vectors with a theoretical error bound for approximate nearest neighbor search,Rabitq: Quantizing high-dimensional vec- tors with a theoretical error bound for approximate nearest neighbor search
+2310.11703,1809.09284,,tree-based optimization: a meta-algorithm for metaheuristic optimization,Tree- based optimization: A meta-algorithm for metaheuristic optimiza- tion
+2310.11703,2206.13843,,manu: a cloud native vector database management system,Manu: a cloud native vector database management system
+2310.11703,2102.08942,,a survey on locality sensitive hashing algorithms and their applications,A survey on locality sensitive hashing algorithms and their applications
+2310.11703,2110.08919,,low-precision quantization for efficient nearest neighbor search,Product quantization for nearest neighbor search
+2310.11703,2401.11324,,bang: billion-scale approximate nearest neighbor search using a single gpu,Bang: Billion-scale approximate nearest neighbor search using a single gpu
+2310.11703,2005.11401,,retrieval-augmented generation for knowledge-intensive nlp tasks,Retrieval-augmented generation for knowledge-intensive nlp tasks
+2310.11703,2005.11401,,retrieval-augmented generation for knowledge-intensive nlp tasks,Retrieval-augmented generation for knowledge- intensive nlp tasks
+2310.11703,2311.18724,,routing-guided learned product quantization for graph-based approximate nearest neighbor search,Optimized high order product quantization for approximate nearest neighbors search
+2310.11703,1610.02455,,"approximate nearest neighbor search on high dimensional data --- experiments, analyses, and improvement (v1.0)","Approximate nearest neighbor search on high dimensional data—experiments, analyses, and improvement"
+2310.11703,2302.03883,,multimodal recommender systems: a survey,Multimodal recommender systems: A survey
+2310.11703,2409.17066,,vptq: extreme low-bit vector post-training quantization for large language models,Vptq: Extrme low-bit vector post-training quantization for large language models
+2310.11703,2003.03369,,a survey on deep hashing methods,A survey on deep hashing methods
+2310.11703,2003.03369,,a survey on deep hashing methods,A survey on deep hashing methods
+2310.11703,1603.09320,,efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs,Efficient and robust approx- imate nearest neighbor search using hierarchical navigable small world graphs
+2310.11703,2005.11401,,retrieval-augmented generation for knowledge-intensive nlp tasks,Retrieval-augmented generation for knowledge-intensive nlp tasks
+2310.11703,2005.11401,,retrieval-augmented generation for knowledge-intensive nlp tasks,Retrieval-augmented generation for knowledge- intensive nlp tasks
+2310.11703,2311.18724,,routing-guided learned product quantization for graph-based approximate nearest neighbor search,Optimized high order product quantization for approximate nearest neighbors search
+2310.11703,1610.02455,,"approximate nearest neighbor search on high dimensional data --- experiments, analyses, and improvement (v1.0)","Approximate nearest neighbor search on high dimensional data—experiments, analyses, and improvement"
+2310.11703,2302.03883,,multimodal recommender systems: a survey,Multimodal recommender systems: A survey
+2310.11703,2409.17066,,vptq: extreme low-bit vector post-training quantization for large language models,Vptq: Extreme low-bit vector post-training quantization for large language models
+2310.11703,2003.03369,,a survey on deep hashing methods,A survey on deep hashing methods
+2310.11703,2003.03369,,a survey on deep hashing methods,A survey on deep hashing methods
+2310.11703,1603.09320,,efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs,Efcient and robust approx- imate nearest neighbor search using hierarchical navigable small world graphs
+2310.11703,2304.01926,,high-throughput vector similarity search in knowledge graphs,High-throughput vector similarity search in knowledge graphs
+2310.11703,2303.08774,,gpt-4 technical report,"Gpt-4 technical report, 2024"
+2310.11703,2310.14021,,survey of vector database management systems,Survey of vector database management systems
+2310.11703,1902.01304,,declarative data analytics: a survey,Multimedia big data analytics: A survey
+2310.11703,2411.05276,,gpt semantic cache: reducing llm costs and latency via semantic embedding caching,Gpt semantic cache: Reducing llm costs and latency via semantic embedding caching
+2310.11703,2212.03551,,talking about large language models,Talking about large language models
+2310.11703,2404.00774,,soar: improved indexing for approximate nearest neighbor search,Soar: im- proved indexing for approximate nearest neighbor search
+2310.11703,2309.11322,,"vector database management systems: fundamental concepts, use-cases, and current challenges","Vector database management systems: Fun- damental concepts, use-cases, and current challenges"
+2310.11703,2401.02116,,starling: an i/o-efficient disk-resident graph index framework for high-dimensional vector similarity search on data segment,Starling: An i/0o-efficient disk-resident graph index framework for high-dimensional vector similarity search on data segment
+2310.11703,2304.08264,,dumpy: a compact and adaptive index for large data series collections,Dumpy: A compact and adaptive index for large data series collec- tions
+2310.11703,2305.14288,,llm-powered data augmentation for enhanced cross-lingual performance,Llm- powered data augmentation for enhanced crosslingual performance
+2310.11703,1711.10775,,online product quantization,Online product quan- tization
+2310.11703,2506.14707,,harmony: a scalable distributed vector database for high-throughput approximate nearest neighbor search,Harmony: A scalable distributed vector database for high- throughput approximate nearest neighbor search
+2310.11703,2304.01926,,high-throughput vector similarity search in knowledge graphs,High-throughput vector similarity search in knowledge graphs
+2310.11703,2303.08774,,gpt-4 technical report,"Gpt-4 technical report, 2024"
+2310.11703,1511.06241,,convolutional clustering for unsupervised learning,K-means tree: an optimal clustering tree for unsupervised learning
+2310.11703,2310.14021,,survey of vector database management systems,Survey of vector database management systems
+2310.11703,1902.01304,,declarative data analytics: a survey,Multimedia big data analytics: A survey
+2310.11703,2411.05276,,gpt semantic cache: reducing llm costs and latency via semantic embedding caching,Gpt semantic cache: Reducing llm costs and latency via semantic embedding caching
+2310.11703,2212.03551,,talking about large language models,Talking about large language models
+2310.11703,2404.00774,,soar: improved indexing for approximate nearest neighbor search,Soar: im- proved indexing for approximate nearest neighbor search
+2310.11703,2303.18223,,a survey of large language models,A survey of large language models
+2310.11703,2307.02046,,recommender systems in the era of large language models (llms),Recommender systems in the era of large language models (llms)
+2310.11703,2312.01454,,d-bot: database diagnosis system using large language models,D-bot: Database diagnosis system using large language models
+2402.05122,1801.01957,,from eliza to xiaoice: challenges and opportunities with social chatbots,From Eliza to XiaoIce: challenges and opportunities with socia] chatbots
+2402.05122,1801.01957,,from eliza to xiaoice: challenges and opportunities with social chatbots,From Eliza to XiaoIce: challenges and opportunities with social chatbots
+2402.05122,2501.16996,,artificial intelligence clones,Artificial intelligence: CALO - SRI n.d
+2402.05122,2501.16996,,artificial intelligence clones,Artificial intelligence: CALO - SRI n.d
+2411.17501,2210.10760,,scaling laws for reward model overoptimization,"Scaling laws for reward model overoptimization, 2022"
+2411.17501,2312.09241,,tinygsm: achieving >80% on gsm8k with small language models,"$>80%$ TinyGSM: achieving on GSM8k with small language models, December 2023a"
+2411.17501,2202.05218,,pynguin: automated unit test generation for python,Pynguin: automated unit test generation for Python
+2404.05290,1706.02417,,evaluating (and improving) the correspondence between deep neural networks and human representations,Evaluating (and improving) the correspondence between deep neural networks and human representations
+2404.05290,1706.02417,,evaluating (and improving) the correspondence between deep neural networks and human representations,Evaluating (and improving) the correspondence between deep neural networks and human representations
+2404.05290,1904.12690,,capturing human categorization of natural images at scale by combining deep networks and cognitive models,Capturing human categorization of natural images by combining deep networks and cognitive models
+2404.05290,2402.04541,,bri3l: a brightness illusion image dataset for identification and localization of regions of illusory perception,Bri3l: A brightness illusion image dataset for identification and localization of regions of illusory perception
+2404.05290,2309.16515,,latent noise segmentation: how neural noise leads to the emergence of segmentation and grouping,Latent noise segmentation: How neural noise leads to the emergence of segmentation and grouping
+2404.05290,2106.07411,,partial success in closing the gap between human and machine vision,Partial success in closing the gap between human and machine vision
+2404.05290,2402.04541,,bri3l: a brightness illusion image dataset for identification and localization of regions of illusory perception,Bri3l: A brightness illusion image dataset for identification and localization of regions of illusory perception
+2404.05290,2309.16515,,latent noise segmentation: how neural noise leads to the emergence of segmentation and grouping,Latent noise segmentation: How neural noise leads to the emergence of segmentation and grouping
+2404.05290,2106.07411,,partial success in closing the gap between human and machine vision,Partial success in closing the gap between human and machine vision
+2404.05290,1805.01078,,exploration of numerical precision in deep neural networks,Exploring perceptual illusions in deep neural networks
+2404.05290,1805.01078,,exploration of numerical precision in deep neural networks,Exploring perceptual illusions in deep neural networks
+2404.05290,2110.01476,,learning online visual invariances for novel objects via supervised and self-supervised training,Learning online visual invariances for novel objects via supervised and self-supervised training
+2404.05290,2110.01476,,learning online visual invariances for novel objects via supervised and self-supervised training,Learning online visual invariances for novel objects via supervised and self-supervised training
+2404.05290,1710.09616,,an introduction to cyber peacekeeping,An Introduction to Perception
+2404.05290,1710.09616,,an introduction to cyber peacekeeping,An Introduction to Perception
+2404.05290,2012.14402,,deep neural models for color discrimination and color constancy,Deep neural models for color classification and color constancy
+2404.05290,1811.12231,,imagenet-trained cnns are biased towards texture; increasing shape bias improves accuracy and robustness,Imagenet-trained CNNs are biased towards texture; increasing shape bias improves accuracy and robustness
+2404.05290,2012.14402,,deep neural models for color discrimination and color constancy,Deep neural models for color classification and color constancy
+2404.05290,1811.12231,,imagenet-trained cnns are biased towards texture; increasing shape bias improves accuracy and robustness,Imagenet-trained CNNs are biased towards texture; increasing shape bias improves accuracy and robustness
+2404.05290,1412.6980,,adam: a method for stochastic optimization,Adam: A method for stochastic optimization
+2404.05290,2102.01955,,predictive coding feedback results in perceived illusory contours in a recurrent neural network,Predictive coding feedback results in perceived illusory contours in a recurrent neural network
+2404.05290,1311.2901,,visualizing and understanding convolutional networks,Visualizing and understanding convolutional networks
+2404.05290,2002.05709,,a simple framework for contrastive learning of visual representations,A simple framework for contrastive learning of visual representations
+2404.05290,2504.10786,,visual language models show widespread visual deficits on neuropsychological tests,Visual language models show widespread visual deficits on neuropsychological tests
+2404.05290,1412.6980,,adam: a method for stochastic optimization,Adam: A method for stochastic optimization
+2404.05290,2102.01955,,predictive coding feedback results in perceived illusory contours in a recurrent neural network,Predictive coding feedback results in perceived illusory contours in a recurrent neural network
+2404.05290,1311.2901,,visualizing and understanding convolutional networks,Visualizing and understanding convolutional networks
+2404.05290,2002.05709,,a simple framework for contrastive learning of visual representations,A simple framework for contrastive learning of visual representations
+2404.05290,2504.10786,,visual language models show widespread visual deficits on neuropsychological tests,Visual language models show widespread visual deficits on neuropsychological tests
+2411.01029,2507.05267,,strongly solving $7 \times 6$ connect-four on consumer grade hardware,"Strongly solving connect-four on consumer grade hardware, 2025."
+2411.01029,quant-ph/0503238,,optimization of partial search,An optimization of alpha-beta search
+2411.01029,2311.07178,,game solving with online fine-tuning,Game solving with online fine-tuning
+2410.10700,2203.02155,,training language models to follow instructions with human feedback,Training language models to follow instructions with human feedback
+2410.10700,2112.11446,,"scaling language models: methods, analysis & insights from training gopher","Scaling language models: Methods, analysis & insights from training gopher"
+2410.10700,2105.00164,,hidden backdoors in human-centric language models,Hidden trigger backdoors in language models
+2410.10700,2312.10523,,paloma: a benchmark for evaluating language model fit,Harmbench: A benchmark for evaluating language model safety
+2410.10700,2202.02093,,temporal attention for language models,Automated attack generation for language models
+2410.10700,2202.02093,,temporal attention for language models,Automated attack generation for language models
+2410.10700,2202.02093,,temporal attention for language models,Automated attack generation for language models
+2410.10700,2202.02093,,temporal attention for language models,Automated attack generation for language models
+2410.10700,2202.02093,,temporal attention for language models,Automated attack generation for language models
+2503.13115,2102.01117,,sgd generalizes better than gd (and regularization doesn't help),Sgd generalizes better than gd (and regu- larization doesn't help)
+2503.13115,2409.08469,,improved finite-particle convergence rates for stein variational gradient descent,Improved finite-particle convergence rates for stein variational gradient descent
+2503.13115,1805.09545,,on the global convergence of gradient descent for over-parameterized models using optimal transport,On the global convergence of gradient descent for over-parameterized models using optimal transport
+2503.13115,2102.01117,,sgd generalizes better than gd (and regularization doesn't help),Sgd generalizes better than gd (and regu- larization doesn't help)
+2503.13115,2409.08469,,improved finite-particle convergence rates for stein variational gradient descent,Improved finite-particle convergence rates for stein variational gradient descent
+2503.13115,1901.07487,,non-asymptotic analysis of fractional langevin monte carlo for non-convex optimization,Analysis of langevin monte carlo via convex optimization
+2503.13115,2305.17558,,provably fast finite particle variants of svgd via virtual particle stochastic approximation,Provably fast finite particle variants of svgd via virtual particle stochastic approximation
+2503.13115,2206.03792,,utilising the clt structure in stochastic gradient based sampling : improved analysis and faster algorithms,Utilising the clt structure in stochastic gradient based sampling: Improved analysis and faster algorithms
+2503.13115,2109.07117,,non-asymptotic analysis of stochastic approximation algorithms for streaming data,Non- asymptotic analysis of stochastic approximation algorithms for streaming data
+2503.13115,1812.10575,,random batch methods (rbm) for interacting particle systems,Random batch methods (rbm) for interacting particle systems
+2503.13115,2405.17068,,the poisson midpoint method for langevin dynamics: provably efficient discretization for diffusion models,The poisson midpoint method for langevin dynamics: Provably efficient discretization for diffusion models
+2503.13115,1901.07487,,non-asymptotic analysis of fractional langevin monte carlo for non-convex optimization,Analysis of langevin monte carlo via convex optimization
+2503.13115,2305.17558,,provably fast finite particle variants of svgd via virtual particle stochastic approximation,Provably fast finite particle variants of svgd via virtual particle stochastic approximation
+2503.13115,2206.03792,,utilising the clt structure in stochastic gradient based sampling : improved analysis and faster algorithms,Utilising the clt structure in stochastic gradient based sampling: Improved analysis and faster algorithms
+2503.13115,2109.07117,,non-asymptotic analysis of stochastic approximation algorithms for streaming data,Non asymptotic analysis of stochastic approximation algorithms for streaming data
+2503.13115,2405.16734,,faster sampling via stochastic gradient proximal sampler,Faster sampling via stochastic gradient proximal sampler
+2503.13115,1812.10575,,random batch methods (rbm) for interacting particle systems,Random batch methods (rbm) for interacting particle systems
+2503.13115,2405.17068,,the poisson midpoint method for langevin dynamics: provably efficient discretization for diffusion models,The poisson midpoint method for langevin dynamics: Provably efficient discretization for diffusion models
+2503.13115,2203.16217,,improved convergence rate of stochastic gradient langevin dynamics with variance reduction and its application to optimization,Improved convergence rate of stochastic gradi- ent langevin dynamics with variance reduction and its application to optimization
+2503.13115,2402.07355,,sampling from the mean-field stationary distribution,Sampling from the mean-field stationary distribution
+2503.13115,1608.04471,,stein variational gradient descent: a general purpose bayesian inference algorithm,Stein variational gradient descent: A general purpose bayesian inference algorithm
+2503.13115,1804.06561,,a mean field view of the landscape of two-layers neural networks,A mean field view of the landscape of two-layer neural networks
+2503.13115,2405.15767,,improved particle approximation error for mean field neural networks,Improved particle approximation error for mean field neural net- works
+2503.13115,1712.05438,,stochastic particle gradient descent for infinite ensembles,Stochastic particle gradient descent for infinite ensembles
+2503.13115,2201.10469,,convex analysis of the mean field langevin dynamics,Convex analysis of the mean field langevin dynamics
+2503.13115,2203.16217,,improved convergence rate of stochastic gradient langevin dynamics with variance reduction and its application to optimization,Improved convergence rate of stochastic gradi- ent langevin dynamics with variance reduction and its application to optimization
+2503.13115,2402.07355,,sampling from the mean-field stationary distribution,Sampling from the mean-field stationary distribution
+2503.13115,1608.04471,,stein variational gradient descent: a general purpose bayesian inference algorithm,Stein variational gradient descent: A general purpose bayesian inference algorithm
+2503.13115,1804.06561,,a mean field view of the landscape of two-layers neural networks,A mean field view of the landscape of two-layer neural networks
+2503.13115,2405.15767,,improved particle approximation error for mean field neural networks,Improved particle approximation error for mean field neural net- works
+2503.13115,1712.05438,,stochastic particle gradient descent for infinite ensembles,Stochastic particle gradient descent for infinite ensembles
+2503.13115,2201.10469,,convex analysis of the mean field langevin dynamics,Convex analysis of the mean field langevin dynamics
+2503.13115,1603.04080,,a stochastic approach to stdp,A stochastic approximation method
+2503.13115,1702.03849,,non-convex learning via stochastic gradient langevin dynamics: a nonasymptotic analysis,Non-convex learning via stochastic gradient langevin dynamics: a nonasymptotic analysis
+2503.13115,1909.05503,,the randomized midpoint method for log-concave sampling,The randomized midpoint method for log-concave sampling
+2503.13115,2306.07221,,"convergence of mean-field langevin dynamics: time and space discretization, stochastic gradient, and variance reduction","Mean-field langevin dynamics: Time space discretization, stochastic gradient, and variance reduction"
+2503.13115,2301.09913,,sequential propagation of chaos,Topics in propagation of chaos
+2503.13115,1903.08568,,rapid convergence of the unadjusted langevin algorithm: isoperimetry suffices,Rapid convergence of the unadjusted langevin algorithm: Isoperimetry suffices
+2503.13115,2510.02174,,flatness-aware stochastic gradient langevin dynamics,Bayesian learning via stochastic gradient langevin dynamics
+2503.13115,2301.01766,,learning gaussian mixtures using the wasserstein-fisher-rao gradient flow,Learning gaussian mixtures using the wasserstein-fisher-ra0 gradient flow
+2503.13115,1603.04080,,a stochastic approach to stdp,A stochastic approximation method
+2503.13115,1702.03849,,non-convex learning via stochastic gradient langevin dynamics: a nonasymptotic analysis,Non-convex learning via stochastic gradient langevin dynamics: a nonasymptotic analysis
+2503.13115,1909.05503,,the randomized midpoint method for log-concave sampling,The randomized midpoint method for log-concave sampling
+2503.13115,2306.07221,,"convergence of mean-field langevin dynamics: time and space discretization, stochastic gradient, and variance reduction","Mean-field langevin dynamics: Time- space discretization, stochastic gradient, and variance reduction"
+2503.13115,2301.09913,,sequential propagation of chaos,Topics in propagation of chaos
+2503.13115,1903.08568,,rapid convergence of the unadjusted langevin algorithm: isoperimetry suffices,Rapid convergence of the unadjusted langevir algorithm: Isoperimetry suffices
+2503.13115,2510.02174,,flatness-aware stochastic gradient langevin dynamics,Bayesian learning via stochastic gradient langevin dynamics
+2503.13115,2301.01766,,learning gaussian mixtures using the wasserstein-fisher-rao gradient flow,Learning gaussian mixtures using the wasserstein-fisher-ra0 gradient flow
+2503.13115,2205.15902,,variational inference via wasserstein gradient flows,Mean field variational inference via wasserstein gradient flow
+2402.12760,2108.06858,,"no-reference image quality assessment via transformers, relative ranking, and self-consistency","No- reference image quality assessment via transformers, rela- tive ranking, and self-consistency"
+2402.12760,2209.11711,,best prompts for text-to-image models and how to find them,Best prompts for text-to-image models and how to find them
+2402.12760,2102.12092,,zero-shot text-to-image generation,Zero-shot text-to- image generation
+2402.12760,2109.01134,,learning to prompt for vision-language models,Learning to prompt for vision-language models
+2402.01677,2009.14654,,owl2vec*: embedding of owl ontologies,Owl2vec*: Embedding of owl ontologies
+2402.01677,2209.07299,,knowledge is flat: a seq2seq generative framework for various knowledge graph completion,"Knowledge is fat: A seq2seq genera- tive framework for various knowledge graph completion, 2022."
+2402.01677,2312.05866,,tabiic: taxonomy building through iterative and interactive clustering,Tabiic: Taxonomy build- ing through iterative and interactive clustering
+2402.01677,1810.04805,,bert: pre-training of deep bidirectional transformers for language understanding,Bert: Pre-training of deep bidirectional transformers for language understand- ing
+2402.01677,2210.03994,,relational message passing for fully inductive knowledge graph completion,Relational message passing for fully inductive knowledge graph completion
+2402.01677,2103.08115,,universal representation learning of knowledge bases by jointly embedding instances and ontological concepts,Universal representation learning of knowledge bases by jointly embedding in stances and ontological concepts
+2402.01677,2209.08767,,dual-geometric space embedding model for two-view knowledge graphs,Dual-geometric space embedding model for two-view knowledge graphs
+2402.01677,1902.10499,,el embeddings: geometric construction of models for the description logic el ++,El embeddings: Ge- ometric construction of models for the description logic el++
+2402.01677,2012.07011,,context-enhanced entity and relation embedding for knowledge graph completion,Learning entity and relation embeddings for knowledge graph completion
+2402.01677,1811.04588,,differentiating concepts and instances for knowledge graph embedding,Differentiating concepts and instances for knowl- edge graph embedding
+2402.01677,1104.1964,,on bisimulations for description logics,An introduction to description logics
+2402.01677,1510.04935,,holographic embeddings of knowledge graphs,Holographic embeddings of knowl- edge graphs
+2402.01677,1902.10499,,el embeddings: geometric construction of models for the description logic el ++,El embeddings: Ge- ometric construction of models for the description logic el++
+2402.01677,2012.07011,,context-enhanced entity and relation embedding for knowledge graph completion,Learning entity and relation embeddings for knowledge graph completion
+2402.01677,1811.04588,,differentiating concepts and instances for knowledge graph embedding,Differentiating concepts and instances for knowl- edge graph embedding
+2402.01677,1104.1964,,on bisimulations for description logics,An introduction to description logics
+2402.01677,1908.10084,,sentence-bert: sentence embeddings using siamese bert-networks,Sentence-bert: Sentence embeddings using siamese bert-networks
+2402.01677,1802.00864,,onto2vec: joint vector-based representation of biological entities and their ontology-based annotations,Onto2vec: joint vector-based repre- sentation of biological entities and their ontology-based annotations
+2402.01677,1804.10922,,opa2vec: combining formal and informal content of biomedical ontologies to improve similarity-based prediction,Opa2vec: combining formal and informal content of biomedical ontologies to improve similarity-based prediction
+2402.01677,1606.06357,,complex embeddings for simple link prediction,Complex embeddings for simple link prediction
+2402.01677,1505.05253,,knowlege graph embedding by flexible translation,Knowledge graph embedding by translating on hyperplanes
+2402.01677,1911.06136,,kepler: a unified model for knowledge embedding and pre-trained language representation,Kepler: A unified model for knowledge embedding and pre-trained language representation
+2402.01677,2406.17532,,can large language models understand dl-lite ontologies? an empirical study,Can large language models understand dl- lite ontologies? an empirical study
+2402.01677,2202.02113,,from discrimination to generation: knowledge graph completion with generative transformer,From discrimination to generation: Knowledge graph completion with generative transformer
+2402.01677,1412.6575,,embedding entities and relations for learning and inference in knowledge bases,Embedding entities and relations for learning and inference in knowledge bases
+2402.01677,1908.10084,,sentence-bert: sentence embeddings using siamese bert-networks,Sentence-bert: Sentence embeddings using siamese bert-networks
+2402.01677,1802.00864,,onto2vec: joint vector-based representation of biological entities and their ontology-based annotations,Onto2vec: joint vector-based repre- sentation of biological entities and their ontology-based annotations
+2402.01677,1606.06357,,complex embeddings for simple link prediction,Complex embeddings for simple link prediction
+2402.01677,1505.05253,,knowlege graph embedding by flexible translation,Knowledge graph embedding by translating on hyperplanes
+2402.01677,1911.06136,,kepler: a unified model for knowledge embedding and pre-trained language representation,Kepler: A unified model for knowledge embedding and pre-trained language representation
+2402.01677,2406.17532,,can large language models understand dl-lite ontologies? an empirical study,Can large language models understand dl- lite ontologies? an empirical study
+2402.01677,1412.6575,,embedding entities and relations for learning and inference in knowledge bases,Embedding entities and relations for learning and inference in knowledge bases
+2402.01677,1909.03193,,kg-bert: bert for knowledge graph completion,Kg-bert: Bert for knowledge graph completion
+2402.01677,2308.13916,,exploring large language models for knowledge graph completion,"Exploring large language models for knowledge graph completion, 2023."
+2402.01677,1509.05488,,transg : a generative mixture model for knowledge graph embedding,Transfg: A fine-grained model for knowledge graph embedding
+2402.01677,1911.01940,,deepening hidden representations from pre-trained language models,Pretrain- kge: learning knowledge representation from pretrained language models
+2402.01677,2308.13916,,exploring large language models for knowledge graph completion,"Exploring large language models for knowledge graph completion, 2023."
+2402.01677,1509.05488,,transg : a generative mixture model for knowledge graph embedding,Transfg: A fine-grained model for knowledge graph embedding
+2402.01677,1911.01940,,deepening hidden representations from pre-trained language models,Pretrain- kge: learning knowledge representation from pretrained language models
+2406.07737,2310.13976,,advancing requirements engineering through generative ai: assessing the role of llms,Advancing requirements engineering through generative ai: Assessing the role of llms
+2406.07737,2312.10622,,unit test generation using generative ai : a comparative performance analysis of autogeneration tools,Unit test generation using generative AI: A comparative performance analysis of autogeneration tools
+2406.07737,2403.02583,,generative software engineering,End-user software engineering
+2406.07737,2107.03374,,evaluating large language models trained on code,Evaluating large language models trained on code
+2406.07737,2310.03533,,large language models for software engineering: survey and open problems,Large language models for software engineering: Survey and open problems
+2406.07737,2408.07106,,"""you still have to study"" -- on the security of llm generated code",""" You still have to study""-On the Security of LLM generated code"
+2406.07737,2202.13169,,a systematic evaluation of large language models of code,A systematic evaluation of large language models for generating programming code
+2406.07737,2309.14345,,bias testing and mitigation in llm-based code generation,Bias assessment and mitigation in llm-based code generation
+2406.07737,2403.02583,,generative software engineering,Generative Software Engineering
+2406.07737,2303.07263,,inferfix: end-to-end program repair with llms,Inferfix: End-to-end program repair with llms
+2406.07737,2310.18338,,small language models fine-tuned to coordinate larger language models improve complex reasoning,Small language models fine-tuned to coordinate larger language models improve complex reasoning
+2406.07737,2409.02977,,large language model-based agents for software engineering: a survey,Large language model-based agents for software engineering: A survey
+2406.07737,2305.01210,,is your code generated by chatgpt really correct? rigorous evaluation of large language models for code generation,Is your code generated by chatgpt really correct? rigorous evaluation of large language models for code generation
+2406.07737,2202.05218,,pynguin: automated unit test generation for python,Pynguin: Automated unit test generation for python
+2406.07737,2310.19204,,can chatgpt advance software testing intelligence? an experience report on metamorphic testing,Can ChatGPT advance software testing intelligence? An experience report on metamorphic testing
+2406.07737,2208.01624,,together or apart? investigating a mediator bot to aggregate bot's comments on pull requests,Together or Apart? Investigating a mediator bot to aggregate bot's comments on pull requests
+2406.07737,2310.03003,,from words to watts: benchmarking the energy costs of large language model inference,From words to watts: Benchmarking the energy costs of large language model inference
+2406.07737,2503.17998,,automatic high-level test case generation using large language models,Adaptive test generation using a large language model
+2406.07737,2302.06527,,an empirical evaluation of using large language models for automated unit test generation,An empirical evaluation of using large language models for automated unit test generation
+2406.07737,2305.00418,,using large language models to generate junit tests: an empirical study,Using large language models to generate junit tests: An empirical study
+2406.07737,2307.07221,,"software testing with large language models: survey, landscape, and vision","Software testing with large language models: Survey, landscape, and vision"
+2406.07737,2309.07864,,the rise and potential of large language model based agents: a survey,The rise and potential of large language model based agents: A survey
+2406.07737,2210.14179,,practical program repair in the era of large pre-trained language models,Automated program repair in the era of large pre-trained language models
+2406.07737,2207.08281,,"less training, more repairing please: revisiting automated program repair via zero-shot learning","Less training, more repairing please: revisiting automated program repair via zero-shot learning"
+2406.07737,2403.05156,,on protecting the data privacy of large language models (llms): a survey,On protecting the data privacy of large language models (lms): A survey
+2406.07737,2304.13712,,harnessing the power of llms in practice: a survey on chatgpt and beyond,Harnessing the power of llms in practice: A survey on chatgpt and beyond
+2406.07737,2312.02003,,"a survey on large language model (llm) security and privacy: the good, the bad, and the ugly","A survey on large language model (llm) security and privacy: The good, the bad, and the ugly"
+2406.07737,2305.04207,,no more manual tests? evaluating and improving chatgpt for unit test generation,No more manual tests? evaluating and improving chatgpt for unit test generation
+2406.07737,2303.18223,,a survey of large language models,A survey of large language models
+2406.07737,2404.15784,,an empirical study of aegis,An empirical study on API usages
+2410.21764,2201.08284,,entropies of sums of independent gamma random variables,Weighted sums of certain dependent random variables
+2410.21764,1711.02257,,gradnorm: gradient normalization for adaptive loss balancing in deep multitask networks,Gradnorm: Gradient normalization for adaptive loss balancing in deep multitask networks
+2410.21764,1711.02257,,gradnorm: gradient normalization for adaptive loss balancing in deep multitask networks,Gradnorm: Gradient normalization for adaptive loss balancing in deep multitask networks
+2410.21764,2007.01162,,tilted empirical risk minimization,Tilted empirical risk minimization
+2410.21764,1912.12854,,pareto multi-task learning,Pareto multi-task learning
+2410.21764,1602.05629,,communication-efficient learning of deep networks from decentralized data,Communication- efficient learning of deep networks from decentralized data
+2410.21764,2007.01162,,tilted empirical risk minimization,Tilted empirical risk minimization
+2410.21764,1912.12854,,pareto multi-task learning,Pareto multi-task learning
+2410.21764,1602.05629,,communication-efficient learning of deep networks from decentralized data,Communication- efficient learning of deep networks from decentralized data
+2410.21764,2103.10432,,mars: markov molecular sampling for multi-objective drug discovery,Mars: Markov molecular sampling for multi-objective drug discovery
+2410.21764,2410.19203,,an inverse modeling constrained multi-objective evolutionary algorithm based on decomposition,MOEA/D: A multiobjective evolutionary algorithm based on decomposition
+2410.21764,2103.10432,,mars: markov molecular sampling for multi-objective drug discovery,Mars: Markov molecular sampling for multi-objective drug discovery
+2410.21764,2410.19203,,an inverse modeling constrained multi-objective evolutionary algorithm based on decomposition,MOEA/D: A multiobjective evolutionary algorithm based on decomposition
+2410.15281,2204.14198,,flamingo: a visual language model for few-shot learning,"Alayrac et al., Flamingo: A visual language model for few-shot learning, 2022"
+2410.15281,2403.19838,,"multi-frame, lightweight & efficient vision-language models for question answering in autonomous driving","Trivedi, Multi-frame, lightweight & efficient vision-language models for question answering in autonomous driving, 2024"
+2410.15281,1910.10683,,exploring the limits of transfer learning with a unified text-to-text transformer,"Raffel et al., Exploring the limits of transfer learning with a unified text-to-text transformer, 2023"
+2410.15281,2503.23463,,opendrivevla: towards end-to-end autonomous driving with large vision language action model,"Knoll, Open- drivevla: Towards end-to-end autonomous driving with large vision language action model, 2025"
+2410.15281,2309.05186,,hilm-d: enhancing mllms with multi-scale high-resolution details for autonomous driving,"Li, Hilm-d: Enhancing mllms with multi-scale high-resolution details for autonomous driving, 2025"
+2410.15281,2406.15349,,navsim: data-driven non-reactive autonomous vehicle simulation and benchmarking,"Dauner et al., Navsim: Data-driven non-reactive au- tonomous vehicle simulation and benchmarking, 2024"
+2410.15281,2509.01944,,autodrive-r$^2$: incentivizing reasoning and self-reflection capacity for vla model in autonomous driving,"Yuan et al., Autodrive : Incentivizing reasoning and self-refection capacity for vla model in autonomous driving, 2025"
+2410.15281,2502.13923,,qwen2.5-vl technical report,"Bai et al., Qwen2.5-vl technical report, 2025"
+2410.15281,2505.20024,,reasonplan: unified scene prediction and decision reasoning for closed-loop autonomous driving,"Liu et al., Reasonplan: Unified scene prediction and de- cision reasoning for closed-loop autonomous driving, 2025"
+2410.15281,2509.20843,,mtrdrive: memory-tool synergistic reasoning for robust autonomous driving in corner cases,"Luo et al., Mtrdrive: Memory-tool synergistic reasoning for robust autonomous driving in corner cases, 2025"
+2410.15281,2304.03834,,womd-lidar: raw sensor dataset benchmark for motion forecasting,"Chen et al., Womd-lidar: Raw sensor dataset benchmark for motion forecasting, 2024"
+2410.15281,2409.12191,,qwen2-vl: enhancing vision-language model's perception of the world at any resolution,"Wang et al., Qwen2-vl: Enhancing vision-language model's perception of the world at any resolution, 2024"
+2410.15281,2402.03300,,deepseekmath: pushing the limits of mathematical reasoning in open language models,"Shao et al., Deepseekmath: Pushing the limits of math- ematical reasoning in open language models, 2024"
+2410.15281,2405.04135,,human-centric reward optimization for reinforcement learning-based automated driving using large language models,"Zhou et al., Human-centric reward optimization for rein- forcement learning-based automated driving using large lan- guage models, 2024"
+2410.15281,2412.18511,,large language model guided deep reinforcement learning for decision making in autonomous driving,"Li, Large language model guided deep reinforcement learning for decision making in autonomous driving, 2024"
+2410.15281,2505.06875,,towards human-centric autonomous driving: a fast-slow architecture integrating large language model guidance with reinforcement learning,"Sun, Towards human-centric autonomous driving: A fast-slow architecture integrating large language model guidance with reinforcement learning, 2025"
+2410.15281,2502.01387,,tell-drive: enhancing autonomous driving with teacher llm-guided deep reinforcement learning,"Xu et al., Tell-drive: Enhancing autonomous driving with teacher llm-guided deep reinforcement learning, 2025"
+2410.15281,2411.11913,,on-board vision-language models for personalized autonomous vehicle motion control: system design and real-world validation,"Cui et al., On-board vision-language models for personal- ized autonomous vehicle motion control: System design and real-world validation, 2024"
+2410.15281,2004.08752,,zeus: a system description of the two-time winner of the collegiate sae autodrive competition,"Burnett et al., Zeus: A system description of the two-time winner of the collegiate sae autodrive competition, 2020"
+2410.15281,2411.13112,,surds: benchmarking spatial understanding and reasoning in driving scenarios with vision language models,"Guo et al., “Surds: Benchmarking spatial understanding and reasoning in driving scenarios with vision language models,’ in NeurIPS, 2025."
+2410.15281,2402.19473,,retrieval-augmented generation for ai-generated content: a survey,"Zhao et al., Retrieval-augmented generation for ai- generated content: A survey, 2024"
+2410.15281,1707.06347,,proximal policy optimization algorithms,"Klimov, Proximal policy optimization algorithms, 2017"
+2410.15281,2405.03572,,robocar: a rapidly deployable open-source platform for autonomous driving research,"Frank, Robocar: A rapidly deployable open-source platform for autonomous driving research, 2024"
+2410.15281,2309.15492,,edgar: an autonomous driving research platform -- from feature development to real-world application,"Karle et al., Edgar: An autonomous driving research plat- form - from feature development to real-world application, 2024"
+2410.15281,2003.07739,,formal scenario-based testing of autonomous vehicles: from simulation to the real world,"Fremont et al., Formal scenario-based testing of au- tonomous vehicles: From simulation to the real world, 2020"
+2410.15281,2402.18558,,"unifying f1tenth autonomous racing: survey, methods and benchmarks","Evans et al., Unifying fltenth autonomous racing: Survey, methods and benchmarks, 2024"
+2410.15281,2309.04379,,language prompt for autonomous driving,"Wu et al., Language prompt for autonomous driving, 2025"
+2410.15281,2106.11810,,nuplan: a closed-loop ml-based planning benchmark for autonomous vehicles,"Caesar et al., Nuplan: A closed-loop ml-based planning benchmark for autonomous vehicles, 2022"
+2410.15281,2503.12772,,nuplanqa: a large-scale dataset and benchmark for multi-view driving scene understanding in multi-modal large language models,"Park et al., Nuplanqa: A large-scale dataset and bench- mark for multi-view driving scene understanding in multi- modal large language models, 2025"
+2410.15281,2408.03326,,llava-onevision: easy visual task transfer,"Li et al., Llava-onevision: Easy visual task transfer, 2024"
+2410.15281,2404.16821,,how far are we to gpt-4v? closing the gap to commercial multimodal models with open-source suites,"Chen et al., How far are we to gpt-4v? closing the gap to commercial multimodal models with open-source suites, 2024"
+2410.15281,2407.21783,,the llama 3 herd of models,"Grattafiori, The llama 3 herd of models, 2024"
+2410.15281,2308.12966,,"qwen-vl: a versatile vision-language model for understanding, localization, text reading, and beyond","Bai et al., Qwen-vl: A versatile vision-language model for understanding, localization, text reading, and beyond, 2023"
+2410.15281,2212.04356,,robust speech recognition via large-scale weak supervision,"Sutskever, Robust speech recognition via large-scale weak supervision, 2022"
+2410.15281,2310.03026,,languagempc: large language models as decision makers for autonomous driving,"Sha et al., Languagempc: Large language models as decision makers for autonomous driving, 2023"
+2410.15281,2106.09685,,lora: low-rank adaptation of large language models,"Hu et al., Lora: Low-rank adaptation of large language models, 2021"
+2410.15281,2505.22618,,fast-dllm: training-free acceleration of diffusion llm by enabling kv cache and parallel decoding,"Wu et al., Fast-dllm: Training-free acceleration of diffu- sion llm by enabling kv cache and parallel decoding, 2025"
+2410.15281,2506.06295,,dllm-cache: accelerating diffusion large language models with adaptive caching,"Liu et al., Dllm-cache: Accelerating diffusion large lan- guage models with adaptive caching, 2025"
+2410.15281,2306.02858,,video-llama: an instruction-tuned audio-visual language model for video understanding,"Bing, Video-llama: An instruction- tuned audio-visual language model for video understanding, 2023"
+2410.15281,2410.18514,,scaling up masked diffusion models on text,"Nie et al., Scaling up masked diffusion models on text, 2025"
+2410.15281,2312.14115,,lingoqa: visual question answering for autonomous driving,"Marcu et al., Lingoqa: Visual question answering for autonomous driving, 2024"
+2412.05127,2312.03740,,a survey on prompting techniques in llms,"A survey on prompting techniques in LLMs, 2024"

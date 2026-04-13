@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/*.log
+*.log
+
+# Data (large files)
+data/papers/
+data/extracted/
+data/datasets/
+data/cs_ai_papers/
+data/cs_ai_datasets/
+data/recent_papers/
+data/*.json
+*.pdf
+*.npy
+*.npz
+*.parquet
+*.h5
+*.hdf5
+*.png
+
+# Model weights
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
