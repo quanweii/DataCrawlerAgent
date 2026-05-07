@@ -8,7 +8,7 @@ from loguru import logger
 import os
 from datetime import datetime
 
-from agents import PaperCollectorAgent, DatasetFormatterAgent, ArxivBatchDownloaderAgent, ReferenceGraphBuilderAgent
+from agents import PaperCollectorAgent, DatasetFormatterAgent, ArxivBatchDownloaderAgent, ReferenceGraphBuilderAgent, DataCleanerAgent
 from tools import create_mcp_tool_manager
 
 
@@ -98,6 +98,11 @@ class DataCrawlerOrchestrator:
             'paper_collector': PaperCollectorAgent(
                 client=self.client,
                 system_prompt=self.paper_collector_prompt,
+                mcp_tool_manager=self.mcp_tool_manager
+            ),
+            'data_cleaner': DataCleanerAgent(
+                client=self.client,
+                system_prompt=self.data_cleaner_prompt,
                 mcp_tool_manager=self.mcp_tool_manager
             ),
             'reference_graph_builder': ReferenceGraphBuilderAgent(
@@ -269,7 +274,7 @@ class DataCrawlerOrchestrator:
             # ==================== 阶段0: ArXiv批量筛选 ====================
             logger.info("\n[阶段 0/3] ArXiv批量下载Agent开始执行...")
             stage0_task = {
-                "metadata_path": task_config.get("metadata_path", "/home/QuanWei/arxiv-metadata-oai-snapshot.json"),
+                "metadata_path": task_config.get("metadata_path", "/home/dev_qw/DataCrawlerAgent/arxiv-metadata-cleaned.json"),
                 "category": task_config.get("category", "cs.AI"),
                 "limit": task_config.get("limit", 20),
                 "output_dir": task_config.get("output_dirs", {}).get("papers", "./data/papers")
@@ -308,7 +313,7 @@ class DataCrawlerOrchestrator:
             # ==================== 阶段2: 引用图构建 (生成边) ====================
             logger.info("\n[阶段 2/3] 引用图构建Agent开始执行 (生成边)...")
             stage2_task = {
-                "metadata_path": task_config.get("metadata_path", "/home/QuanWei/arxiv-metadata-cs.json"),
+                "metadata_path": task_config.get("metadata_path", "/home/dev_qw/DataCrawlerAgent/arxiv-metadata-cleaned.json"),
                 "output_dir": task_config.get("output_dirs", {}).get("graphs", "./data/graphs")
             }
 

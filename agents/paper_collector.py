@@ -101,7 +101,7 @@ class PaperCollectorAgent(BaseAgent):
                     "download_arxiv_papers_batch",
                     paper_ids=arxiv_ids,
                     output_dir=output_dir,
-                    max_workers=min(5, len(arxiv_ids))
+                    max_workers=min(10, len(arxiv_ids))
                 )
 
                 if download_result:
@@ -159,38 +159,80 @@ class PaperCollectorAgent(BaseAgent):
             except Exception as e:
                 results["errors"].append(f"处理论文失败: {str(e)}")
 
-        # 3. 批量提取多模态数据（按顺序，因为GPU操作）
+        # 3. 批量提取多模态数据
         if extract_multimodal:
             total = len(results["papers"])
-            logger.info(f"[{self.agent_name}] 开始提取 {total} 篇论文的多模态数据")
+            parallel_extraction = task.get("parallel_extraction", False)
+            num_gpus = task.get("num_gpus", 8)
 
-            for i, paper in enumerate(results["papers"], 1):
-                pdf_path = paper.get("path")
-                if not pdf_path or not os.path.exists(pdf_path):
-                    continue
+            if parallel_extraction and total > 1:
+                # 使用多GPU并行提取
+                from tools.gpu_pool import GPUExtractionPool
+                logger.info(f"[{self.agent_name}] 使用 {num_gpus} 张GPU并行提取 {total} 篇论文")
 
-                paper_name = paper.get("name") or paper.get("arxiv_id", f"paper_{i}")
-                logger.info(f"[{self.agent_name}] [{i}/{total}] 提取: {paper_name}")
+                extraction_tasks = []
+                paper_index = []  # 记录哪些paper有对应的extraction task
+                for i, paper in enumerate(results["papers"]):
+                    pdf_path = paper.get("path")
+                    if not pdf_path or not os.path.exists(pdf_path):
+                        continue
+                    paper_name = paper.get("name") or paper.get("arxiv_id", f"paper_{i}")
+                    extraction_tasks.append({
+                        "pdf_path": pdf_path,
+                        "output_dir": output_dir,
+                        "paper_name": paper_name
+                    })
+                    paper_index.append(i)
 
-                try:
-                    multimodal_result = self._extract_multimodal_from_pdf(
-                        pdf_path=pdf_path,
-                        output_dir=output_dir,
-                        paper_name=paper_name,
-                        device=device
-                    )
-                    if multimodal_result.get("status") == "success":
-                        results["multimodal_data"].append(multimodal_result)
-                        results["extracted_folders"].append(multimodal_result.get("output_folder"))
-                        # 添加markdown路径
+                batch_size = task.get("batch_size", 50)
+                progress_callback = task.get("progress_callback")
+                pool = GPUExtractionPool(num_gpus=num_gpus, batch_size=batch_size)
+                extraction_results = pool.extract_all(extraction_tasks, progress_callback=progress_callback)
+
+                for idx, ext_result in zip(paper_index, extraction_results):
+                    paper = results["papers"][idx]
+                    if ext_result.get("status") == "success":
+                        results["multimodal_data"].append(ext_result)
+                        results["extracted_folders"].append(ext_result.get("output_folder"))
                         paper["markdown_path"] = os.path.join(
-                            multimodal_result.get("output_folder", ""),
-                            f"{paper_name}.md"
+                            ext_result.get("output_folder", ""),
+                            f"{paper.get('name', paper.get('arxiv_id', ''))}.md"
                         )
                     else:
-                        results["errors"].append(f"多模态提取失败 {paper_name}: {multimodal_result.get('message', '未知错误')}")
-                except Exception as e:
-                    results["errors"].append(f"多模态提取异常 {paper_name}: {str(e)}")
+                        results["errors"].append(
+                            f"多模态提取失败 {ext_result.get('paper_name', '?')}: "
+                            f"{ext_result.get('message', '未知错误')}"
+                        )
+            else:
+                # 顺序提取（原有逻辑）
+                logger.info(f"[{self.agent_name}] 顺序提取 {total} 篇论文的多模态数据")
+
+                for i, paper in enumerate(results["papers"], 1):
+                    pdf_path = paper.get("path")
+                    if not pdf_path or not os.path.exists(pdf_path):
+                        continue
+
+                    paper_name = paper.get("name") or paper.get("arxiv_id", f"paper_{i}")
+                    logger.info(f"[{self.agent_name}] [{i}/{total}] 提取: {paper_name}")
+
+                    try:
+                        multimodal_result = self._extract_multimodal_from_pdf(
+                            pdf_path=pdf_path,
+                            output_dir=output_dir,
+                            paper_name=paper_name,
+                            device=device
+                        )
+                        if multimodal_result.get("status") == "success":
+                            results["multimodal_data"].append(multimodal_result)
+                            results["extracted_folders"].append(multimodal_result.get("output_folder"))
+                            paper["markdown_path"] = os.path.join(
+                                multimodal_result.get("output_folder", ""),
+                                f"{paper_name}.md"
+                            )
+                        else:
+                            results["errors"].append(f"多模态提取失败 {paper_name}: {multimodal_result.get('message', '未知错误')}")
+                    except Exception as e:
+                        results["errors"].append(f"多模态提取异常 {paper_name}: {str(e)}")
 
         # 保存收集结果
         self.collected_papers = results["papers"]

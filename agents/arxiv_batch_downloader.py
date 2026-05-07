@@ -147,10 +147,10 @@ class ArxivBatchDownloaderAgent(BaseAgent):
                 try:
                     paper = json.loads(line)
 
-                    # 检查分类是否匹配
+                    # 检查分类是否匹配（仅匹配主分类）
                     categories = paper.get("categories", "")
-                    # 分类可能是空格分隔的多个分类
-                    if category in categories.split():
+                    primary_category = categories.split()[0] if categories.split() else ""
+                    if primary_category == category:
                         filtered.append(paper)
 
                         if len(filtered) % 1000 == 0:

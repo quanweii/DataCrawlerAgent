@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from orchestrator import DataCrawlerOrchestrator
+from orchestrator_parallel import ParallelDataCrawlerOrchestrator
 
 
 def setup_logging(log_level: str = "INFO"):
@@ -232,6 +233,23 @@ def main():
         action="store_true",
         help="批量下载模式（从arxiv元数据筛选论文）"
     )
+    parser.add_argument(
+        "--num-gpus",
+        type=int,
+        default=8,
+        help="并行提取使用的GPU数量 (默认: 8)"
+    )
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=8,
+        help="CPU并行worker数，用于清洗和引用图构建 (默认: 8)"
+    )
+    parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="禁用并行，使用顺序执行（调试用）"
+    )
 
     args = parser.parse_args()
 
@@ -252,7 +270,16 @@ def main():
         logger.warning("未设置 API_KEY 环境变量，请在 .env 文件中配置")
 
     # 创建主协调器
-    orchestrator = DataCrawlerOrchestrator()
+    if not args.sequential and args.batch:
+        orchestrator = ParallelDataCrawlerOrchestrator(
+            num_gpus=args.num_gpus,
+            num_cpu_workers=args.num_workers
+        )
+        logger.info(f"使用并行模式: {args.num_gpus} GPUs, {args.num_workers} CPU workers")
+    else:
+        orchestrator = DataCrawlerOrchestrator()
+        if args.sequential:
+            logger.info("使用顺序模式（调试）")
 
     if args.interactive:
         # 交互模式

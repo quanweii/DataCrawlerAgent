@@ -22,7 +22,7 @@ from pathlib import Path
 from loguru import logger
 
 # pdf-extract-kit 路径
-PDF_EXTRACT_KIT_PATH = "/home/QuanWei/pdf-extract-kit"
+PDF_EXTRACT_KIT_PATH = "/home/dev_qw/pdf-extract-kit"
 
 
 class PDFExtractorTool:
@@ -86,13 +86,16 @@ class PDFExtractorTool:
 
         try:
             # 使用subprocess调用pdf-extract-kit
-            # 直接使用conda环境的python解释器，避免conda run的工作目录问题
-            conda_python = "/root/data/conda/envs/pdf-extract/bin/python"
+            # 转换为绝对路径，因为subprocess的cwd是pdf-extract-kit目录
+            abs_pdf_path = os.path.abspath(pdf_path)
+            abs_output_dir = os.path.abspath(paper_output_dir)
+
+            conda_python = "/home/dev_qw/miniconda3/envs/pdf-extract-kit-1.0/bin/python"
             extract_script = os.path.join(PDF_EXTRACT_KIT_PATH, "extract_pdf.py")
             cmd = [
                 conda_python, extract_script,
-                "--pdf", pdf_path,
-                "--output", paper_output_dir,
+                "--pdf", abs_pdf_path,
+                "--output", abs_output_dir,
                 "--device", device
             ]
 

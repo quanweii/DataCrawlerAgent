@@ -139,8 +139,8 @@ class BaseAgent(ABC):
             )
             return response.choices[0].message.content
         except Exception as e:
-            logger.error(f"[{self.agent_name}] LLM调用失败: {e}")
-            raise
+            logger.warning(f"[{self.agent_name}] LLM调用失败: {e}")
+            return ""
 
     def call_mcp_tool(self, tool_name: str, **kwargs) -> Any:
         """

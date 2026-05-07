@@ -412,9 +412,10 @@ class MCPToolManager:
             }
 
     def _download_arxiv_paper(self, paper_id: str, save_path: str = None) -> Dict:
-        """从arXiv下载论文PDF"""
+        """从arXiv下载论文PDF（带重试）"""
         import urllib.request
         import os
+        import time
 
         logger.info(f"[MCP] 下载arXiv论文: {paper_id}")
 
@@ -430,38 +431,46 @@ class MCPToolManager:
             logger.info(f"[MCP] PDF已存在，跳过下载: {save_path}")
             return {"status": "success", "paper_id": paper_id, "path": save_path, "cached": True}
 
-        # 构建arXiv PDF URL
-        # 注意: arXiv的PDF链接格式是 /pdf/{id} 而不是 /pdf/{id}.pdf
-        # 支持新旧格式的paper_id (如 0704.1394 或 2301.07041)
         pdf_url = f"https://arxiv.org/pdf/{paper_id}"
 
+        # 直连arxiv，不使用代理（代理会导致Connection refused）
+        saved_env = {}
+        for k in ['http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'all_proxy']:
+            if k in os.environ:
+                saved_env[k] = os.environ.pop(k)
+
         try:
-            # 下载PDF
-            logger.info(f"[MCP] 正在下载: {pdf_url}")
-            req = urllib.request.Request(
-                pdf_url,
-                headers={'User-Agent': 'Mozilla/5.0 (compatible; DataCrawlerAgent/1.0)'}
-            )
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    logger.info(f"[MCP] 正在下载: {pdf_url}" +
+                               (f" (重试 {attempt+1}/{max_retries})" if attempt > 0 else ""))
+                    req = urllib.request.Request(
+                        pdf_url,
+                        headers={'User-Agent': 'Mozilla/5.0 (compatible; DataCrawlerAgent/1.0)'}
+                    )
 
-            with urllib.request.urlopen(req, timeout=120) as response:
-                with open(save_path, 'wb') as f:
-                    f.write(response.read())
+                    with urllib.request.urlopen(req, timeout=120) as response:
+                        with open(save_path, 'wb') as f:
+                            f.write(response.read())
 
-            logger.info(f"[MCP] 下载完成: {save_path}")
-            return {"status": "success", "paper_id": paper_id, "path": save_path, "cached": False}
+                    logger.info(f"[MCP] 下载完成: {save_path}")
+                    return {"status": "success", "paper_id": paper_id, "path": save_path, "cached": False}
 
-        except urllib.error.HTTPError as e:
-            error_msg = f"HTTP错误 {e.code}: {e.reason}"
-            logger.error(f"[MCP] 下载失败: {error_msg}")
-            return {"status": "error", "paper_id": paper_id, "message": error_msg}
-        except urllib.error.URLError as e:
-            error_msg = f"URL错误: {e.reason}"
-            logger.error(f"[MCP] 下载失败: {error_msg}")
-            return {"status": "error", "paper_id": paper_id, "message": error_msg}
-        except Exception as e:
-            error_msg = f"下载失败: {str(e)}"
-            logger.error(f"[MCP] {error_msg}")
-            return {"status": "error", "paper_id": paper_id, "message": error_msg}
+                except (urllib.error.HTTPError, urllib.error.URLError, ConnectionError, OSError) as e:
+                    if attempt < max_retries - 1:
+                        time.sleep(2 * (attempt + 1))
+                        continue
+                    error_msg = f"{type(e).__name__}: {e}"
+                    logger.error(f"[MCP] 下载失败({attempt+1}次重试后): {error_msg}")
+                    return {"status": "error", "paper_id": paper_id, "message": error_msg}
+                except Exception as e:
+                    error_msg = f"下载失败: {str(e)}"
+                    logger.error(f"[MCP] {error_msg}")
+                    return {"status": "error", "paper_id": paper_id, "message": error_msg}
+        finally:
+            # 恢复代理环境变量
+            os.environ.update(saved_env)
 
     def download_arxiv_papers_batch(
         self,

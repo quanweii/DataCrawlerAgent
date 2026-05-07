@@ -15,8 +15,15 @@ import os
 import re
 import hashlib
 import numpy as np
+from multiprocessing import Pool
 
 from .base_agent import BaseAgent
+
+
+def _clean_paper_standalone(paper_dir: str) -> Optional[Dict]:
+    """独立清洗函数，供multiprocessing.Pool调用（picklable）"""
+    agent = DataCleanerAgent(client=None, system_prompt="")
+    return agent._clean_paper_directory(paper_dir)
 
 
 class DataCleanerAgent(BaseAgent):
@@ -61,18 +68,34 @@ class DataCleanerAgent(BaseAgent):
             "errors": []
         }
 
-        for paper_dir in paper_dirs:
-            try:
-                result = self._clean_paper_directory(paper_dir)
+        parallel = task.get("parallel", False)
+        num_workers = task.get("num_workers", 8)
+
+        if parallel and len(paper_dirs) > 1:
+            logger.info(f"[{self.agent_name}] 并行清洗 {len(paper_dirs)} 篇, {num_workers} 个worker")
+            with Pool(processes=num_workers) as pool:
+                raw_results = pool.map(_clean_paper_standalone, paper_dirs)
+            for result in raw_results:
                 if result:
                     results["cleaned_papers"].append(result)
                     results["stats"]["total_cleaned"] += 1
                     results["stats"]["duplicates_removed"] += result.get("duplicates_removed", 0)
                     results["stats"]["chars_fixed"] += result.get("chars_fixed", 0)
-            except Exception as e:
-                logger.error(f"清洗论文目录失败 {paper_dir}: {e}")
-                results["errors"].append(f"{paper_dir}: {str(e)}")
-                results["stats"]["errors"] += 1
+                else:
+                    results["stats"]["errors"] += 1
+        else:
+            for paper_dir in paper_dirs:
+                try:
+                    result = self._clean_paper_directory(paper_dir)
+                    if result:
+                        results["cleaned_papers"].append(result)
+                        results["stats"]["total_cleaned"] += 1
+                        results["stats"]["duplicates_removed"] += result.get("duplicates_removed", 0)
+                        results["stats"]["chars_fixed"] += result.get("chars_fixed", 0)
+                except Exception as e:
+                    logger.error(f"清洗论文目录失败 {paper_dir}: {e}")
+                    results["errors"].append(f"{paper_dir}: {str(e)}")
+                    results["stats"]["errors"] += 1
 
         self.cleaned_data = results["cleaned_papers"]
         self.cleaning_stats = results["stats"]

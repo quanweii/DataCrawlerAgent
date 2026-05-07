@@ -50,6 +50,14 @@ data/cs_ai_papers/
 data/cs_ai_datasets/
 data/recent_papers/
 data/*.json
+# Paper directories (very large)
+data/*_papers/
+# Benchmark data
+benchmark/
+# Large arxiv metadata files
+arxiv-*.json
+# Config files with local paths
+*_config.json
 *.pdf
 *.npy
 *.npz
