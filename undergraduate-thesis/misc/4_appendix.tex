@@ -1,0 +1,81 @@
+%%
+% BIThesis 本科毕业设计论文模板 —— 使用 XeLaTeX 编译 The BIThesis Template for Undergraduate Thesis
+% This file has no copyright assigned and is placed in the Public Domain.
+%%
+
+\begin{appendices}
+
+\section{AMMAG数据集完整实验结果}
+
+表\ref{tab:full_nc}展示了七种模态组合的节点分类完整结果（4种基线模型，CLIP-ViT-Large 768d统一编码，5次运行均值$\pm$标准差）。
+
+\begin{table}[htbp]
+  \centering
+  \caption{七种模态组合节点分类完整结果（Accuracy \%）}
+  \label{tab:full_nc}
+  \small
+  \begin{tabular}{lccccccc}
+    \toprule
+    模型 & Text & Image & Formula & T+I & T+F & I+F & T+I+F \\
+    \midrule
+    MLP & 88.86$\pm$0.24 & 79.47$\pm$0.42 & 76.47$\pm$0.21 & 89.94$\pm$0.36 & 90.55$\pm$0.25 & 85.06$\pm$0.37 & 90.33$\pm$0.27 \\
+    GCN & 89.47$\pm$0.29 & 81.25$\pm$0.28 & 78.35$\pm$0.16 & 90.37$\pm$0.16 & \textbf{90.90$\pm$0.11} & 86.29$\pm$0.37 & 90.67$\pm$0.23 \\
+    GAT & 89.42$\pm$0.21 & 81.58$\pm$0.46 & 78.68$\pm$0.20 & 90.40$\pm$0.23 & 90.83$\pm$0.16 & 86.13$\pm$0.34 & 90.55$\pm$0.20 \\
+    GraphSAGE & 89.43$\pm$0.22 & 81.31$\pm$0.18 & 78.43$\pm$0.12 & 90.67$\pm$0.16 & \textbf{91.06$\pm$0.22} & 86.22$\pm$0.23 & \textbf{90.91$\pm$0.14} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+表\ref{tab:full_12model}展示了13种模型在T+I+F多模态输入下的节点分类完整结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{十三模型节点分类完整结果（T+I+F, Accuracy \%）}
+  \label{tab:full_12model}
+  \small
+  \begin{tabular}{llcc}
+    \toprule
+    模型 & 类型 & Accuracy (\%) & F1 (\%) \\
+    \midrule
+    MLP & 标准MLP & 90.33$\pm$0.27 & 90.30$\pm$0.24 \\
+    GCN & 标准GNN & 90.76$\pm$0.04 & 90.74$\pm$0.06 \\
+    GAT & 标准GNN & 90.71$\pm$0.22 & 90.68$\pm$0.21 \\
+    GraphSAGE & 标准GNN & 90.91$\pm$0.14 & 90.89 \\
+    GIN & 标准GNN & 90.33$\pm$0.31 & 90.29$\pm$0.31 \\
+    GCNII & 标准GNN & \textbf{91.09$\pm$0.14} & \textbf{91.09$\pm$0.16} \\
+    GATv2 & 标准GNN & 90.90$\pm$0.08 & 90.88$\pm$0.05 \\
+    \midrule
+    DGF & 多模态GNN & 90.22$\pm$0.38 & 90.13$\pm$0.41 \\
+    MMGCN & 多模态GNN & 90.91$\pm$0.18 & 90.87$\pm$0.21 \\
+    MGAT & 多模态GNN & 90.76$\pm$0.19 & 90.77$\pm$0.18 \\
+    LGMRec & 多模态GNN & 90.81$\pm$0.17 & 90.79$\pm$0.19 \\
+    DMGC & 多模态GNN & 90.93$\pm$0.36 & 90.90$\pm$0.34 \\
+    MHGAT & 多模态GNN & 90.91$\pm$0.21 & 90.91$\pm$0.21 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{数据集统计信息}
+
+表\ref{tab:full_stats}展示了AMMAG数据集的详细统计信息。
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMMAG数据集详细统计}
+  \label{tab:full_stats}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    统计项 & cs.SI & cs.LO & math.LO & physics.soc-ph & 合计 \\
+    \midrule
+    论文数 & 11,929 & 11,012 & 9,555 & 13,176 & 45,672 \\
+    引用边数（域内） & 4,483 & 8,174 & 12,544 & 30,325 & 55,526 \\
+    平均度 & 0.75 & 1.49 & 2.63 & 4.60 & 2.43 \\
+    平均图片数/篇 & 12.41 & 6.58 & 1.83 & 10.81 & 7.91 \\
+    平均公式数/篇 & 180.24 & 874.70 & 1,136.50 & 188.70 & 594.79 \\
+    含图片论文比例 & 98.5\% & 81.6\% & 38.2\% & 97.3\% & 81.5\% \\
+    含公式论文比例 & 99.4\% & 99.8\% & 100.0\% & 99.6\% & 99.7\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\end{appendices}

@@ -1,0 +1,115 @@
+%%
+% BIThesis 本科毕业设计论文模板 —— 使用 XeLaTeX 编译 The BIThesis Template for Undergraduate Thesis
+% This file has no copyright assigned and is placed in the Public Domain.
+% Compile with: xelatex -> biber -> xelatex -> xelatex
+%%
+
+% 请勿删除下面两行注释，以免影响编译。
+% !TeX program = xelatex
+% !BIB program = biber
+
+
+% 开启盲审格式 blindPeerReview=true (如：[type=bachelor,blindPeerReview=true])
+
+\documentclass[type=bachelor]{bithesis}
+
+% 此处仅列出常用的配置。全部配置用法请见「bithesis.pdf」手册。
+\BITSetup{
+  cover = {
+    % 封面需要「北京理工大学」字样图片，如无必要请勿修改该项。
+    headerImage = images/header.pdf,
+    % 封面标题需要"华文细黑"，如无必要请勿修改该项。
+    xiheiFont = STXIHEI.TTF,
+  },
+  info = {
+    title = 基于多智能体的学术多模态属性图数据集自动化构建系统,
+    titleEn = {Automated Construction System for Academic Multimodal Attributed Graph Dataset Based on Multi-Agent Architecture},
+    school = 计算机学院,
+    major = 计算机科学与技术,
+    class = 0561xxxx,
+    author = xxx,
+    studentId = 11xxxxxxxx,
+    supervisor = xxx,
+    keywords = {多模态属性图；图神经网络；学术文献；多智能体系统；数据集构建},
+    keywordsEn = {Multimodal Attributed Graph; Graph Neural Network; Academic Literature; Multi-Agent System; Dataset Construction},
+  },
+  style = {
+    betterTimesNewRoman = true,
+  },
+  misc = {
+    tabularRowSeparation = 1.25,
+  },
+}
+
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes, arrows, positioning, fit, backgrounds}
+
+% 大部分关于参考文献样式的修改，都可以通过此处的选项进行配置。
+% 详情请搜索「biblatex-gb7714-2015 文档」进行阅读。
+\usepackage[
+  backend=biber,
+  style=gb7714-2015,
+  gbalign=gb7714-2015,
+  gbnamefmt=lowercase,
+  gbpub=false,
+  doi=false,
+  url=false,
+  eprint=false,
+  isbn=false,
+]{biblatex}
+
+% 参考文献引用文件位于 misc/ref.bib
+\addbibresource{misc/ref.bib}
+
+% 文档开始
+\begin{document}
+
+% 标题页面
+\MakeCover
+
+% 原创性声明
+\begin{blindPeerReview}
+  \includepdf{misc/1_originality.pdf}\newpage
+\end{blindPeerReview}
+
+% 前置内容定义
+\frontmatter
+% 摘要
+\input{chapters/0_abstract.tex}
+
+\MakeTOC
+
+% 正文开始
+\mainmatter
+
+% 第一章 绪论
+\input{chapters/1_chapter1.tex}
+% 第二章 相关工作
+\input{chapters/2_chapter2.tex}
+% 第三章 系统架构设计
+\input{chapters/3_chapter3.tex}
+% 第四章 数据集构建与分析
+\input{chapters/4_chapter4.tex}
+% 第五章 Benchmark实验与分析
+\input{chapters/5_chapter5.tex}
+
+% 后置内容
+\backmatter
+
+% 第六章 总结与展望
+\input{misc/2_conclusion.tex}
+% 参考文献
+\input{misc/3_reference.tex}
+% 附录
+\input{misc/4_appendix.tex}
+% 致谢
+\input{misc/5_acknowledgements.tex}
+
+\end{document}

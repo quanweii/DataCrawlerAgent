@@ -1,0 +1,17 @@
+%%
+% BIThesis 本科毕业设计论文模板 —— 使用 XeLaTeX 编译 The BIThesis Template for Undergraduate Thesis
+% This file has no copyright assigned and is placed in the Public Domain.
+%%
+
+% 中英文摘要章节
+\begin{abstract}
+
+现有MAG基准数据集（MAGB、OpenMAG、MM-GRAPH）均限于电商和社交领域且仅含文本与图像双模态，未覆盖学术论文领域和公式模态。针对这一空白，本文提出AMMAG——首个面向学术论文领域的多模态属性图Benchmark数据集，覆盖计算机科学、数学和物理学三个学科共45,672篇论文，包含文本、图像、公式三种模态和59,364条引用边，并通过基于多智能体的自动化系统实现端到端构建。在Benchmark实验方面，本文在六组任务上系统评估了6种GNN模型与7种模态组合。核心发现包括：（1）三模态融合较文本单模态提升+0.45pp（20次运行，p$<$0.001），达到统计显著，但不同领域模态偏好差异显著——cs.SI获益最大（+1.27pp）而math.LO几乎不受图像影响；（2）公式密度效应揭示了通用编码器在数学公式上的局限；（3）L2归一化在Few-shot中提升8-11pp，但归一化后Image仍占拼接特征58.6\%的能量，表明简单拼接不足以解决模态失衡。AMMAG为学术MAG学习研究提供了首个标准化评估平台。
+
+\end{abstract}
+
+% 英文摘要章节
+\begin{abstractEn}
+
+Existing MAG benchmarks (MAGB, OpenMAG, MM-GRAPH) are limited to e-commerce and social domains with only text and image modalities, failing to cover academic literature and formula modality. We propose AMMAG --- the first multimodal attributed graph benchmark for academic literature, covering 45,672 papers across three disciplines with text, image, and formula modalities along with 59,364 citation edges, constructed via an automated multi-agent system. We systematically evaluate 6 GNN models across 7 modality combinations on six task groups. Key findings include: (1) tri-modal fusion achieves a statistically significant improvement of +0.45pp over text-only (20 runs, p<0.001), with domain-specific modality preferences --- cs.SI benefits most (+1.27pp) while math.LO is barely affected by images; (2) the formula density effect reveals limitations of general-purpose encoders on mathematical formulas; (3) L2 normalization improves few-shot performance by 8-11pp, yet images still dominate 58.6\% of concatenated feature energy, indicating simple concatenation is insufficient. AMMAG provides the first standardized evaluation platform for academic MAG learning.
+\end{abstractEn}

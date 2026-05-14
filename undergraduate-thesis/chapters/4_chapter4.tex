@@ -1,0 +1,273 @@
+%%
+% 第四章 数据集构建与分析（~8页）← 重点章
+%%
+
+\chapter{数据集构建与分析}
+
+本章介绍AMMAG数据集的构建过程和统计分析。首先阐述数据采集策略和领域选择依据，然后对数据集的拓扑结构、模态分布和数据质量进行全面的统计分析，最后将AMMAG与现有代表性数据集进行系统对比，展示其独特价值。
+
+\section{数据采集策略}
+
+\subsection{领域选择依据}
+
+AMMAG数据集旨在覆盖多个学科大类，以验证多模态属性图学习方法在不同学术领域的适用性。数据集选择了四个arXiv子领域，横跨计算机科学、数学和物理学三个学科大类。表\ref{tab:domain_design}展示了各子领域的设计和选择理由。
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMMAG数据集领域设计}
+  \label{tab:domain_design}
+  \begin{tabular}{llclp{4.5cm}}
+    \toprule
+    数据集 & 子领域 & 学科大类 & 论文数 & 选择理由 \\
+    \midrule
+    AMMAG-SI & cs.SI（社交信息学） & CS & 11,929 & 偏社交网络研究，图文并茂 \\
+    AMMAG-LO & cs.LO（计算逻辑） & CS & 11,012 & 偏计算理论，公式密度极高 \\
+    AMMAG-MLO & math.LO（数理逻辑） & Math & 9,555 & 数学领域，公式密度最高 \\
+    AMMAG-SOC & physics.soc-ph（社会物理） & Physics & 13,176 & 物理领域，实验图表丰富 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+领域选择遵循以下三个原则：
+
+\textbf{（1）学科大类覆盖。}四个子领域覆盖了计算机科学、数学和物理学三个学科大类，能够验证多模态图学习方法在不同学科背景下的泛化能力。不同学科的论文在写作风格、模态组成和引用模式上存在显著差异，这种差异为模态消融实验提供了天然的实验条件。
+
+\textbf{（2）模态分布差异。}四个子领域在模态分布上具有鲜明的差异性。cs.SI领域的论文以社交网络分析为主，平均每篇论文包含12.41张图片和180.24条公式，图文比例相对均衡。cs.LO领域的论文偏重计算理论，平均公式密度高达874.70条/篇，而图片仅有6.58张/篇，公式远多于图片。math.LO领域作为纯数学领域，公式密度最高（1,136.50条/篇），图片最少（1.83张/篇）。physics.soc-ph领域的论文涉及物理实验和模拟，图片较多（10.81张/篇），文本相对较短。这种模态分布的差异使得AMMAG能够系统地评估不同模态在不同学术背景下的贡献。
+
+\textbf{（3）领域内差异验证。}在计算机科学内部选择了两个差异显著的子领域：cs.SI偏应用（社交网络分析、推荐系统），cs.LO偏理论（计算复杂性、形式逻辑）。这种设计使得跨域迁移实验（第五章5.6节）能够在同属CS但子领域差异显著的场景下进行，更精细地评估模型的迁移能力。
+
+\subsection{采集流程}
+
+数据采集流程基于第三章所述的自动化构建系统实现，具体步骤如下：
+
+\textbf{（1）元数据过滤。}从arXiv元数据集（约299万篇论文）中，按主领域标签分别过滤出cs.SI、cs.LO、math.LO和physics.soc-ph四个子领域的论文，按更新日期降序排序后各取前12,000篇作为候选集。
+
+\textbf{（2）PDF批量下载。}使用多线程下载工具（最大10个并发线程）批量下载候选论文的PDF文件。四个子领域的下载成功率均在99\%以上：cs.SI为99.6\%（11,951/12,000），cs.LO为99.3\%（11,017/11,100），math.LO为98.9\%（9,555/9,660），physics.soc-ph为99.8\%（13,176/13,200）。
+
+\textbf{（3）多模态提取。}使用基于DocLayout-YOLO\cite{zhao2024doclayoutyolo}的多模态提取引擎，从每篇PDF中提取文本（Markdown格式）、图片（PNG格式）和公式（LaTeX格式）。提取过程采用多GPU并行模式（6个GPU，批次大小50），利用批量处理策略将模型加载开销从每篇30秒降至每批30秒。
+
+\textbf{（4）数据清洗。}对提取的Markdown文本执行六步清洗流水线（详见第三章3.4节），修复PDF转换引入的格式问题，提取和格式化参考文献列表。清洗过程采用32个CPU工作进程并行执行。
+
+\textbf{（5）引用图构建。}使用ReferenceGraphBuilderAgent的双源提取和三级匹配引擎，从每篇论文中提取引用信息并与arXiv元数据进行匹配，构建域内引用网络图。
+
+\textbf{（6）标准化格式化。}将清洗后的多模态数据、引用边信息和论文元数据整合为标准化的多模态属性图数据集，输出为PyTorch Geometric兼容的格式。
+
+\section{数据集统计分析}
+
+\subsection{基本统计}
+
+表\ref{tab:statistics}展示了AMMAG数据集四个子领域的基本统计信息。
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMMAG数据集统计}
+  \label{tab:statistics}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    统计项 & cs.SI & cs.LO & math.LO & physics.soc-ph & 合计 \\
+    \midrule
+    论文数 & 11,929 & 11,012 & 9,555 & 13,176 & 45,672 \\
+    引用边数（域内） & 4,483 & 8,174 & 12,544 & 30,325 & 55,526 \\
+    引用边数（含跨域） & --- & --- & --- & --- & 59,364 \\
+    平均度 & 0.75 & 1.49 & 2.63 & 4.60 & 2.43 \\
+    \midrule
+    平均图片数/篇 & 12.41 & 6.58 & 1.83 & 10.81 & 7.91 \\
+    平均公式数/篇 & 180.24 & 874.70 & 1,136.50 & 188.70 & 594.79 \\
+    平均文本长度(字符) & 61,361 & 100,214 & 87,735 & 53,996 & 75,826 \\
+    \midrule
+    含图片论文比例 & 98.5\% & 81.6\% & 38.2\% & 97.3\% & 81.5\% \\
+    含公式论文比例 & 99.4\% & 99.8\% & 100.0\% & 99.6\% & 99.7\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+从表\ref{tab:statistics}可以观察到以下关键特征。图\ref{fig:dataset_overview}直观展示了AMMAG数据集的引用网络结构和模态分布。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{images/dataset_overview.png}
+  \caption{AMMAG数据集概览：引用网络结构与模态分布}
+  \label{fig:dataset_overview}
+\end{figure}
+
+\textbf{（1）图结构特征。}AMMAG合并引用图包含45,672个节点和59,364条引用边（含跨领域引用3,838条），平均度为2.60。四个子领域的图结构密度差异显著：physics.soc-ph最稠密（平均度4.60），cs.SI最稀疏（平均度0.75）。这种差异反映了不同学科的引用习惯——物理学论文倾向于引用更多相关领域的工作，而计算机科学的某些子领域（如社交信息学）的引用范围相对集中。
+
+\textbf{（2）模态分布差异。}四个子领域在模态分布上呈现出鲜明的差异性。在图片方面，cs.SI的论文平均包含12.41张图片（主要为网络架构图和实验结果可视化），而math.LO仅包含1.83张图片（数学论文以纯文本和公式为主），两者相差约6.8倍。在公式方面，math.LO的论文平均包含1,136.50条公式，而cs.SI仅包含180.24条，两者相差约6.3倍。在文本长度方面，cs.LO的论文最长（平均100,214字符），physics.soc-ph最短（53,996字符）。
+
+\textbf{（3）模态覆盖率。}公式模态的覆盖率最高，四个子领域中99.7\%的论文至少包含一条公式，这符合学术论文的基本特征——即使是实验性论文也通常包含数学符号和简单公式。图片模态的覆盖率因领域而异：cs.SI和physics.soc-ph的覆盖率超过97\%，而math.LO仅有38.2\%的论文包含图片。
+
+\subsection{与现有数据集的系统对比}
+
+表\ref{tab:benchmark_comparison}将AMMAG与现有代表性图基准数据集进行了系统对比。
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMMAG与现有Benchmark数据集对比}
+  \label{tab:benchmark_comparison}
+  \small
+  \begin{tabular}{p{2.2cm}p{1.2cm}rrcccp{1.2cm}}
+    \toprule
+    数据集 & 领域 & 节点数 & 边数 & 文本 & 图像 & 公式 & 图结构 \\
+    \midrule
+    Cora\cite{sen2008collective} & 学术 & 2,708 & 5,429 & BoW & \texttimes & \texttimes & 引用网络 \\
+    CiteSeer\cite{giles1998citeseer} & 学术 & 3,327 & 4,732 & BoW & \texttimes & \texttimes & 引用网络 \\
+    PubMed\cite{sen2008collective} & 学术 & 19,717 & 44,338 & TF-IDF & \texttimes & \texttimes & 引用网络 \\
+    ogbn-arxiv\cite{hu2020ogb} & 学术 & 169,343 & 1,166,243 & 128d向量 & \texttimes & \texttimes & 引用网络 \\
+    CS-TAG\cite{yan2023cstag} & 学术 & 18,000 & 82,000 & 原始文本 & \texttimes & \texttimes & 合作网络 \\
+    DocGenome\cite{xia2024docgenome} & 科学 & 500,000 & --- & 全文 & 原始 & LaTeX & \texttimes \\
+    \midrule
+    MAGB-Movies\cite{yan2025magb} & 电商 & 16,238 & 218,572 & 原始 & 原始 & \texttimes & 共购网络 \\
+    MAGB-Reddit\cite{yan2025magb} & 社交 & 15,000 & 566,632 & 原始 & 原始 & \texttimes & 互动网络 \\
+    OpenMAG\cite{wan2026openmag} & 多领域 & 多规模 & --- & 原始 & 原始 & \texttimes & 部分 \\
+    MM-GRAPH\cite{zhu2025mmgraph} & 多领域 & 多规模 & --- & 原始 & 原始 & \texttimes & 部分 \\
+    \midrule
+    \textbf{AMMAG} & \textbf{学术} & \textbf{45,672} & \textbf{59,364} & \textbf{全文MD} & \textbf{原始} & \textbf{LaTeX} & \textbf{引用网络} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+从表\ref{tab:benchmark_comparison}的对比中可以清晰地看到AMMAG的独特定位：
+
+\textbf{与经典学术图数据集的对比。}Cora\cite{sen2008collective}、CiteSeer\cite{giles1998citeseer}和PubMed\cite{sen2008collective}作为最早被广泛使用的学术图数据集，其节点属性仅为词袋或TF-IDF表示，完全丢失了原始文本的语义信息，更不包含图像和公式等多模态信息。AMMAG提供了原始的全文Markdown文本、论文图片的PNG文件和公式的LaTeX源码，保留了完整的原始多模态信息。
+
+\textbf{与OGB的对比。}ogbn-arxiv\cite{hu2020ogb}虽然规模更大（169K节点），但其节点特征为128维的skip-gram向量，是将论文标题和摘要通过skip-gram模型编码得到的低维表示。这种压缩表示丢失了大量语义信息——不同领域的论文如果标题中的关键词相似，可能产生接近的特征向量，无法体现论文的完整语义。AMMAG保留了原始多模态数据，研究者可以根据需要选择不同的编码策略（如SBERT\cite{reimers2019sbert}、SciBERT\cite{beltagy2019scibert}等），灵活性更高。
+
+\textbf{与MAG基准的对比。}MAGB\cite{yan2025magb}、OpenMAG\cite{wan2026openmag}和MM-GRAPH\cite{zhu2025mmgraph}虽然提供了多模态节点属性，但仅限于文本和图像两种模态。AMMAG首次将公式模态引入MAG基准。公式在学术论文中承载了大量的结构化数学信息，是数学、物理和理论计算机科学论文最核心的内容之一。缺少公式模态使得现有MAG基准无法评估公式在学术图学习任务中的贡献。
+
+\subsection{模态分布分析}
+
+为了更直观地展示四个子领域的模态分布差异，本节从多个角度进行深入分析。
+
+\textbf{图片数量分布。}四个子领域的图片数量分布均呈现长尾分布特征，但分布形态存在显著差异。cs.SI和physics.soc-ph领域的图片数量分布相对分散，部分论文包含超过50张图片（主要为实验结果可视化），而中位数约为8-10张。math.LO领域约53.7\%的论文不包含任何图片，有图片的论文中位数仅为1-2张，且图片多为定理证明中的辅助示意图。cs.LO领域介于两者之间，图片数量集中在2-10张的范围内。
+
+\textbf{公式数量分布。}公式数量的跨领域差异更为极端。math.LO领域的公式数量分布具有最长的尾部——部分论文包含超过5,000条公式（主要为形式化证明的论文），平均值为1,136.50条。cs.LO领域的公式密度也很高（平均874.70条/篇），因为计算逻辑领域的论文大量使用形式化规约和证明。相比之下，physics.soc-ph和cs.SI的公式密度较低（分别平均188.70和180.24条/篇），这些领域的论文更多使用叙述性文字和实验图表来传达研究结果。
+
+\textbf{度分布特征。}四个子领域的度分布均呈现幂律分布特征——少数"hub"论文拥有大量的引用，而大部分论文的引用次数较少。physics.soc-ph的度分布尾部最长，存在度数超过100的hub论文；cs.SI的度分布最为集中，大部分论文的度数在0-3之间。图\ref{fig:degree_dist}直观展示了四个子领域的度分布差异。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/degree_distribution.png}
+  \caption{四个子领域的引用网络度分布（对数坐标）}
+  \label{fig:degree_dist}
+\end{figure}
+
+图\ref{fig:modality_dist}以分组柱状图的形式直观对比了四个子领域在图片数量、公式数量和文本长度三个维度上的差异。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/modality_distribution.png}
+  \caption{四个子领域的模态分布对比}
+  \label{fig:modality_dist}
+\end{figure}
+
+\section{数据质量评估}
+
+为了评估AMMAG数据集的数据质量，本节从多个维度进行量化分析。
+
+\subsection{多模态提取质量}
+
+表\ref{tab:quality}展示了数据质量的评估结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{数据质量评估}
+  \label{tab:quality}
+  \begin{tabular}{lll}
+    \toprule
+    评估维度 & 评估指标 & 结果 \\
+    \midrule
+    文本完整性 & 提取后文本长度与PDF页数的相关系数 & $\sim$0.85 \\
+    图片提取率 & 成功提取图片的论文比例 & 81.5\% (37,210/45,672) \\
+    公式提取率 & 成功提取公式的论文比例 & 99.7\% (45,531/45,672) \\
+    引用边质量 & 域内匹配率 & 20.7\% (cs.SI) \\
+    数据清洗效果 & 重复段落去除率 & $>$90\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{文本完整性。}提取后Markdown文本的长度（字符数）与原始PDF的页数之间的皮尔逊相关系数约为0.85，表明文本提取的完整性与论文的实际内容量高度相关。较长的论文产生较长的提取文本，这说明提取过程没有系统性地遗漏大段文本内容。相关系数未达到1.0的原因包括：部分论文包含大量图片（图片区域不产生文本）、参考文献列表的提取完整度因格式差异而不同、以及双栏布局论文的文本合并可能产生少量信息损失。
+
+\textbf{图片提取率。}81.5\%的论文至少包含一张成功提取的图片。图片提取率因领域而异：cs.SI为98.5\%（该领域论文通常包含网络架构图和实验可视化），math.LO仅为38.2\%（纯数学论文通常不包含图片）。对于不含图片的论文，图像编码器输出768维零向量作为占位符，确保这些论文仍然可以参与多模态图学习实验。
+
+\textbf{公式提取率。}99.7\%的论文至少包含一条成功提取的公式，这一高覆盖率反映了公式在学术论文中的普遍性——即使是非数学领域的论文也通常包含符号定义、目标函数或评价指标公式等数学内容。公式提取使用UniMERNet\cite{wang2024unimernet}将公式图像识别为LaTeX代码，其识别精度在标准数学表达式上表现优异。
+
+\textbf{引用边质量。}以cs.SI领域为例，系统从11,929篇论文中提取了21,638条原始引用关系，经过三级匹配引擎处理后成功匹配4,483条域内引用边，匹配率为20.7\%。未匹配的引用主要指向域外论文（即被引用论文不在当前数据集中）。这一较低的匹配率限制了图的密度（合并图平均度仅2.60），直接影响了GNN图结构增益的体现——第五章实验中GCN与MLP仅差0.26pp，可能部分归因于图的稀疏性。跨领域引用的高丢失率是学术引用网络的固有特征——一篇cs.SI论文可能引用机器学习（cs.LG）、信息检索（cs.IR）等多个领域的工作。
+
+\subsection{标签体系}
+
+AMMAG数据集提供两级标签体系：
+
+\textbf{领域标签（4类）。}每篇论文根据其所属的arXiv主领域被赋予一个领域标签：cs.SI（0）、cs.LO（1）、math.LO（2）、physics.soc-ph（3）。领域标签用于节点分类任务（第五章5.2节）和模态消融实验（第五章5.3节）。四个领域的论文数量分布相对均衡（9,555-13,176篇），避免了严重的类别不平衡问题。
+
+\textbf{子分类标签（6-7类/领域）。}每篇论文根据其在arXiv中的交叉类别（cross-list categories）被赋予一个子分类标签。子分类标签的分配规则为：从论文的类别列表中选择第一个非主领域的、且在该领域的子分类映射表中存在的类别；如果没有匹配的交叉类别，则归入"other"类别。各领域的子分类数量和分布如下：cs.SI有6个子分类（cs.SI、cs.LG、cs.CY、cs.CL、cs.AI、other），cs.LO有7个子分类，math.LO有7个子分类，physics.soc-ph有6个子分类。子分类标签用于更细粒度的分类任务（第五章5.7节）和跨域迁移实验（第五章5.6节）。
+
+\section{特征编码与数据集格式}
+
+\subsection{统一编码方案}
+
+AMMAG数据集的所有模态统一使用CLIP\cite{radford2021clip}（Contrastive Language-Image Pre-training）的ViT-Large-Patch14模型进行编码，输出维度均为768维。该统一编码方案确保了文本、图像和公式三种模态在同一语义空间中的表示，为跨模态融合和检索提供了基础。
+
+\textbf{文本编码。}使用CLIP的文本编码器将论文的标题与摘要编码为768维向量。对于长文档，编码器将文本按段落分割为多个片段分别编码，最后取均值池化作为整篇论文的文本表示。CLIP文本编码器基于Transformer架构，在大规模图像-文本对上进行了对比学习预训练，能够捕获丰富的语义信息。
+
+\textbf{图像编码。}使用CLIP的视觉编码器（ViT-Large-Patch14）将论文中的图片编码为768维向量。对于包含多张图片的论文，对每张图片分别编码后取均值池化。不含图片的论文返回768维零向量作为占位符。CLIP视觉编码器采用Vision Transformer架构，将图像分割为$14\times14$的patch后进行自注意力编码。
+
+\textbf{公式编码。}使用与文本编码器相同的CLIP文本编码器将论文中的LaTeX公式编码为768维向量。编码器从Markdown文本中提取块级公式和行内公式，过滤短公式后取前200条，分别编码后取均值池化。将LaTeX公式作为文本序列用CLIP编码，利用了CLIP文本编码器的通用序列建模能力来处理数学符号。
+
+\textbf{统一编码的优势。}与使用不同编码器分别编码各模态的方案相比，统一编码方案具有两个关键优势：（1）跨模态语义对齐——CLIP的对比学习预训练使得文本和图像在共享的768维空间中具有语义对应关系，跨模态检索MRR（11.45\%）是独立编码器（0.17\%）的67倍（第五章5.8.2节详细验证）；（2）维度一致性——所有模态输出均为768维，避免了不同维度（如SBERT 384维与CLIP 512维）拼接时的模态失衡问题。
+
+\subsection{多模态融合策略}
+
+AMMAG数据集支持7种模态组合的节点特征表示。当使用多模态组合时，各模态的768维向量直接拼接后，通过一个可学习的线性投影层映射至统一的768维空间：
+
+\begin{equation}
+\mathbf{x}_i = \mathbf{W}_{proj} \cdot [\mathbf{x}_i^{text}; \mathbf{x}_i^{image}; \mathbf{x}_i^{formula}] + \mathbf{b}_{proj}
+\end{equation}
+
+其中$\mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{in}}$，$d_{in}$为拼接后的维度（单模态为768，双模态为1536，三模态为2304）。该投影层在下游GNN模型训练过程中端到端学习，确保不同维度的模态组合能够公平地与768维单模态进行对比。七种模态组合及其特征维度为：Text（768）、Image（768）、Formula（768）、T+I（1536→768）、T+F（1536→768）、I+F（1536→768）、T+I+F（2304→768）。
+
+\subsection{标准化数据格式}
+
+AMMAG数据集以PyTorch Geometric（PyG）\cite{fey2019pyg}兼容的格式存储，每个领域的输出目录包含以下文件：
+
+\begin{itemize}
+  \item \texttt{graph\_data.pt}：PyG Data对象，包含\texttt{edge\_index}（引用边的稀疏张量）、\texttt{labels}（领域标签）、\texttt{subcat\_labels}（子分类标签）和\texttt{paper\_ids}（论文ID列表）。
+  \item \texttt{text\_embeddings.pt}：文本模态的编码结果，维度为$N \times 768$，与\texttt{paper\_ids}对齐。
+  \item \texttt{image\_embeddings.pt}：图像模态的编码结果，维度为$N \times 768$。
+  \item \texttt{formula\_embeddings.pt}：公式模态的编码结果，维度为$N \times 768$。
+  \item \texttt{statistics.json}：数据集的统计元信息。
+\end{itemize}
+
+数据集的使用接口设计简洁，研究者可以通过以下方式加载数据：
+
+\begin{lstlisting}[language=Python, caption={AMMAG数据集加载示例}]
+from benchmark.data.dataset import AMMAGDataset
+
+# 加载单个领域
+dataset = AMMAGDataset(
+    root='./data', domains=['cs_si'],
+    modality='text+formula', label_type='domain'
+)
+
+# 加载合并的4领域图
+dataset = AMMAGDataset(
+    root='./data',
+    domains=['cs_si', 'cs_lo', 'math_lo', 'physics_socph'],
+    modality='text+image+formula'
+)
+
+# 获取数据划分
+data = dataset._load_data()
+train_mask, val_mask, test_mask = dataset.get_split_masks('supervised')
+\end{lstlisting}
+
+\texttt{AMMAGDataset}类支持多种数据划分方式：（1）全监督划分——随机打乱后按60\%/20\%/20\%比例划分训练集、验证集和测试集；（2）Few-shot划分——每类随机采样$k$个样本作为训练集（$k \in \{1, 3, 5, 10, 20\}$），20\%作为验证集，其余作为测试集；（3）跨域迁移划分——以非目标领域的所有节点作为训练集和验证集（80\%/20\%），目标领域的节点作为测试集；（4）域内子图划分——提取单个领域的子图进行独立评估。
+
+\section{本章小结}
+
+本章介绍了AMMAG数据集的构建过程和统计分析。AMMAG覆盖计算机科学、数学和物理学三个学科大类共45,672篇论文，包含文本、图像和公式三种模态属性，并通过引用网络连接。
+
+数据集的核心特征包括：（1）四个子领域在模态分布上差异显著——math.LO的公式密度是cs.SI的6.3倍，cs.SI的图片数量是math.LO的6.8倍，这种差异为模态消融实验提供了理想的实验条件；（2）图结构密度差异明显——physics.soc-ph的平均度（4.60）是cs.SI（0.75）的6.1倍，反映了不同学科的引用习惯差异；（3）公式模态覆盖率极高（99.7\%），验证了公式作为学术论文核心模态的地位。
+
+在特征编码方面，AMMAG采用CLIP-ViT-Large-Patch14统一编码方案，将文本、图像和公式三种模态统一映射至768维语义空间，并使用可学习线性投影层将多模态拼接特征投影至统一维度。该方案相比独立编码器方案具有显著的跨模态检索优势（MRR提升67倍），为多模态融合提供了高质量的语义对齐基础。
+
+与现有数据集的系统对比表明，AMMAG是首个同时满足学术论文领域、三模态节点属性（含公式）、引用网络图结构和自动化构建系统四个条件的数据集。AMMAG继承了OGB\cite{hu2020ogb}和CS-TAG\cite{yan2023cstag}的学术领域和图结构优势，借鉴了DocGenome\cite{xia2024docgenome}的多模态信息提取技术，融合了MAGB\cite{yan2025magb}的MAG学习范式，并通过第三章所述的自动化构建系统实现了端到端的数据集生成。

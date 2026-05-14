@@ -1,0 +1,79 @@
+%%
+% 第一章 绪论（~5页）
+%%
+
+\chapter{绪论}
+
+\section{研究背景与意义}
+
+近年来，图神经网络（Graph Neural Network, GNN）作为处理图结构数据的深度学习方法，在社交网络分析\cite{hamilton2017rep_survey}、推荐系统、药物发现和交通预测等领域取得了显著的成功。图数据广泛存在于现实世界中，其中节点表示实体，边表示实体间的关系。与传统欧几里得数据（如图像、文本）不同，图数据的非规则结构使得传统卷积操作难以直接应用。针对这一挑战，研究者们提出了一系列图神经网络模型。Kipf和Welling\cite{kipf2017gcn}提出了图卷积网络（Graph Convolutional Network, GCN），通过谱域近似的方法将卷积操作推广到图结构上，实现了高效的邻居信息聚合。Veli\v{c}kovi\'{c}等人\cite{velickovic2018gat}提出了图注意力网络（Graph Attention Network, GAT），引入注意力机制自适应地学习邻居节点的重要性权重。Hamilton等人\cite{hamilton2017graphsage}提出了GraphSAGE，通过采样和聚合的策略支持归纳式学习，使其能够处理大规模动态图。Xu等人\cite{xu2019gin}从理论上分析了GNN的表达能力上界，提出了图同构网络（Graph Isomorphism Network, GIN），证明其表达能力与Weisfeiler-Lehman图同构测试等价。这些模型在节点分类、图分类、链接预测等核心图学习任务上展现了强大的性能\cite{zhou2020gnn_survey, wu2021gnn_survey}。
+
+Benchmark数据集在推动机器学习发展方面发挥着至关重要的作用。在图像识别领域，ImageNet数据集推动了深度卷积神经网络的快速发展；在自然语言处理领域，GLUE基准促进了预训练语言模型的持续进步。类似地，图机器学习领域也迫切需要高质量、大规模、标准化的Benchmark数据集来客观评估和比较不同方法的性能。Hu等人\cite{hu2020ogb}提出了开放图基准（Open Graph Benchmark, OGB），提供了涵盖节点分类、链接预测和图分类三大任务的标准化评估框架。其中，ogbn-arxiv数据集包含约169K篇arXiv论文节点和1.16M条引用边，将论文的标题和摘要编码为128维skip-gram向量作为节点特征。ogbn-mag数据集则包含约1.9M个节点和21M条边，覆盖论文、作者、机构和研究领域四种节点类型。OGB极大地促进了图学习研究的标准化和可复现性，成为该领域最重要的基准之一。然而，OGB的节点属性主要为低维文本向量，丢失了论文原始文本中的丰富语义信息，更无法体现论文中的视觉信息（如图表、公式等），这限制了多模态图学习方法的研究和发展。
+
+随着多模态学习技术的快速发展\cite{baltruvsaitis2019multimodal}，研究者们逐渐意识到，现实世界中的图数据往往同时包含多种模态的节点属性。多模态属性图（Multimodal Attributed Graph, MAG）正是这样一种数据结构，其节点不仅具有传统的标量或向量属性，还包含文本、图像等多种模态的信息。Yan等人\cite{yan2025magb}首次系统地定义了MAG学习范式，并构建了MAGB基准，包含覆盖电商（Amazon Movies、Amazon Toys、Amazon Grocery）和社交（Reddit）领域的5个数据集，每个节点都具有文本和图像双模态属性。MAGB的实验揭示了重要发现：在社交网络中视觉特征往往比文本特征更重要，而在电商领域中文本特征的贡献更为显著；简单拼接多模态特征存在模态不平衡问题。Wan等人\cite{wan2026openmag}进一步扩展了MAG基准的规模，提出了OpenMAG，包含19个数据集，覆盖6个领域，设计了8个评估任务，使用了16个编码器和24个基线模型。Zhu等人\cite{zhu2025mmgraph}提出了MM-GRAPH基准，包含5个多模态图数据集，系统地支持模态消融实验，能够量化各模态的独立和联合贡献。然而，这些MAG基准数据集均存在两个共性局限：一是仅包含文本和图像双模态，未涵盖公式这一学术论文特有的模态；二是领域覆盖局限于电商和社交领域，未涉及学术论文这一天然的多模态属性图场景。
+
+学术论文作为科学知识的主要载体，天然构成了一个丰富的多模态属性图。在这一图中，每个节点代表一篇论文，节点间的有向边表示引用关系，而每个节点的属性则包含全文文本、实验图表、数学公式和表格等多种模态的信息。与电商和社交领域的多模态属性图相比，学术论文图具有其独特性：第一，公式是学术论文最核心的多模态成分之一，特别是在数学、物理和理论计算机科学领域，公式承载了大量结构化的数学信息，这些信息往往无法通过纯文本充分表达；第二，学术论文的引用网络具有明确的学术语义，引用关系反映了知识传播和学科发展的脉络；第三，学术图表（如架构图、实验结果图、流程图）与电商商品图或社交媒体图片在内容上有本质差异，需要领域适配的视觉编码方法。
+
+现有工作中，面向学术论文领域的图基准数据集仍存在显著不足。在学术图基准方面，OGB\cite{hu2020ogb}和CS-TAG\cite{yan2023cstag}虽然覆盖了学术论文领域并提供了引用网络结构，但节点属性仅限于文本，缺乏图像和公式等多模态信息。经典的小规模学术图数据集（如Cora、CiteSeer、PubMed\cite{sen2008collective}）更是使用词袋（Bag-of-Words）表示作为节点特征，模态信息更为匮乏。在多模态学术文档基准方面，DocGenome\cite{xia2024docgenome}虽然提供了涵盖文本、图像、公式和布局四种模态的大规模科学文档数据集（50万篇论文），但仅关注单文档级别的多模态理解，未构建文档间的引用网络图结构。M3SciQA\cite{li2024m3sciqa}和MCiteBench\cite{hu2025mcitebench}分别关注多文档多模态科学问答和多模态引用生成任务，同样未将论文组织为图结构进行图学习任务的评估。
+
+基于上述分析，目前学术界尚缺乏一个同时满足以下条件的数据集和基准：（1）面向学术论文领域；（2）包含文本、图像、公式等多种模态的节点属性；（3）具备引用网络图结构；（4）提供自动化数据采集与构建系统。为了填补这一空白，本文提出了AMMAG（Academic Multimodal Attributed Graph）——首个面向学术论文领域的多模态属性图Benchmark数据集及其自动化构建系统。
+
+\section{国内外研究现状}
+
+本文的研究涉及图神经网络与图基准、多模态属性图基准、多模态学术文档理解以及学术文献图构建与自动化采集四个交叉领域。近年来，GCN\cite{kipf2017gcn}、GAT\cite{velickovic2018gat}、GraphSAGE\cite{hamilton2017graphsage}和GIN\cite{xu2019gin}等模型推动了图学习的快速发展，OGB\cite{hu2020ogb}等基准提供了标准化评估框架，但现有基准的节点属性主要为低维文本向量，缺乏多模态信息。MAGB\cite{yan2025magb}、OpenMAG\cite{wan2026openmag}和MM-GRAPH\cite{zhu2025mmgraph}开创了多模态属性图学习范式，但均仅含文本和图像双模态且领域局限于电商和社交。DocGenome\cite{xia2024docgenome}等大规模科学文档基准证明了学术论文包含丰富的多模态信息，但未构建文档间的引用网络图结构。在自动化采集方面，AutoData\cite{ma2025autodata}等多智能体系统框架为复杂数据采集提供了技术基础\cite{guo2024llm_agent_survey}，但未针对学术MAG的自动化构建设计端到端流水线。第二章将对上述四个方面进行详细综述。
+
+\subsection{现有工作总结}
+
+% --- 用一张核心对比表总结 ---
+
+\begin{table}[htbp]
+  \centering
+  \caption{现有工作特性对比}
+  \label{tab:related_work_comparison}
+  \begin{tabular}{lccccccc}
+    \toprule
+    特性 & OGB & CS-TAG & DocGenome & MAGB & OpenMAG & MM-GRAPH & \textbf{AMMAG} \\
+    \midrule
+    学术论文领域 & \checkmark & \checkmark & \checkmark & & & & \textbf{\checkmark} \\
+    节点多模态属性 & & & \checkmark & \checkmark & \checkmark & \checkmark & \textbf{\checkmark(3种)} \\
+    图结构(引用网络) & \checkmark & \checkmark & & \checkmark & \checkmark & \checkmark & \textbf{\checkmark} \\
+    公式模态 & & & \checkmark & & & & \textbf{\checkmark} \\
+    模态消融实验 & & & & \checkmark & \checkmark & \checkmark & \textbf{\checkmark(含公式)} \\
+    自动化采集系统 & & & & & & & \textbf{\checkmark} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+如表\ref{tab:related_work_comparison}所示，目前没有任何一个工作同时满足学术论文领域、多模态节点属性（含公式模态）、引用网络图结构和自动化构建系统这四个条件。OGB和CS-TAG虽然覆盖了学术领域并提供了图结构，但缺乏多模态属性；DocGenome虽然提供了丰富的多模态信息，但缺乏图结构；MAGB、OpenMAG和MM-GRAPH虽然同时具备多模态属性和图结构，但其领域局限于电商和社交，且不包含公式模态。AMMAG正是填补这一空白的首次尝试。
+
+\section{本文贡献}
+
+针对上述研究空白，本文提出了AMMAG——首个面向学术论文领域的多模态属性图Benchmark数据集及其基于多智能体的自动化构建系统。本文的主要贡献如下：
+
+\textbf{（1）构建了首个学术多模态属性图Benchmark数据集AMMAG。}
+AMMAG覆盖计算机科学、数学和物理学三个学科大类，包含cs.SI（社交信息学）、cs.LO（计算逻辑）、math.LO（数理逻辑）和physics.soc-ph（社会物理）四个子领域，共计45,672篇论文。每篇论文节点包含全文文本（Markdown格式）、实验图表（PNG格式）和数学公式（LaTeX格式）三种模态属性，并通过59,364条引用边构成引用网络图结构。与MAGB\cite{yan2025magb}和OpenMAG\cite{wan2026openmag}相比，AMMAG首次将公式模态引入MAG学习范式；与OGB\cite{hu2020ogb}和CS-TAG\cite{yan2023cstag}相比，AMMAG提供了原始多模态属性而非低维压缩向量。
+
+\textbf{（2）设计了基于多智能体的自动化构建系统。}
+本文设计并实现了包含五个专用智能体的自动化构建系统，采用编排器-智能体-工具三层架构。五个智能体分别负责论文下载、多模态提取、数据清洗、引用图构建和标准化格式化，实现了从arXiv元数据到标准化MAG数据集的端到端自动化流程。其中，多模态提取引擎基于DocLayout-YOLO\cite{zhao2024doclayoutyolo}实现了文本、图像和公式的并行提取；引用图构建模块通过双源引用提取和三级匹配引擎（精确匹配、子串匹配和模糊匹配）实现了自动化引用网络构建。与GROBID\cite{lopez2009grobid}等传统半自动工具相比，本系统支持多模态信息提取和完整的引用图自动构建。
+
+\textbf{（3）进行了全面的Benchmark实验评估。}
+本文在节点分类、模态消融、Few-shot学习、链接预测、跨域迁移和子分类分类六组任务上，系统评估了6种GNN模型（MLP、GCN\cite{kipf2017gcn}、GAT\cite{velickovic2018gat}、GraphSAGE\cite{hamilton2017graphsage}、GIN\cite{xu2019gin}和Graph Transformer）在7种模态组合下的性能表现，为学术MAG学习研究提供了全面的基线结果。
+
+\textbf{（4）提供了首个学术多模态属性图的全面基线与关键发现。}
+本文在六组任务上系统评估了6种GNN模型与7种模态组合，产生了超过200组基线结果。关键发现包括：（a）不同学术领域对模态的偏好差异显著——cs.SI从三模态融合获益最大（+1.27pp），math.LO几乎不受图像影响，这种差异与领域模态分布直接相关；（b）公式模态的密度效应揭示了通用SBERT编码器的局限——公式密度越高，T+F增益反而越低，表明需要专门的公式编码器；（c）L2归一化在Few-shot中带来8-11pp提升，但归一化后Image仍占拼接特征58.6\%的能量，说明简单拼接不足以解决模态失衡；（d）子分类任务（最佳72\%）和跨域迁移（增益$\approx$0）为未来研究提供了有区分度的评估基准。这些发现为未来学术MAG学习中的多模态融合策略和编码器设计提供了重要的实证依据。
+
+\section{论文组织结构}
+
+本文共分为六章，各章内容安排如下：
+
+第一章为绪论。介绍了本文的研究背景与意义，从图神经网络与Benchmark的发展、多模态属性图的兴起和学术文献的特殊价值三个角度阐述了研究动机。综述了国内外研究现状，分析了现有工作的局限性，最后阐述了本文的四点贡献。
+
+第二章为相关工作。分别从图神经网络与图基准、多模态属性图基准、多模态学术文档理解、学术文献图构建与自动化采集四个方面详细综述了相关工作。通过对OGB、MAGB、DocGenome等代表性工作的深入分析，明确了AMMAG的研究定位。
+
+第三章为系统架构设计。详细阐述了基于多智能体的自动化构建系统的三层架构设计，包括五个智能体的功能设计和关键技术实现。重点介绍了多模态提取引擎和引用图构建模块的设计原理与实现细节。
+
+第四章为数据集构建与分析。介绍了AMMAG数据集的采集策略、统计分析和数据质量评估。通过与现有数据集的系统对比，展示了AMMAG的独特价值。
+
+第五章为Benchmark实验与分析。在节点分类、模态消融、Few-shot学习、链接预测、跨域迁移和子分类分类六组任务上系统评估了基线模型的性能，重点分析了模态消融实验揭示的学术领域特性。
+
+第六章为总结与展望。总结了本文的主要工作和贡献，讨论了存在的不足，并展望了未来的研究方向。

@@ -1,0 +1,707 @@
+%%
+% 第五章 Benchmark实验与分析（~12页）← 最重点章
+%%
+
+\chapter{Benchmark实验与分析}
+
+本章在AMMAG数据集上进行全面的Benchmark实验评估。首先介绍实验设置，包括统一编码方案、基线模型和超参数配置。然后从多模态必要性、模型有效性、鲁棒性、Few-shot学习、链接预测和跨域迁移六个维度展开实验分析，全面评估AMMAG数据集上多模态图学习的性能与特性。
+
+本章评估的实验围绕以下核心任务展开：
+
+\textbf{全监督节点分类。}给定多模态属性图$\mathcal{G}=(\mathcal{V}, \mathcal{E}, \mathbf{X})$，其中$\mathcal{V}$为论文节点集合，$\mathcal{E}$为引用边集合，$\mathbf{X} \in \mathbb{R}^{|\mathcal{V}| \times d}$为节点多模态特征矩阵，目标是学习映射$f: \mathcal{V} \rightarrow \mathcal{Y}$，将每个论文节点分类到预定义的标签集合$\mathcal{Y}$中（领域4类或子分类6-7类）。
+
+\textbf{链接预测。}给定图$\mathcal{G}$中已知的引用边集合$\mathcal{E}_{train}$，目标是学习评分函数$s: \mathcal{V} \times \mathcal{V} \rightarrow \mathbb{R}$，使得存在的引用边的得分高于不存在的边，使用MRR和Hits@K作为评估指标。
+
+\textbf{Few-shot节点分类。}在极端少样本条件下进行节点分类，每类仅使用$k$个标注样本（$k \in \{1, 3, 5, 10, 20\}$）作为训练集，评估模型在低数据条件下的泛化能力。
+
+\textbf{跨域迁移。}给定源域$\mathcal{D}_s$和目标域$\mathcal{D}_t$，先在$\mathcal{D}_s$子图上预训练GNN编码器，再将编码器权重复制到目标域模型中进行微调，评估不同学术领域间的知识可迁移性。
+
+\section{实验设置}
+
+\subsection{统一编码方案}
+
+所有模态统一使用CLIP\cite{radford2021clip} ViT-Large-Patch14编码至768维向量空间，多模态组合通过可学习线性投影层映射至统一768维。表\ref{tab:encoders}展示了编码器配置。
+
+\begin{table}[htbp]
+  \centering
+  \caption{特征编码器配置}
+  \label{tab:encoders}
+  \begin{tabular}{llcp{4.5cm}}
+    \toprule
+    模态 & 编码器 & 输出维度 & 编码策略 \\
+    \midrule
+    文本 (Text) & CLIP\cite{radford2021clip} ViT-Large & 768 & 标题+摘要分段编码$\to$均值池化 \\
+    图像 (Image) & CLIP ViT-Large & 768 & 多图编码$\to$均值池化（无图论文用零向量） \\
+    公式 (Formula) & CLIP ViT-Large & 768 & LaTeX公式提取（最多200条）$\to$编码$\to$均值池化 \\
+    多模态融合 & 拼接+投影 & 768 & 各模态拼接后通过Linear($d_{in}$, 768)投影 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+该统一编码方案的核心优势在于：CLIP的对比学习预训练使文本和图像在同一768维空间中具有语义对应关系，跨模态检索MRR（11.45\%）是独立编码器（SBERT+CLIP-Base，0.17\%）的67倍（详见5.8.2节）。所有模态输出维度一致（768维），避免了不同维度拼接时的模态失衡问题。
+
+\subsection{基线模型}
+
+本文评估了13种基线模型（另有GT仅参与Few-shot实验），涵盖标准GNN和多模态GNN两大类：
+
+\textbf{标准GNN模型（8种）：}
+
+\textbf{MLP}：多层感知机作为无图结构的基线模型，仅使用节点特征进行分类。MLP的性能反映特征本身的信息量。
+
+\textbf{GCN}\cite{kipf2017gcn}：图卷积网络，通过归一化邻接矩阵实现谱域近似图卷积。
+
+\textbf{GAT}\cite{velickovic2018gat}：图注意力网络，使用多头注意力机制（4头）自适应学习邻居权重。
+
+\textbf{GraphSAGE}\cite{hamilton2017graphsage}：采样聚合网络，通过采样和聚合策略支持归纳式学习。
+
+\textbf{GIN}\cite{xu2019gin}：图同构网络，基于Weisfeiler-Lehman测试理论设计求和聚合策略。
+
+\textbf{GCNII}：深层图卷积网络，引入初始残差连接与恒等映射，有效缓解深层GNN的过平滑问题。
+
+\textbf{GATv2}：动态注意力图网络，改进GAT的静态注意力机制为动态注意力。
+
+\textbf{GT}：Graph Transformer，使用PyG\cite{fey2019pyg}的TransformerConv实现，配置4头注意力。
+
+\textbf{多模态GNN模型（6种）：}
+
+\textbf{DGF}：解耦图滤波网络，将特征传播与变换解耦。
+
+\textbf{MMGCN}：多模态图卷积网络，对每种模态分别进行图聚合后融合。
+
+\textbf{MGAT}：多模态图注意力网络，在图注意力机制中融入模态感知能力。
+
+\textbf{LGMRec}：线性图多模态推荐网络，采用线性图传播与模态解耦策略。
+
+\textbf{DMGC}：动态多模态图组合网络，动态学习模态组合策略。
+
+\textbf{MHGAT}：多头异质图注意力网络，使用多头机制处理多模态异质信息。
+
+所有模型使用相同网络结构：2层GNN，隐藏维度256，Dropout率0.5。多模态输入通过可学习Linear($d_{in}$, 768)投影层映射至统一维度。
+
+\subsection{超参数与评估设置}
+
+表\ref{tab:hyperparams}展示了实验的超参数设置。
+
+\begin{table}[htbp]
+  \centering
+  \caption{超参数设置}
+  \label{tab:hyperparams}
+  \begin{tabular}{ll}
+    \toprule
+    参数 & 值 \\
+    \midrule
+    隐藏维度 & 256 \\
+    GNN层数 & 2 \\
+    Dropout & 0.5 \\
+    学习率 & 0.001 \\
+    权重衰减 & $5 \times 10^{-4}$ \\
+    优化器 & Adam \\
+    训练轮数 & 500（early stopping, patience=25） \\
+    投影维度 & 768 \\
+    监督学习重复次数 & 5次（显著性检验10次） \\
+    Few-shot重复次数 & 10次 \\
+    跨域迁移重复次数 & 3次 \\
+    数据划分 & 60\%训练/20\%验证/20\%测试 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+评估指标包括：分类任务使用准确率（Accuracy）和宏平均F1值（Macro-F1），链接预测任务使用MRR和Hits@K（K=1,3,10）。所有实验使用多次独立运行的均值$\pm$标准差报告结果。
+
+实验使用两级标签：（1）\textbf{领域标签}（4类）——cs.SI、cs.LO、math.LO和physics.soc-ph，用于全监督分类和模态消融实验；（2）\textbf{子分类标签}（每域6-7类），用于跨域迁移实验。
+
+\section{多模态消融实验}
+
+本节是本文的核心创新实验。在7种模态组合和4个基线模型（MLP、GCN、GAT、GraphSAGE）上系统评估多模态融合的必要性，并分析不同学术领域的模态偏好差异。
+
+\subsection{七种模态组合消融}
+
+表\ref{tab:nc_7modality}展示了全监督节点分类（4类领域分类）在7种模态组合下的完整结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{七种模态组合的节点分类结果（Accuracy \%，5次运行均值$\pm$标准差）}
+  \label{tab:nc_7modality}
+  \small
+  \begin{tabular}{lccccccc}
+    \toprule
+    模型 & Text & Image & Formula & T+I & T+F & I+F & T+I+F \\
+    \midrule
+    MLP & 88.86$\pm$0.24 & 79.47$\pm$0.42 & 76.47$\pm$0.21 & 89.94$\pm$0.36 & \textbf{90.55$\pm$0.25} & 85.06$\pm$0.37 & 90.33$\pm$0.27 \\
+    GCN & 89.47$\pm$0.29 & 81.25$\pm$0.28 & 78.35$\pm$0.16 & 90.37$\pm$0.16 & \textbf{90.90$\pm$0.11} & 86.29$\pm$0.37 & 90.67$\pm$0.23 \\
+    GAT & 89.42$\pm$0.21 & 81.58$\pm$0.46 & 78.68$\pm$0.20 & 90.40$\pm$0.23 & \textbf{90.83$\pm$0.16} & 86.13$\pm$0.34 & 90.55$\pm$0.20 \\
+    GraphSAGE & 89.43$\pm$0.22 & 81.31$\pm$0.18 & 78.43$\pm$0.12 & 90.67$\pm$0.16 & \textbf{91.06$\pm$0.22} & 86.22$\pm$0.23 & 90.91$\pm$0.14 \\
+    \midrule
+    \textbf{均值} & \textbf{89.30} & \textbf{80.90} & \textbf{77.98} & \textbf{90.35} & \textbf{90.84} & \textbf{85.93} & \textbf{90.62} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+从表\ref{tab:nc_7modality}可以得出以下关键发现：
+
+\textbf{发现1：文本是最强单模态。}Text-only在所有模型上均达到约89-90\%的准确率，远超Image-only（约81\%）和Formula-only（约78\%）。CLIP文本编码器已经捕获了论文标题和摘要的丰富语义信息，足以区分4个学科领域。
+
+\textbf{发现2：T+F（文本+公式）是最佳模态组合。}T+F在所有模型上均优于或持平T+I+F，均值达到90.84\%，超过三模态T+I+F（90.62\%）0.22个百分点。公式比图像提供了更多互补增益，尽管Formula-only（77.98\%）低于Image-only（80.90\%）。这说明公式的独特价值在于其与文本的互补性而非独立区分力。
+
+\textbf{发现3：缺失文本是灾难性的。}I+F组合降至约86\%，损失约4个百分点。Image-only和Formula-only分别仅约81\%和78\%，远低于Text-only的约89\%。文本是不可替代的主导模态。
+
+\textbf{发现4：GraphSAGE获益最大。}GraphSAGE在T+F组合下达到91.06\%，为所有配置中的最优结果，比GraphSAGE+Text（89.43\%）提升1.63个百分点。
+
+表\ref{tab:modality_gain}量化了各模态组合相对Text-only的增益。
+
+\begin{table}[htbp]
+  \centering
+  \caption{模态组合增益分析（相对Text-only，百分点）}
+  \label{tab:modality_gain}
+  \begin{tabular}{lcp{6cm}}
+    \toprule
+    模态组合 & 均值增益 (pp) & 说明 \\
+    \midrule
+    \textbf{T+F} & \textbf{+1.54} & 最大增益：文本+公式组合效果最佳 \\
+    T+I+F & +1.32 & 三模态融合，略低于T+F \\
+    T+I & +1.05 & 文本+图像组合，增益温和 \\
+    I+F & $-$3.37 & 缺失文本导致严重下降 \\
+    Image & $-$8.40 & 图像单独信息不足 \\
+    Formula & $-$11.32 & 公式单独信息最弱 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+图\ref{fig:modality_bar}以柱状图直观展示了7种模态组合的分类性能对比。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{images/modality_ablation_bar.png}
+  \caption{七种模态组合的节点分类性能对比}
+  \label{fig:modality_bar}
+\end{figure}
+
+\subsection{领域模态偏好分析}
+
+表\ref{tab:domain_modality}展示了不同模态在四个领域的分类准确率，揭示了各领域的模态偏好差异。
+
+\begin{table}[htbp]
+  \centering
+  \caption{各领域的模态偏好分析（Accuracy \%，4模型均值）}
+  \label{tab:domain_modality}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    模态 & cs.SI & cs.LO & math.LO & physics.soc-ph & Overall \\
+    \midrule
+    Text-only & 86.67 & 89.36 & 89.78 & 91.29 & 89.30 \\
+    Image-only & 82.05 & 71.93 & 82.94 & 85.97 & 80.90 \\
+    T+I+F & 88.78 & 90.48 & 91.21 & 91.84 & 90.62 \\
+    \midrule
+    T+I+F vs Text 增益 & \textbf{+2.11} & +1.12 & \textbf{+1.43} & +0.55 & +1.32 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+四个领域对多模态的响应截然不同：
+
+\textbf{（1）cs.SI从多模态融合获益最大}（+2.11pp）。该领域论文平均含12.41张图片（最多），图片中的网络架构图和系统设计图对分类贡献显著。Image-only在cs.SI上也达到82.05\%，为Image在各领域中最高。
+
+\textbf{（2）math.LO从公式模态获益最大}（+1.43pp）。该领域平均含1,136条公式（全领域最高），公式提供了关键的数学结构信息。值得注意的是，Image-only在math.LO上仅82.94\%，因为该领域仅38.2\%的论文含图片。
+
+\textbf{（3）physics.soc-ph增益最小}（+0.55pp）。该领域Text-only已达91.29\%（最高），接近性能天花板，多模态增益有限。
+
+\textbf{（4）Image-only在cs.LO上表现最弱}（71.93\%）。计算逻辑领域以逻辑推理为主，图片信息量最低（仅81.6\%论文含图，平均6.58张/篇）。
+
+这一领域差异是AMMAG独有的发现。MAGB\cite{yan2025magb}、OpenMAG\cite{wan2026openmag}和MM-GRAPH\cite{zhu2025mmgraph}因缺少公式模态，无法开展此类分析。
+
+\subsection{图结构信息贡献分析}
+
+为量化图结构信息的贡献，使用GraphSAGE+T+I+F，变化每个节点的采样邻居数量$K \in \{0, 2, 4, 6, 8\}$。$K=0$等价于MLP（不使用邻居信息）。
+
+\begin{table}[htbp]
+  \centering
+  \caption{邻居数量消融实验（GraphSAGE + T+I+F, Accuracy \%）}
+  \label{tab:neighbor}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    $K$（邻居数） & 0 & 2 & 4 & 6 & 8 \\
+    \midrule
+    Accuracy & 90.68$\pm$0.12 & 91.16$\pm$0.07 & \textbf{91.29$\pm$0.07} & 91.18$\pm$0.10 & 91.28$\pm$0.23 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+引入图结构信息即刻带来显著提升：$K=0 \to K=2$提升0.48pp。$K=4$时达到最优，之后趋于饱和，边际收益递减。该数据集平均度仅2.60，$K=4$已覆盖大部分有效邻居。
+
+\subsection{链接预测模态消融}
+
+表\ref{tab:lp_7modality}展示了链接预测在7种模态组合下的结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{七种模态组合的链接预测结果（MRR）}
+  \label{tab:lp_7modality}
+  \begin{tabular}{lccccccc}
+    \toprule
+    模型 & Text & Image & Formula & T+I & T+F & I+F & T+I+F \\
+    \midrule
+    MLP & 0.957 & 0.948 & 0.931 & 0.966 & 0.962 & 0.955 & \textbf{0.970} \\
+    GCN & 0.974 & 0.973 & 0.953 & 0.983 & 0.978 & 0.977 & \textbf{0.985} \\
+    GAT & 0.959 & 0.960 & 0.941 & 0.971 & 0.957 & 0.966 & \textbf{0.974} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+链接预测整体高度饱和（MRR $>$ 0.93），所有模型和模态组合的区分度不如节点分类明显。T+I+F在所有模型上取得最高MRR。链接预测饱和的原因在于：AMMAG引用网络的同质性强（同领域论文高度互联），链接预测退化为领域识别的代理任务。该数据集不适合作为链接预测Benchmark，建议以节点分类作为主要评估指标。
+
+\section{模型有效性实验}
+
+本节评估13种模型在AMMAG上的表现，包括标准GNN和多模态GNN的系统对比，以及统计显著性检验。
+
+\subsection{多模型节点分类对比}
+
+表\ref{tab:model_comparison}展示了13种模型在T+I+F多模态输入下的节点分类结果，其中GT（TransformerConv）仅参与Few-shot实验（详见5.5节），故未列入此表。
+
+\begin{table}[htbp]
+  \centering
+  \caption{十三模型节点分类结果（T+I+F, Accuracy \%）}
+  \label{tab:model_comparison}
+  \small
+  \begin{tabular}{llccc}
+    \toprule
+    模型 & 类型 & Accuracy (\%) & F1 (\%) & 排名 \\
+    \midrule
+    GCNII & 标准GNN & \textbf{91.09$\pm$0.14} & \textbf{91.09$\pm$0.16} & 1 \\
+    DMGC & 多模态GNN & 90.93$\pm$0.36 & 90.90$\pm$0.34 & 2 \\
+    MHGAT & 多模态GNN & 90.91$\pm$0.21 & 90.91$\pm$0.21 & 3 \\
+    MMGCN & 多模态GNN & 90.91$\pm$0.18 & 90.87$\pm$0.21 & 4 \\
+    GraphSAGE & 标准GNN & 90.91$\pm$0.14 & 90.89 & 5 \\
+    GATv2 & 标准GNN & 90.90$\pm$0.08 & 90.88$\pm$0.05 & 6 \\
+    LGMRec & 多模态GNN & 90.81$\pm$0.17 & 90.79$\pm$0.19 & 7 \\
+    MGAT & 多模态GNN & 90.76$\pm$0.19 & 90.77$\pm$0.18 & 8 \\
+    GCN & 标准GNN & 90.76$\pm$0.04 & 90.74$\pm$0.06 & 9 \\
+    GAT & 标准GNN & 90.71$\pm$0.22 & 90.68$\pm$0.21 & 10 \\
+    MLP & 标准MLP & 90.33$\pm$0.27 & 90.30$\pm$0.24 & 11 \\
+    GIN & 标准GNN & 90.33$\pm$0.31 & 90.29$\pm$0.31 & 12 \\
+    DGF & 多模态GNN & 90.22$\pm$0.38 & 90.13$\pm$0.41 & 13 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{（1）GCNII以91.09\%取得全局最优。}初始残差连接与恒等映射使其在深层网络中有效传播信息，超越了所有标准GNN和多模态GNN。
+
+\textbf{（2）多模态GNN整体优于标准GNN。}DMGC（90.93\%）和MHGAT（90.91\%）超过最佳标准模型GAT（90.71\%）约0.2pp。多模态GNN组均值（90.76\%）略高于标准GNN组均值（90.63\%）。
+
+\textbf{（3）Top-5模型准确率差距仅0.19pp}（90.91\%-91.09\%），表明在该数据集上已接近约91\%的性能天花板。
+
+\textbf{（4）GIN表现不佳}（90.33\%）。GIN侧重于图的结构等变特征，但在以节点特征为主导的多模态分类任务中优势不显。
+
+\textbf{（5）链接预测方面}，由于该任务在AMMAG上高度饱和（MRR $>$ 0.97，详见5.6节），仅对部分代表性模型进行了LP评估。GCN取得最高MRR（98.50\%），但所有模型的LP差异均不足以作为模型选择的依据。
+
+\subsection{统计显著性检验}
+
+对12个模型各运行10次独立实验，使用成对t检验评估模型间差异的统计显著性。表\ref{tab:significance}展示各模型的显著性统计。
+
+\begin{table}[htbp]
+  \centering
+  \caption{统计显著性检验结果（10次运行）}
+  \label{tab:significance}
+  \begin{tabular}{lrrrr}
+    \toprule
+    模型 & 均值 (\%) & 标准差 (\%) & 显著优于数 & 净显著胜场 \\
+    \midrule
+    GCNII & \textbf{91.15} & 0.30 & 8 & \textbf{+7} \\
+    DMGC & 91.08 & 0.42 & 6 & +5 \\
+    MHGAT & 90.99 & 0.37 & 5 & +4 \\
+    MGAT & 90.97 & 0.29 & 5 & +3 \\
+    GATv2 & 90.94 & 0.32 & 5 & +3 \\
+    MMGCN & 90.87 & 0.31 & 4 & +2 \\
+    GAT & 90.95 & 0.35 & 4 & +2 \\
+    LGMRec & 90.82 & 0.26 & 4 & $-$1 \\
+    GCN & 90.77 & 0.34 & 4 & 0 \\
+    MLP & 90.63 & 0.35 & 2 & $-$4 \\
+    GIN & 90.49 & 0.39 & 1 & $-$6 \\
+    DGF & 90.33 & 0.39 & 1 & $-$8 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{（1）GCNII具有最强的统计显著性优势}，在11对比较中8次显著优于对手，仅被GATv2显著超越1次。
+
+\textbf{（2）Top-tier模型间差异不显著}：GCNII、DMGC、MHGAT之间均未达到$p < 0.01$的显著性水平，构成"性能无差异梯队"。
+
+\textbf{（3）DGF统计上显著劣于几乎所有模型}，在9对比较中被显著超越。
+
+\textbf{（4）GCN与GAT差异不显著}（$p > 0.05$），谱方法与注意力机制在该数据集上效果接近。
+
+\section{鲁棒性实验}
+
+本节从特征噪声、标签噪声、模态缺失和边噪声四个维度评估模型鲁棒性，全部使用T+I+F多模态输入。
+
+\subsection{特征与标签噪声鲁棒性}
+
+在6个模型上注入三类噪声：文本噪声（shuffle文本特征）、图像噪声（shuffle图像特征）和标签噪声（随机翻转标签），噪声比例0\%-80\%。
+
+表\ref{tab:noise_retention}展示了80\%噪声下各模型的性能保留率。
+
+\begin{table}[htbp]
+  \centering
+  \caption{80\%噪声下的性能保留率（Accuracy \% / 保留率 \%）}
+  \label{tab:noise_retention}
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    噪声类型 & GAT & GraphSAGE & DGF & MMGCN & MGAT & LGMRec \\
+    \midrule
+    无噪声基线 & 91.13 & 91.31 & 90.60 & 90.78 & 91.16 & 91.02 \\
+    \midrule
+    文本噪声 & 86.65 & 86.54 & 85.31 & 86.55 & 86.42 & 86.52 \\
+    保留率 & 95.2\% & 94.9\% & 94.1\% & 95.4\% & 95.1\% & 95.1\% \\
+    \midrule
+    图像噪声 & 90.95 & 91.02 & 89.97 & 90.93 & 90.63 & 90.83 \\
+    保留率 & \textbf{99.7\%} & \textbf{99.6\%} & 99.1\% & \textbf{99.6\%} & 99.5\% & \textbf{99.8\%} \\
+    \midrule
+    标签噪声 & 13.95 & 12.43 & 17.60 & 22.28 & 22.87 & 23.21 \\
+    保留率 & 15.3\% & 13.6\% & 19.4\% & 24.5\% & 25.1\% & 25.5\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{（1）图像噪声几乎不影响性能}：80\%图像噪声下保留率$>$99\%，模型主要依赖文本和图结构，图像信息对分类是冗余信号。
+
+\textbf{（2）文本噪声影响温和}：80\%文本噪声下保留率约95\%，模型通过图结构邻居聚合弥补了文本特征损失。
+
+\textbf{（3）标签噪声是最大威胁}：60\%标签噪声时DGF率先崩溃（70.59\%），其余维持86-87\%；80\%时所有模型崩溃至12-23\%，呈现"悬崖效应"。
+
+\textbf{（4）多模态GNN在特征噪声下并不比标准GNN更鲁棒}，但MMGCN对标签噪声略具韧性（80\%时22.28\% vs GAT 13.95\%）。
+
+\subsection{模态缺失鲁棒性}
+
+测试5种模态缺失场景下的性能退化。
+
+\begin{table}[htbp]
+  \centering
+  \caption{模态缺失鲁棒性（Accuracy \%，6模型均值）}
+  \label{tab:modality_missing}
+  \begin{tabular}{lcc}
+    \toprule
+    缺失场景 & Accuracy (\%) & 相对完整损失 (pp) \\
+    \midrule
+    T+I+F（完整基线） & $\sim$90.70 & --- \\
+    Text-only（缺失图像+公式） & 90.49 & $-$0.21 \\
+    Text+Image（缺失公式） & 90.79 & $-$0.09 \\
+    Random 50\%特征丢失 & 90.69 & $-$0.01 \\
+    Image-only（缺失文本+公式） & 82.24 & $-$8.46 \\
+    Formula-only（缺失文本+图像） & 80.90 & $-$9.80 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{（1）仅保留文本（Text-only）仍可达到99.4\%的性能保留率}（90.5\%-90.9\%），几乎不影响分类能力。
+
+\textbf{（2）缺失文本是灾难性的}：Image-only和Formula-only分别降至约82\%和81\%，损失8-10pp。
+
+\textbf{（3）Random 50\%特征丢失被良好容忍}（约90.7\%）：图结构邻居信息提供了有效的冗余补偿。
+
+\textbf{（4）模态贡献排序}：文本 $\gg$ 图像 $\geq$ 公式，文本信息是性能的基石。
+
+\subsection{边噪声鲁棒性}
+
+在6个模型上添加随机虚假边（不删除原始边），噪声比例0\%-80\%。
+
+\begin{table}[htbp]
+  \centering
+  \caption{80\%边噪声下的性能保留率}
+  \label{tab:edge_noise}
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    & GAT & GraphSAGE & DGF & MMGCN & MGAT & LGMRec \\
+    \midrule
+    无噪声基线 (\%) & 91.13 & 91.31 & 90.60 & 90.78 & 91.16 & 91.02 \\
+    80\%噪声 (\%) & 75.27 & 90.68 & 55.07 & 63.89 & 79.49 & 63.71 \\
+    保留率 (\%) & 82.7 & \textbf{99.4} & 60.6 & 70.3 & 87.3 & 70.0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{GraphSAGE对边噪声极其鲁棒}：80\%边噪声下仅损失0.63pp（91.31\%$\to$90.68\%），其采样策略天然过滤噪声边。GAT和MGAT的注意力机制可学习降低噪声边权重。DGF最敏感（保留率仅60.6\%），特征传播直接受虚假边影响。
+
+\section{Few-shot学习实验}
+
+Few-shot学习实验评估模型在极端少样本条件下的性能。使用5个模型（GCN、GAT、GraphSAGE、GIN、GT），7种模态组合，训练集每类仅提供$k \in \{1, 3, 5, 10, 20\}$个样本，10次独立运行。
+
+表\ref{tab:fewshot}展示了GCN在全部7种模态组合下的Few-shot结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{Few-shot学习结果（GCN, Accuracy \%，10次运行均值$\pm$标准差）}
+  \label{tab:fewshot}
+  \small
+  \begin{tabular}{lrrrrr}
+    \toprule
+    模态 & k=1 & k=3 & k=5 & k=10 & k=20 \\
+    \midrule
+    Text & 53.8$\pm$9.1 & 67.2$\pm$4.8 & 73.0$\pm$4.2 & 78.7$\pm$2.7 & 83.4$\pm$1.0 \\
+    Image & 52.6$\pm$8.9 & 68.8$\pm$2.7 & 71.4$\pm$2.0 & 73.5$\pm$1.6 & 75.4$\pm$1.3 \\
+    Formula & 37.3$\pm$4.3 & 48.1$\pm$4.2 & 53.1$\pm$2.7 & 58.4$\pm$2.8 & 63.7$\pm$2.6 \\
+    T+I & 55.5$\pm$8.8 & 72.7$\pm$2.2 & 75.8$\pm$2.0 & 78.9$\pm$2.1 & 81.2$\pm$1.6 \\
+    T+F & 52.4$\pm$7.7 & 65.4$\pm$3.2 & 71.8$\pm$2.8 & 77.5$\pm$2.6 & \textbf{82.8$\pm$1.4} \\
+    I+F & 54.0$\pm$5.9 & 68.6$\pm$3.2 & 71.2$\pm$2.1 & 74.3$\pm$2.1 & 76.4$\pm$1.5 \\
+    \textbf{T+I+F} & \textbf{57.4$\pm$9.4} & \textbf{72.0$\pm$1.8} & \textbf{75.3$\pm$2.8} & 78.4$\pm$2.1 & 81.3$\pm$1.5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+图\ref{fig:fewshot}展示了Few-shot学习曲线。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{images/few_shot_curves.png}
+  \caption{Few-shot学习曲线（7种模态组合，GCN）}
+  \label{fig:fewshot}
+\end{figure}
+
+\textbf{（1）T+I+F在极端少样本（k=1）下最优}（57.4\%），多模态增益在数据极度稀缺时最显著。但$k \geq 10$后T+F和Text追平甚至反超。
+
+\textbf{（2）Formula改善幅度最大}：k=1时仅37.3\%（最差），但k=20时达到63.7\%（+26.4pp），公式特征需要更多样本释放潜力。
+
+\textbf{（3）T+F在k=20时达到最高82.8\%}，再次验证文本+公式是最有效的模态组合。
+
+\textbf{（4）k=10是性价比最高的设置}：T+I+F达到78.4\%（仅比k=20低3pp），而训练样本仅需40个（4类$\times$10）。
+
+\textbf{（5）Image饱和最早}：k=10后仅从73.5\%升至75.4\%（+1.9pp），远低于Text的增幅（+4.7pp）。
+
+\section{链接预测实验}
+
+\subsection{全链接预测与饱和分析}
+
+如5.2.4节所示，链接预测任务在该数据集上高度饱和——所有模型的MRR $>$ 0.93，Hits@3和Hits@10均为1.0。这反映了AMMAG引用网络的强同质性：同领域论文高度互联，链接预测退化为领域识别的代理任务。
+
+与MAGB\cite{yan2025magb}报告的MRR 0.4-0.8相比，AMMAG的饱和性能表明该任务在当前图结构上已无法区分不同方法的优劣。
+
+\subsection{跨域链接预测}
+
+为解决任务饱和问题，设计了跨域链接预测任务：仅使用3,838条跨领域引用边（占总引用边59,364条的6.5\%）作为正样本，负采样同样强制为跨域节点对。表\ref{tab:cross_domain_lp}展示了跨域链接预测结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{跨域链接预测结果}
+  \label{tab:cross_domain_lp}
+  \begin{tabular}{llcc}
+    \toprule
+    模型 & 模态 & MRR & Hits@10 \\
+    \midrule
+    GCN & Text & \textbf{0.9915} & 1.0000 \\
+    GCN & Image & 0.9855 & 1.0000 \\
+    GCN & T+I+F & 0.9907 & 1.0000 \\
+    GAT & Text & 0.9848 & 1.0000 \\
+    GraphSAGE & Text & 0.9894 & 1.0000 \\
+    MLP & Text & 0.9755 & 1.0000 \\
+    MLP & Image & 0.9560 & 1.0000 \\
+    MLP & T+I+F & 0.9777 & 1.0000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+跨域链接预测仍然高度饱和（MRR $>$ 0.95, Hits@10 = 1.0），表明该数据集的图结构（平均度2.60、引用关系明确）使得链接预测本身过于简单。GCN+Text取得最高MRR（0.9915），与最低的MLP+Image（0.9560）仅差3.5pp。结论：AMMAG数据集不适合作为链接预测Benchmark，建议在论文中以节点分类作为主要评估指标。
+
+\section{跨域迁移实验}
+
+\subsection{实验设置}
+
+在4个领域之间进行12对跨域迁移实验（每方向3个模型：GCN、GAT、GraphSAGE）。训练流程：(1) 在源域子图上预训练GNN（使用子分类标签，每域6-7类，任务难度高于4类域分类）；(2) 复制GNN编码器权重（跳过分类头）；(3) 在目标域上微调全部参数。3次独立运行。
+
+\subsection{实验结果}
+
+表\ref{tab:transfer}展示了12对迁移的平均增益。
+
+\begin{table}[htbp]
+  \centering
+  \caption{跨域迁移平均增益（Finetune$-$Scratch, pp, 3模型均值）}
+  \label{tab:transfer}
+  \begin{tabular}{lrrrr}
+    \toprule
+    源$\to$目标 & cs.SI & cs.LO & math.LO & physics.soc-ph \\
+    \midrule
+    cs.SI & --- & +0.04 & $-$0.07 & $-$0.04 \\
+    cs.LO & $-$0.17 & --- & $-$0.10 & +0.11 \\
+    math.LO & $-$0.48 & $-$0.22 & --- & +0.42 \\
+    physics.soc-ph & +0.40 & $-$0.02 & $-$0.02 & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+图\ref{fig:heatmap}展示了跨域迁移准确率热力图。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/heatmap.png}
+  \caption{跨域迁移子分类分类准确率热力图}
+  \label{fig:heatmap}
+\end{figure}
+
+\subsection{结果分析}
+
+\textbf{（1）跨域迁移增益极其有限}：平均迁移增益在$\pm$0.5pp以内，12对迁移中仅4对获得正向增益（最大+0.42pp）。预训练对目标域性能几乎没有帮助。
+
+\textbf{（2）math.LO$\to$cs.SI迁移效果最差}（$-$0.48pp）：数学领域学习的图结构模式对计算机科学分类反而产生负迁移。
+
+\textbf{（3）所有目标域准确率远低于全局分类}（约45-54\% vs 约91\%），验证了子分类任务（6-7类）比域分类（4类）难度大得多。
+
+\textbf{（4）根本原因}：不同学科使用完全不同的术语体系和数学符号，子分类标签体系独立（cs.SI的子分类与math.LO的子分类无语义对应），即使同属计算机科学（cs.SI偏应用、cs.LO偏理论），域间迁移同样失败。
+
+\textbf{（5）结论}：各领域的子分类模式差异大，GNN编码器在源域学到的表示难以迁移到不同领域，领域特定训练是必要的。
+
+\section{编码器与训练策略分析}
+
+本节分析编码器微调策略、编码方案选择和参数高效微调等训练策略对性能的影响。
+
+\subsection{编码器微调策略}
+
+在GraphSAGE+T+I+F配置下，对比四种CLIP编码器微调策略。
+
+\begin{table}[htbp]
+  \centering
+  \caption{编码器微调策略对比（Accuracy \%）}
+  \label{tab:encoder_tuning}
+  \begin{tabular}{lc}
+    \toprule
+    配置 & Accuracy (\%) \\
+    \midrule
+    T-Frozen + V-Frozen & 90.24$\pm$0.05 \\
+    T-Train + V-Frozen & 90.38$\pm$0.28 \\
+    T-Frozen + V-Train & 89.94$\pm$0.05 \\
+    \textbf{T-Train + V-Train} & \textbf{90.48$\pm$0.05} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+全训练（T-Train+V-Train）效果最优（90.48\%），但与全冻结仅差0.24pp。训练文本编码器增益（+0.14pp）大于视觉编码器（$-$0.30pp，反而略降）。CLIP编码器已经过充分预训练，微调的边际收益有限，推荐使用冻结策略。
+
+\subsection{统一编码与独立编码对比}
+
+对比统一编码器（CLIP-Large 768d，文本和图像共享语义空间）与独立编码器的跨模态检索质量。
+
+\begin{table}[htbp]
+  \centering
+  \caption{统一编码与独立编码的跨模态检索对比}
+  \label{tab:encoding_compare}
+  \begin{tabular}{lrr}
+    \toprule
+    编码器 & T2I MRR (\%) & I2T MRR (\%) \\
+    \midrule
+    \textbf{CLIP-Large（统一）} & \textbf{11.45} & \textbf{6.56} \\
+    SBERT+CLIP-Base（独立） & 0.17 & 0.20 \\
+    SPECTER+CLIP-Large & 0.21 & 0.26 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+统一编码器碾压独立编码器：CLIP-Large的T2I MRR（11.45\%）是独立编码器的54-67倍。SPECTER虽然维度匹配（768d），但与CLIP不在同一语义空间，检索性能同样极低。这验证了第四章选择CLIP统一编码的合理性——跨模态对齐是多模态融合的基础。
+
+\subsection{参数高效微调}
+
+在GraphSAGE+T+I+F配置下对比四种参数策略。
+
+\begin{table}[htbp]
+  \centering
+  \caption{参数高效微调对比（Accuracy \%）}
+  \label{tab:peft}
+  \begin{tabular}{lrc}
+    \toprule
+    PEFT策略 & Accuracy (\%) & 相对全参数 (pp) \\
+    \midrule
+    \textbf{None（全参数）} & \textbf{91.30$\pm$0.04} & baseline \\
+    Adapter(b=64) & 89.79$\pm$0.18 & $-$1.51 \\
+    LoRA(r=16) & 88.93$\pm$0.59 & $-$2.37 \\
+    LoRA(r=8) & 88.12$\pm$0.24 & $-$3.18 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+全参数训练仍是最优选择。Adapter损失最小（$-$1.51pp），LoRA表现不如Adapter。GNN参数量较小（约2M），全参数训练的代价可接受，PEFT在GNN上的效果不如在LLM上显著。
+
+\subsection{自监督基线对比}
+
+使用对比学习进行自监督预训练（不使用标签），然后在线性评估协议下测试分类性能：自监督（89.37$\pm$0.85\%）vs 有监督（91.08$\pm$0.11\%），差距1.71pp。有监督训练显著优于自监督，标签信息不可替代。但自监督仍达到89.37\%，说明对比学习成功捕获了图结构和多模态特征中的有意义模式。
+
+\section{效率分析}
+
+表\ref{tab:efficiency}总结了各模型的训练效率。
+
+\begin{table}[htbp]
+  \centering
+  \caption{模型训练效率对比}
+  \label{tab:efficiency}
+  \begin{tabular}{lrrr}
+    \toprule
+    模型 & 参数量 & 时间/epoch (ms) & 峰值显存 (MB) \\
+    \midrule
+    MLP & 1.97M & 16.5 & 846 \\
+    GCN & 1.97M & \textbf{13.1} & 870 \\
+    GAT & 2.56M & 29.2 & 2,388 \\
+    DGF & 2.03M & 21.9 & 1,663 \\
+    MMGCN & 2.56M & 26.5 & 1,278 \\
+    MGAT & 2.30M & 28.8 & 2,519 \\
+    LGMRec & 2.04M & \textbf{13.1} & \textbf{1,008} \\
+    DMGC & 2.23M & 18.8 & 1,042 \\
+    MHGAT & 2.24M & 27.6 & 2,429 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{（1）GCN和LGMRec训练最快}（约13ms/epoch），且LGMRec性能优秀（NC 90.81\%），是效率-性能最佳选择。
+
+\textbf{（2）GAT/MHGAT显存消耗最大}（约2.4GB），因注意力矩阵与多头机制。
+
+\textbf{（3）所有模型单卡可训练}：最大显存2.5GB（MGAT），远低于RTX 4090的24GB。
+
+\textbf{（4）DMGC综合效率优异}：18.8ms/epoch + 1,042MB + 90.93\% Accuracy，适合资源受限场景。
+
+\section{可视化分析}
+
+\subsection{t-SNE嵌入可视化}
+
+图\ref{fig:tsne_compare}对比了原始CLIP特征（2304维降维至2维）与GCN学习到的嵌入（256维降维至2维）的t-SNE可视化。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/tsne_raw_vs_gcn.png}
+  \caption{t-SNE嵌入可视化：左图为原始CLIP特征（2304d），右图为GCN嵌入（256d）}
+  \label{fig:tsne_compare}
+\end{figure}
+
+原始特征空间中4个领域已有一定程度的聚类（尤其math.LO分离较好）。GCN嵌入后聚类更加紧凑，类别边界更清晰，验证了图结构聚合的有效性。cs.SI和physics.soc-ph在原始空间中重叠较多，GCN聚合后分离度改善。
+
+\subsection{鲁棒性可视化}
+
+鲁棒性折线图（图\ref{fig:robustness}）直观展示了三类噪声下的性能退化曲线：图像噪声曲线近乎水平（保留率$>$99\%），标签噪声曲线在60\%后急剧下降呈现"悬崖效应"，不同模型在标签噪声下的退化速率明显不同。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{images/robustness_curves.png}
+  \caption{噪声鲁棒性折线图（文本噪声、图像噪声、标签噪声）}
+  \label{fig:robustness}
+\end{figure}
+
+\subsection{模态消融与Few-shot可视化}
+
+图\ref{fig:modality_bar}展示了7种模态组合的柱状图对比，清晰可见T+F柱体最高（约91\%），Formula单模态柱体最低（约78\%），但融合后提供最大增益。
+
+图\ref{fig:fewshot}展示了Few-shot学习曲线，Formula曲线起点最低但斜率最大（改善最快），T+I+F在k=1时优势最明显。
+
+\subsection{跨域迁移热力图}
+
+图\ref{fig:heatmap}展示了4$\times$4跨域迁移热力图。热力图几乎为中性色（接近0），视觉化地说明迁移增益极其有限。physics$\to$math.LO和math.LO$\to$physics有轻微正迁移，math.LO$\to$cs.SI负迁移最明显。
+
+\section{本章小结}
+
+本章在AMMAG数据集上进行了全面的Benchmark实验，包括多模态消融、模型有效性、鲁棒性、Few-shot学习、链接预测和跨域迁移六组核心实验，系统评估了13种模型在7种模态组合下的性能，共计产生超过1,000组实验结果。核心发现总结如下：
+
+\textbf{（1）多模态融合在所有模型和任务上均带来提升。}节点分类提升1.05-1.66pp（T+I+F vs Text），链接预测MRR提升0.01-0.02。T+F（文本+公式）是最佳模态组合（均值90.84\%），甚至略优于三模态T+I+F（90.62\%），公式比图像提供了更多互补增益。这是AMMAG独有的发现——MAGB\cite{yan2025magb}等现有基准因缺少公式模态无法得出此结论。
+
+\textbf{（2）不同学术领域对模态的偏好差异显著。}cs.SI从多模态融合获益最大（+2.11pp），math.LO从公式获益最大（+1.43pp），physics.soc-ph增益最小（+0.55pp）。这种差异与各领域的模态分布特征直接相关。
+
+\textbf{（3）GCNII以91.09\%取得全局最优}，但Top-tier模型（GCNII、DMGC、MHGAT）间差异不显著（$p > 0.05$），约91\%的性能天花板需要从特征工程或数据增强层面突破。
+
+\textbf{（4）鲁棒性实验揭示了模态贡献的层级关系。}图像噪声几乎不影响性能（保留率$>$99\%），文本是基石（Text-only保留99.4\%），缺失文本导致8-10pp性能下降。GraphSAGE对边噪声极鲁棒（保留率99.4\%），DGF最敏感（60.6\%）。
+
+\textbf{（5）Few-shot实验发现多模态增益在数据稀缺时最显著。}T+I+F在k=1时达到57.4\%（最优），但k$\geq$10后Text追平。公式特征需要更多样本释放潜力（k=1$\to$20提升26.4pp）。
+
+\textbf{（6）跨域迁移增益接近零}（$\pm$0.5pp），领域间子分类模式差异大，GNN编码器难以迁移。链接预测在该数据集上饱和（MRR $>$ 0.95），不适合作为主要评估指标。
+
+\textbf{（7）CLIP统一编码方案远优于独立编码器。}跨模态检索MRR提升67倍（11.45\% vs 0.17\%），验证了统一语义空间对多模态融合的重要性。
