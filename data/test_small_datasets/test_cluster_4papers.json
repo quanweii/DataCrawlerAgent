@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "id": "1804.04346",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "1804.04346",
+        "markdown_length": 47060,
+        "image_count": 7,
+        "markdown_size": 47060
+      }
+    },
+    {
+      "id": "2110.12583",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2110.12583",
+        "markdown_length": 74305,
+        "image_count": 3,
+        "markdown_size": 74305
+      }
+    },
+    {
+      "id": "2405.13715",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2405.13715",
+        "markdown_length": 75412,
+        "image_count": 8,
+        "markdown_size": 75412
+      }
+    },
+    {
+      "id": "2603.24443",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2603.24443",
+        "markdown_length": 97149,
+        "image_count": 6,
+        "markdown_size": 97149
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "2603.24443",
+      "target": "2110.12583",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The first two are basic formulas of spatiotemporal and hybrid logics"
+      }
+    },
+    {
+      "source": "2405.13715",
+      "target": "2110.12583",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "In the first scenarios"
+      }
+    },
+    {
+      "source": "2110.12583",
+      "target": "1804.04346",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Maike Schwammberger (2018): Introducing Liveness into Multi-lane Spatial Logic lane change controllers using UPPAAL"
+      }
+    }
+  ],
+  "metadata": {
+    "name": "test_cluster",
+    "created_at": "2026-05-20",
+    "category": "cs.LO",
+    "statistics": {
+      "node_count": 4,
+      "edge_count": 3,
+      "total_images": 24,
+      "total_markdown_chars": 293926,
+      "avg_images_per_paper": 6.0,
+      "avg_md_length": 73482
+    },
+    "schema": {
+      "node_types": [
+        "paper"
+      ],
+      "edge_types": [
+        "citation"
+      ],
+      "node_attributes": [
+        "arxiv_id",
+        "markdown_length",
+        "image_count",
+        "markdown_size"
+      ],
+      "edge_attributes": [
+        "reference_text"
+      ]
+    }
+  }
+}

@@ -52,8 +52,17 @@ data/recent_papers/
 data/*.json
 # Paper directories (very large)
 data/*_papers/
-# Benchmark data
-benchmark/
+# Benchmark data (exclude large files, track code)
+benchmark/results/
+benchmark/processed/
+benchmark/__pycache__/
+# But track benchmark code
+!benchmark/
+!benchmark/**/*.py
+!benchmark/**/*.yaml
+!benchmark/**/*.yml
+!benchmark/**/*.md
+!benchmark/**/*.txt
 # Large arxiv metadata files
 arxiv-*.json
 # Config files with local paths

@@ -18,7 +18,8 @@ try:
 except ImportError:
     HAS_PDFPLUMBER = False
 
-from agents.base_agent import BaseAgent
+from .react_agent import ReActAgent
+from .messages import Blackboard, MessageBus, Message
 
 # ==================== 多进程共享状态 ====================
 # 在主进程中加载元数据后赋值，子进程通过fork继承（COW，零拷贝）
@@ -33,6 +34,16 @@ def _process_single_paper_refs(paper_info: Dict) -> List[Dict]:
     多进程worker: 处理单篇论文的引用提取和匹配
     使用模块级别的共享元数据索引（通过fork COW继承）
     """
+    paper_id = paper_info.get('paper_id', '')
+    markdown_path = paper_info.get('markdown_path', '')
+    pdf_path = paper_info.get('pdf_path', '')
+
+    logger.debug(
+        f"[Worker] paper={paper_id}, md={os.path.exists(markdown_path) if markdown_path else 'N/A'}, "
+        f"pdf={os.path.exists(pdf_path) if pdf_path else 'N/A'}, "
+        f"shared_idx={len(_shared_title_to_id) if _shared_title_to_id else 0}"
+    )
+
     agent = ReferenceGraphBuilderAgent(client=None, system_prompt="")
     # 指向共享数据，不重新加载
     agent.title_to_id = _shared_title_to_id
@@ -40,10 +51,6 @@ def _process_single_paper_refs(paper_info: Dict) -> List[Dict]:
     agent.arxiv_id_to_canonical = _shared_arxiv_id_to_canonical
     agent._word_index = _shared_word_index
     agent.metadata_loaded = True
-
-    paper_id = paper_info.get('paper_id', '')
-    markdown_path = paper_info.get('markdown_path', '')
-    pdf_path = paper_info.get('pdf_path', '')
 
     edges = []
     all_candidates: List[Dict] = []
@@ -55,11 +62,11 @@ def _process_single_paper_refs(paper_info: Dict) -> List[Dict]:
             if pdf_text:
                 pdf_refs = agent.parse_references(pdf_text)
                 all_candidates.extend(pdf_refs)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Worker] PDF refs failed for {paper_id}: {e}")
 
     # 来源2: markdown
-    if os.path.exists(markdown_path):
+    if markdown_path and os.path.exists(markdown_path):
         try:
             with open(markdown_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -67,8 +74,8 @@ def _process_single_paper_refs(paper_info: Dict) -> List[Dict]:
             if md_text:
                 md_refs = agent.parse_references(md_text)
                 all_candidates.extend(md_refs)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Worker] MD refs failed for {paper_id}: {e}")
 
     if not all_candidates:
         return []
@@ -124,9 +131,9 @@ def _process_single_paper_refs(paper_info: Dict) -> List[Dict]:
     return edges
 
 
-class ReferenceGraphBuilderAgent(BaseAgent):
+class ReferenceGraphBuilderAgent(ReActAgent):
     """
-    引用图构建Agent
+    引用图构建Agent — ReAct版
 
     功能:
     1. 从论文markdown文件中提取References部分
@@ -139,13 +146,17 @@ class ReferenceGraphBuilderAgent(BaseAgent):
         self,
         client: OpenAI,
         system_prompt: str,
-        mcp_tool_manager: Optional[Any] = None
+        mcp_tool_manager: Optional[Any] = None,
+        blackboard: Optional[Blackboard] = None,
+        message_bus: Optional[MessageBus] = None
     ):
         super().__init__(
             client=client,
             system_prompt=system_prompt,
             mcp_tool_manager=mcp_tool_manager,
-            agent_name="ReferenceGraphBuilder"
+            agent_name="ReferenceGraphBuilder",
+            blackboard=blackboard,
+            message_bus=message_bus
         )
 
         # arxiv元数据索引 (title -> arxiv_id)
@@ -1667,22 +1678,242 @@ class ReferenceGraphBuilderAgent(BaseAgent):
             'stats': stats
         }
 
+    # ==================== ReAct 接口实现 ====================
+
+    def get_available_actions(self) -> List[str]:
+        return [
+            "load_metadata",          # 加载arxiv元数据索引
+            "collect_papers",         # 从上游数据收集论文列表
+            "build_graph",            # 构建引用图
+            "build_graph_parallel",   # 并行构建引用图
+            "validate_graph",         # 验证引用图质量
+            "report_low_match",       # 报告低匹配率
+            "done"
+        ]
+
+    def is_done(self, observation: Dict) -> bool:
+        results = observation.get("accumulated_results", {})
+        return bool(results.get("edges_file"))
+
+    def observe(self, task: Dict, blackboard: Blackboard,
+                messages: List[Message]) -> Dict[str, Any]:
+        observation = super().observe(task, blackboard, messages)
+
+        observation["metadata_loaded"] = self.metadata_loaded
+        metadata_path = task.get('metadata_path') or ''
+        observation["metadata_path"] = metadata_path
+        observation["metadata_exists"] = os.path.exists(metadata_path) if metadata_path else False
+        observation["parallel"] = task.get('parallel', False)
+        observation["num_workers"] = task.get('num_workers', 8)
+
+        # 从blackboard读取collector结果
+        if blackboard:
+            papers = blackboard.read("collector", "papers", [])
+            observation["collector_papers_count"] = len(papers)
+            extracted = blackboard.read("collector", "extracted_folders", [])
+            observation["extracted_folders"] = extracted
+
+        results = observation.get("accumulated_results", {})
+        observation["edge_count"] = results.get("edge_count", 0)
+        observation["papers_processed"] = results.get("papers_processed", 0)
+
+        return observation
+
+    def act(self, action_plan: Dict) -> Dict[str, Any]:
+        action = action_plan.get("action", "")
+
+        if action == "load_metadata":
+            return self.action_load_metadata(self._current_task)
+        elif action == "collect_papers":
+            return self.action_collect_papers(self._current_task, self._upstream_data)
+        elif action == "build_graph":
+            return self.action_build_graph(self._current_task)
+        elif action == "build_graph_parallel":
+            return self.action_build_graph_parallel(self._current_task)
+        elif action == "validate_graph":
+            return self.action_validate_graph()
+        elif action == "report_low_match":
+            return self.action_report_low_match()
+        elif action == "done":
+            return {"status": "success", "message": "引用图构建完成"}
+
+        return {"status": "error", "message": f"未知行动: {action}"}
+
+    # ==================== ReAct 行动方法 ====================
+
+    def action_load_metadata(self, task: Dict) -> Dict:
+        metadata_path = task.get('metadata_path') or ''
+        if not metadata_path or not os.path.exists(metadata_path):
+            logger.warning(f"[{self.agent_name}] 元数据文件不可用，跳过加载")
+            return {"status": "success", "metadata_count": 0, "message": "无元数据，将仅提取引用但不匹配"}
+
+        if not self.metadata_loaded:
+            count = self.load_arxiv_metadata(metadata_path)
+            if self.blackboard:
+                self.blackboard.write("graph", "metadata_loaded", True)
+                self.blackboard.write("graph", "metadata_count", count)
+            return {"status": "success", "metadata_count": count}
+
+        return {"status": "success", "message": "元数据已加载"}
+
+    def action_collect_papers(self, task: Dict, upstream_data=None) -> Dict:
+        """从上游数据或blackboard收集论文列表"""
+        papers = []
+
+        if upstream_data:
+            if 'papers' in upstream_data:
+                for paper in upstream_data['papers']:
+                    pid = paper.get('arxiv_id', paper.get('id', ''))
+                    md_path = paper.get('markdown_path', '')
+                    if not md_path:
+                        pdf_dir = os.path.dirname(paper.get('path', ''))
+                        if pdf_dir and pid:
+                            md_path = os.path.join(pdf_dir, f"{pid}.md")
+                    papers.append({
+                        'paper_id': pid,
+                        'title': paper.get('title', ''),
+                        'markdown_path': md_path,
+                        'pdf_path': paper.get('path', '')
+                    })
+
+        if not papers and self.blackboard:
+            collector_papers = self.blackboard.read("collector", "papers", [])
+            for paper in collector_papers:
+                pid = paper.get('arxiv_id', paper.get('name', ''))
+                md_path = paper.get('markdown_path', '')
+                # fallback: 根据path推导markdown路径
+                if not md_path:
+                    pdf_dir = os.path.dirname(paper.get('path', ''))
+                    if pdf_dir and pid:
+                        md_path = os.path.join(pdf_dir, f"{pid}.md")
+                papers.append({
+                    'paper_id': pid,
+                    'title': paper.get('title', ''),
+                    'markdown_path': md_path,
+                    'pdf_path': paper.get('path', '')
+                })
+
+        if not papers:
+            return {
+                "status": "error",
+                "errors": ["没有找到论文数据"]
+            }
+
+        self._graph_papers = papers
+        if self.blackboard:
+            self.blackboard.write("graph", "papers_count", len(papers))
+
+        return {"status": "success", "papers": papers, "papers_count": len(papers)}
+
+    def action_build_graph(self, task: Dict) -> Dict:
+        """顺序构建引用图"""
+        papers = getattr(self, '_graph_papers', [])
+        if not papers:
+            return {"status": "error", "errors": ["没有论文数据"]}
+
+        output_dir = task.get('output_dir', './data/graphs')
+        output_csv = os.path.join(output_dir, 'citation_edges.csv')
+
+        result = self.build_reference_graph(papers, output_csv)
+
+        if self.blackboard:
+            self.blackboard.write("graph", "edges_file", result['edges_file'])
+            self.blackboard.write("graph", "edge_count", result['edge_count'])
+
+        return {
+            "status": "success",
+            "edges_file": result['edges_file'],
+            "edge_count": result['edge_count'],
+            "stats": result['stats'],
+            "papers_processed": len(papers)
+        }
+
+    def action_build_graph_parallel(self, task: Dict) -> Dict:
+        """并行构建引用图"""
+        papers = getattr(self, '_graph_papers', [])
+        if not papers:
+            return {"status": "error", "errors": ["没有论文数据"]}
+
+        output_dir = task.get('output_dir', './data/graphs')
+        output_csv = os.path.join(output_dir, 'citation_edges.csv')
+        num_workers = task.get('num_workers', 8)
+
+        result = self._build_reference_graph_parallel(papers, output_csv, num_workers)
+
+        if self.blackboard:
+            self.blackboard.write("graph", "edges_file", result['edges_file'])
+            self.blackboard.write("graph", "edge_count", result['edge_count'])
+
+        return {
+            "status": "success",
+            "edges_file": result['edges_file'],
+            "edge_count": result['edge_count'],
+            "stats": result['stats'],
+            "papers_processed": len(papers)
+        }
+
+    def action_validate_graph(self) -> Dict:
+        """验证引用图质量"""
+        edge_count = self._accumulated_results.get("edge_count", 0)
+        papers_processed = self._accumulated_results.get("papers_processed", 0)
+
+        match_rate = edge_count / papers_processed if papers_processed > 0 else 0
+
+        issues = []
+        if match_rate < 0.1 and papers_processed > 5:
+            issues.append(f"匹配率过低: {match_rate:.1%} ({edge_count}/{papers_processed})")
+
+        if issues and self.message_bus:
+            self.message_bus.send(Message(
+                sender=self.agent_name,
+                recipient="broadcast",
+                msg_type="quality_issue",
+                content={"graph_issues": issues, "match_rate": match_rate},
+                priority=1
+            ))
+
+        return {
+            "status": "success",
+            "match_rate": match_rate,
+            "issues": issues
+        }
+
+    def action_report_low_match(self) -> Dict:
+        """报告低匹配率问题"""
+        if self.message_bus:
+            self.message_bus.send(Message(
+                sender=self.agent_name,
+                recipient="DataCleanerAgent",
+                msg_type="quality_issue",
+                content={"issue": "引用匹配率低，可能References清洗有问题"},
+                priority=1
+            ))
+        return {"status": "success", "message": "已报告匹配率问题"}
+
+    # ==================== execute 入口（兼容旧接口）====================
+
     def execute(self, task: Dict[str, Any], upstream_data: Optional[Dict] = None) -> Dict[str, Any]:
         """
-        执行引用图构建任务
-
-        Args:
-            task: 任务配置，包含:
-                - metadata_path: arxiv元数据JSON文件路径
-                - output_dir: 输出目录
-                - parallel: 是否并行处理
-                - num_workers: 并行worker数
-            upstream_data: 上游Agent传递的数据，包含论文列表
-
-        Returns:
-            Dict[str, Any]: 执行结果
+        执行入口 — 兼容旧接口
         """
+        self._current_task = task
+        self._upstream_data = upstream_data
+
+        if self.blackboard and self.message_bus:
+            return self.run_react_loop(task, self.blackboard, self.message_bus)
+
+        # 兼容模式
+        return self._execute_legacy(task, upstream_data)
+
+    def _execute_legacy(self, task: Dict, upstream_data=None) -> Dict:
+        """原始执行逻辑（向后兼容）"""
         logger.info(f"[{self.agent_name}] 开始执行引用图构建任务")
+
+        # LLM分析任务
+        analysis = self.reason_about_task(task)
+        logger.info(f"[{self.agent_name}] 任务理解: {analysis.get('understanding', '')}")
+        if analysis.get("risks"):
+            logger.info(f"[{self.agent_name}] LLM识别风险: {analysis['risks']}")
 
         try:
             # 获取配置
@@ -1727,13 +1958,21 @@ class ReferenceGraphBuilderAgent(BaseAgent):
             else:
                 result = self.build_reference_graph(papers, output_csv)
 
-            return {
+            final_result = {
                 'status': 'success',
                 'edges_file': result['edges_file'],
                 'edge_count': result['edge_count'],
                 'stats': result['stats'],
                 'papers_processed': len(papers)
             }
+
+            # LLM评估引用图质量
+            evaluation = self.evaluate_own_results(final_result)
+            logger.info(f"[{self.agent_name}] 自评质量: {evaluation.get('quality', '未知')}")
+            if evaluation.get("issues"):
+                logger.info(f"[{self.agent_name}] 发现问题: {evaluation['issues']}")
+
+            return final_result
 
         except Exception as e:
             logger.error(f"[{self.agent_name}] 执行失败: {e}")

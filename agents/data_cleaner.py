@@ -1,13 +1,9 @@
 """
-数据清洗Agent - 负责对收集的数据进行清洗整理，统一格式
-纯规则驱动，不使用 LLM，保证 100% 可靠
+数据清洗Agent - ReAct版
+LLM驱动质量分析 + 规则管道执行
 
-功能：
-1. 删除重复段落
-2. 修复换行和截断问题
-3. 规范化公式格式
-4. 统一引用格式（增强版：处理连接在一起的引用）
-5. 修复表格和图片位置
+ReAct能力: 发现清洗问题→通知上游Collector重提取
+清洗逻辑（_clean_pipeline等）完全不变
 """
 from typing import Dict, Any, Optional, List, Tuple
 from loguru import logger
@@ -17,7 +13,8 @@ import hashlib
 import numpy as np
 from multiprocessing import Pool
 
-from .base_agent import BaseAgent
+from .react_agent import ReActAgent
+from .messages import Blackboard, MessageBus, Message
 
 
 def _clean_paper_standalone(paper_dir: str) -> Optional[Dict]:
@@ -26,32 +23,279 @@ def _clean_paper_standalone(paper_dir: str) -> Optional[Dict]:
     return agent._clean_paper_directory(paper_dir)
 
 
-class DataCleanerAgent(BaseAgent):
-    """数据清洗Agent - 纯规则驱动，不使用 LLM"""
+class DataCleanerAgent(ReActAgent):
+    """数据清洗Agent — ReAct循环驱动"""
 
-    def __init__(
-        self,
-        client=None,
-        system_prompt: str = "",
-        mcp_tool_manager: Optional[Any] = None,
-        model: str = None
-    ):
+    def __init__(self, client=None, system_prompt: str = "",
+                 mcp_tool_manager=None, blackboard=None, message_bus=None,
+                 model: str = None):
         super().__init__(
             client=client,
             system_prompt=system_prompt,
             mcp_tool_manager=mcp_tool_manager,
-            agent_name="DataCleanerAgent"
+            agent_name="DataCleanerAgent",
+            blackboard=blackboard,
+            message_bus=message_bus
         )
         self.cleaned_data: List[Dict] = []
         self.cleaning_stats: Dict = {}
 
-    def execute(
-        self,
-        task: Dict[str, Any],
-        upstream_data: Optional[Dict] = None
-    ) -> Dict[str, Any]:
-        """执行数据清洗任务"""
+    # ==================== ReAct 接口实现 ====================
+
+    def get_available_actions(self) -> List[str]:
+        return [
+            "discover_dirs",       # 发现需要清洗的论文目录
+            "clean_paper",         # 清洗单篇论文
+            "clean_batch",         # 批量清洗（并行）
+            "validate_cleaned",    # 验证清洗结果
+            "report_issues",       # 向上游报告质量问题
+            "done"
+        ]
+
+    def is_done(self, observation: Dict) -> bool:
+        results = observation.get("accumulated_results", {})
+        total = results.get("stats", {}).get("total_input", 0)
+        cleaned = results.get("stats", {}).get("total_cleaned", 0)
+        errors = results.get("stats", {}).get("errors", 0)
+        return total > 0 and (cleaned + errors >= total)
+
+    def observe(self, task: Dict, blackboard: Blackboard,
+                messages: List[Message]) -> Dict[str, Any]:
+        observation = super().observe(task, blackboard, messages)
+
+        # 从blackboard读取collector结果
+        if blackboard:
+            extracted = blackboard.read("collector", "extracted_folders", [])
+            observation["extracted_folders_count"] = len(extracted)
+            observation["extracted_folders"] = extracted
+
+        # 当前清洗进度
+        results = observation.get("accumulated_results", {})
+        stats = results.get("stats", {})
+        observation["total_input"] = stats.get("total_input", 0)
+        observation["total_cleaned"] = stats.get("total_cleaned", 0)
+        observation["pending_count"] = stats.get("total_input", 0) - stats.get("total_cleaned", 0) - stats.get("errors", 0)
+
+        return observation
+
+    def act(self, action_plan: Dict) -> Dict[str, Any]:
+        action = action_plan.get("action", "")
+        params = action_plan.get("params", {})
+
+        if action == "discover_dirs":
+            return self.action_discover_dirs(self._current_task, self._upstream_data)
+        elif action == "clean_paper":
+            return self.action_clean_paper(params.get("paper_dir", ""))
+        elif action == "clean_batch":
+            return self.action_clean_batch(self._current_task)
+        elif action == "validate_cleaned":
+            return self.action_validate_cleaned()
+        elif action == "report_issues":
+            return self.action_report_issues()
+        elif action == "done":
+            return {"status": "success", "message": "清洗完成"}
+
+        return {"status": "error", "message": f"未知行动: {action}"}
+
+    # ==================== 行动方法 ====================
+
+    def action_discover_dirs(self, task: Dict, upstream_data: Optional[Dict] = None) -> Dict:
+        """发现需要清洗的论文目录"""
+        paper_dirs = self._get_paper_dirs(task, upstream_data)
+
+        if self.blackboard:
+            self.blackboard.write("cleaner", "paper_dirs", paper_dirs)
+            self.blackboard.write("cleaner", "total_input", len(paper_dirs))
+
+        return {
+            "status": "success",
+            "paper_dirs": paper_dirs,
+            "stats": {"total_input": len(paper_dirs)}
+        }
+
+    def action_clean_paper(self, paper_dir: str) -> Dict:
+        """清洗单篇论文"""
+        if not paper_dir or not os.path.exists(paper_dir):
+            return {"status": "error", "message": f"目录不存在: {paper_dir}"}
+
+        result = self._clean_paper_directory(paper_dir)
+        if result:
+            if self.blackboard:
+                self.blackboard.write("cleaner", f"cleaned_{result.get('paper_id', '')}", result)
+
+            # 更新累积统计
+            stats = self._accumulated_results.get("stats", {
+                "total_input": 0, "total_cleaned": 0, "errors": 0,
+                "duplicates_removed": 0, "chars_fixed": 0
+            })
+            stats["total_cleaned"] = stats.get("total_cleaned", 0) + 1
+            stats["duplicates_removed"] = stats.get("duplicates_removed", 0) + result.get("duplicates_removed", 0)
+            stats["chars_fixed"] = stats.get("chars_fixed", 0) + result.get("chars_fixed", 0)
+
+            return {
+                "status": "success",
+                "cleaned_paper": result,
+                "stats": stats
+            }
+        return {"status": "error", "message": f"清洗失败: {paper_dir}"}
+
+    def action_clean_batch(self, task: Dict) -> Dict:
+        """批量清洗（支持并行）"""
+        paper_dirs = self._accumulated_results.get("paper_dirs", [])
+        if not paper_dirs:
+            # 先发现目录
+            dirs_result = self.action_discover_dirs(task, self._upstream_data)
+            paper_dirs = dirs_result.get("paper_dirs", [])
+
+        if not paper_dirs:
+            return {"status": "error", "message": "没有找到需要清洗的目录"}
+
+        parallel = task.get("parallel", False)
+        num_workers = task.get("num_workers", 8)
+
+        cleaned_papers = []
+        all_errors = []
+        total_dup = 0
+        total_chars = 0
+
+        if parallel and len(paper_dirs) > 1:
+            logger.info(f"[{self.agent_name}] 并行清洗 {len(paper_dirs)} 篇, {num_workers} workers")
+            with Pool(processes=num_workers) as pool:
+                raw_results = pool.map(_clean_paper_standalone, paper_dirs)
+            for result in raw_results:
+                if result:
+                    cleaned_papers.append(result)
+                    total_dup += result.get("duplicates_removed", 0)
+                    total_chars += result.get("chars_fixed", 0)
+                else:
+                    all_errors.append("清洗返回None")
+        else:
+            for paper_dir in paper_dirs:
+                try:
+                    result = self._clean_paper_directory(paper_dir)
+                    if result:
+                        cleaned_papers.append(result)
+                        total_dup += result.get("duplicates_removed", 0)
+                        total_chars += result.get("chars_fixed", 0)
+                    else:
+                        all_errors.append(f"{paper_dir}: 清洗返回None")
+                except Exception as e:
+                    all_errors.append(f"{paper_dir}: {str(e)}")
+
+        self.cleaned_data = cleaned_papers
+        stats = {
+            "total_input": len(paper_dirs),
+            "total_cleaned": len(cleaned_papers),
+            "errors": len(all_errors),
+            "duplicates_removed": total_dup,
+            "chars_fixed": total_chars
+        }
+        self.cleaning_stats = stats
+
+        if self.blackboard:
+            self.blackboard.write("cleaner", "stats", stats)
+            self.blackboard.write("cleaner", "cleaned_papers", cleaned_papers)
+
+        return {
+            "status": "success",
+            "cleaned_papers": cleaned_papers,
+            "errors": all_errors,
+            "stats": stats
+        }
+
+    def action_validate_cleaned(self) -> Dict:
+        """验证清洗结果"""
+        issues = []
+        cleaned = self._accumulated_results.get("cleaned_papers", [])
+
+        for paper in cleaned:
+            paper_dir = paper.get("paper_dir", "")
+            md_path = os.path.join(paper_dir, f"{paper.get('paper_id', '')}.md")
+
+            if not os.path.exists(md_path):
+                issues.append({"paper_dir": paper_dir, "issue": "清洗后md文件不存在"})
+                continue
+
+            with open(md_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            original_len = paper.get("original_length", 0)
+            cleaned_len = len(content)
+
+            # 检查异常缩小
+            if original_len > 1000 and cleaned_len < original_len * 0.2:
+                issues.append({
+                    "paper_dir": paper_dir,
+                    "issue": f"文件异常缩小: {original_len} -> {cleaned_len} ({cleaned_len/original_len*100:.0f}%)",
+                    "severity": "warning"
+                })
+
+        if issues and self.message_bus:
+            self.message_bus.send(Message(
+                sender=self.agent_name,
+                recipient="PaperCollectorAgent",
+                msg_type="quality_issue",
+                content={"cleaning_issues": issues},
+                priority=1
+            ))
+
+        return {
+            "status": "success",
+            "issues_count": len(issues),
+            "issues": issues
+        }
+
+    def action_report_issues(self) -> Dict:
+        """向上游Agent报告质量问题"""
+        issues = self._accumulated_results.get("issues", [])
+        if not issues:
+            return {"status": "success", "message": "没有需要报告的问题"}
+
+        if self.message_bus:
+            self.message_bus.send(Message(
+                sender=self.agent_name,
+                recipient="PaperCollectorAgent",
+                msg_type="quality_issue",
+                content={"issues": issues},
+                priority=1
+            ))
+
+        return {"status": "success", "message": f"已报告 {len(issues)} 个问题"}
+
+    # ==================== execute 入口（兼容旧接口）====================
+
+    def execute(self, task: Dict[str, Any],
+                upstream_data: Optional[Dict] = None) -> Dict[str, Any]:
+        self._current_task = task
+        self._upstream_data = upstream_data
+
+        if self.blackboard and self.message_bus:
+            result = self.run_react_loop(task, self.blackboard, self.message_bus)
+            self._ensure_compatible_result(result)
+            return result
+
+        return self._execute_legacy(task, upstream_data)
+
+    def _ensure_compatible_result(self, result: Dict):
+        """确保ReAct结果与旧格式兼容"""
+        if "cleaned_papers" not in result:
+            result["cleaned_papers"] = self._accumulated_results.get("cleaned_papers", [])
+        if "stats" not in result:
+            result["stats"] = self._accumulated_results.get("stats", {
+                "total_input": 0, "total_cleaned": 0, "errors": 0,
+                "duplicates_removed": 0, "chars_fixed": 0
+            })
+        if "errors" not in result:
+            result["errors"] = self._accumulated_results.get("errors", [])
+
+        evaluation = self.evaluate_own_results(result)
+
+    def _execute_legacy(self, task: Dict, upstream_data=None) -> Dict:
+        """原始执行逻辑（向后兼容）"""
         logger.info(f"[{self.agent_name}] 开始执行数据清洗任务")
+
+        analysis = self.reason_about_task(task)
+        logger.info(f"[{self.agent_name}] 任务理解: {analysis.get('understanding', '')}")
 
         paper_dirs = self._get_paper_dirs(task, upstream_data)
 
@@ -60,10 +304,8 @@ class DataCleanerAgent(BaseAgent):
             "cleaned_papers": [],
             "stats": {
                 "total_input": len(paper_dirs),
-                "total_cleaned": 0,
-                "errors": 0,
-                "duplicates_removed": 0,
-                "chars_fixed": 0
+                "total_cleaned": 0, "errors": 0,
+                "duplicates_removed": 0, "chars_fixed": 0
             },
             "errors": []
         }
@@ -72,7 +314,7 @@ class DataCleanerAgent(BaseAgent):
         num_workers = task.get("num_workers", 8)
 
         if parallel and len(paper_dirs) > 1:
-            logger.info(f"[{self.agent_name}] 并行清洗 {len(paper_dirs)} 篇, {num_workers} 个worker")
+            logger.info(f"[{self.agent_name}] 并行清洗 {len(paper_dirs)} 篇, {num_workers} workers")
             with Pool(processes=num_workers) as pool:
                 raw_results = pool.map(_clean_paper_standalone, paper_dirs)
             for result in raw_results:
@@ -100,18 +342,18 @@ class DataCleanerAgent(BaseAgent):
         self.cleaned_data = results["cleaned_papers"]
         self.cleaning_stats = results["stats"]
 
+        evaluation = self.evaluate_own_results(results)
         logger.info(
-            f"[{self.agent_name}] 数据清洗完成: "
-            f"输入 {results['stats']['total_input']}, "
+            f"[{self.agent_name}] 数据清洗完成: 输入 {results['stats']['total_input']}, "
             f"成功 {results['stats']['total_cleaned']}"
         )
 
         return results
 
-    def _get_paper_dirs(self, task: Dict, upstream_data: Optional[Dict]) -> List[str]:
-        """获取论文目录列表"""
-        paper_dirs = []
+    # ==================== 核心清洗逻辑（完全不变）====================
 
+    def _get_paper_dirs(self, task: Dict, upstream_data: Optional[Dict]) -> List[str]:
+        paper_dirs = []
         if task.get("paper_dirs"):
             paper_dirs = task["paper_dirs"]
         elif upstream_data:
@@ -121,18 +363,18 @@ class DataCleanerAgent(BaseAgent):
                     paper_dirs.append(paper["paper_dir"])
                 elif "markdown_path" in paper:
                     paper_dirs.append(os.path.dirname(paper["markdown_path"]))
+                elif "path" in paper:
+                    paper_dirs.append(os.path.dirname(paper["path"]))
         else:
-            default_dir = task.get("data_dir", "./data/recent_papers")
+            default_dir = task.get("data_dir", "./data/papers")
             if os.path.exists(default_dir):
                 for item in os.listdir(default_dir):
                     item_path = os.path.join(default_dir, item)
                     if os.path.isdir(item_path):
                         paper_dirs.append(item_path)
-
         return paper_dirs
 
     def _clean_paper_directory(self, paper_dir: str) -> Optional[Dict]:
-        """清洗单个论文目录"""
         paper_id = os.path.basename(paper_dir)
         logger.info(f"清洗论文: {paper_id}")
 
@@ -147,15 +389,11 @@ class DataCleanerAgent(BaseAgent):
             raw_content = f.read()
 
         original_length = len(raw_content)
-
-        # 执行清洗管道
         cleaned_content, stats = self._clean_pipeline(raw_content)
 
-        # 保存清洗后的内容
         with open(md_path, 'w', encoding='utf-8') as f:
             f.write(cleaned_content)
 
-        # 更新 npy 文件
         if os.path.exists(npy_path):
             self._update_npy_file(npy_path, cleaned_content)
 
@@ -172,68 +410,42 @@ class DataCleanerAgent(BaseAgent):
         }
 
     def _clean_pipeline(self, text: str) -> Tuple[str, Dict]:
-        """清洗管道"""
         stats = {
-            "duplicates_removed": 0,
-            "chars_fixed": 0,
-            "formulas_fixed": 0,
-            "refs_formatted": 0
+            "duplicates_removed": 0, "chars_fixed": 0,
+            "formulas_fixed": 0, "refs_formatted": 0
         }
-
-        # 1. 修复连字符分割 (Hel- lo -> Hello)
         text, fix_count = self._fix_hyphenation(text)
         stats["chars_fixed"] += fix_count
-
-        # 2. 修复换行问题
         text, fix_count = self._fix_line_breaks(text)
         stats["chars_fixed"] += fix_count
-
-        # 3. 删除重复段落
         text, dup_count = self._remove_duplicate_paragraphs(text)
         stats["duplicates_removed"] = dup_count
-
-        # 4. 规范化公式格式
         text, fix_count = self._normalize_formulas(text)
-        stats["formulas_fixed"] = fix_count
-
-        # 5. 规范化引用格式（增强版）
+        stats["formulas_fixed"] += fix_count
         text, ref_count = self._normalize_references_enhanced(text)
         stats["refs_formatted"] = ref_count
-
-        # 6. 清理多余空白
         text = self._cleanup_whitespace(text)
-
         return text, stats
 
     def _fix_hyphenation(self, text: str) -> Tuple[str, int]:
-        """修复连字符分割"""
         fix_count = 0
-
         def replace_hyphen(match):
             nonlocal fix_count
             fix_count += 1
             return match.group(1) + match.group(2)
-
         text = re.sub(r'(\w+)-\s*\n\s*(\w+)', replace_hyphen, text)
-        # 也修复同一行内的连字符问题
         text = re.sub(r'(\w+)-\s+(\w+)', replace_hyphen, text)
-
         return text, fix_count
 
     def _fix_line_breaks(self, text: str) -> Tuple[str, int]:
-        """修复 PDF 转换导致的换行问题"""
         fix_count = 0
         lines = text.split('\n')
         result = []
         i = 0
-
         while i < len(lines):
             line = lines[i]
-
             while i + 1 < len(lines):
                 next_line = lines[i + 1]
-
-                # 不合并的情况
                 if not next_line.strip():
                     break
                 if next_line.strip().startswith('#'):
@@ -247,89 +459,58 @@ class DataCleanerAgent(BaseAgent):
                 if line.strip().endswith(('.', '!', '?', ':', ';')):
                     break
                 if re.match(r'^[A-Z][a-z]+,?\s+[A-Z]\.', next_line.strip()):
-                    # 可能是引用的开始 (如 "Smith, J.")
                     break
-
-                # 合并行
                 if not line.endswith(' '):
                     line = line + ' ' + next_line
                 else:
                     line = line + next_line
                 fix_count += 1
                 i += 1
-
             result.append(line)
             i += 1
-
         return '\n'.join(result), fix_count
 
     def _remove_duplicate_paragraphs(self, text: str) -> Tuple[str, int]:
-        """删除重复的段落"""
         paragraphs = re.split(r'\n\n+', text)
-
         seen_hashes = set()
         unique_paragraphs = []
         dup_count = 0
-
         for para in paragraphs:
             normalized = ' '.join(para.split())
             if len(normalized) < 50:
                 unique_paragraphs.append(para)
                 continue
-
             para_hash = hashlib.md5(normalized.encode()).hexdigest()
-
             if para_hash not in seen_hashes:
                 seen_hashes.add(para_hash)
                 unique_paragraphs.append(para)
             else:
                 dup_count += 1
-
         return '\n\n'.join(unique_paragraphs), dup_count
 
     def _normalize_formulas(self, text: str) -> Tuple[str, int]:
-        """规范化 LaTeX 公式格式"""
         fix_count = 0
         original = text
-
         text = re.sub(r'\$\$\s+', '$$', text)
         text = re.sub(r'\s+\$\$', '$$', text)
         text = re.sub(r'(?<!\$)\$\s+([^\$]+?)\s+\$(?!\$)', r'$\1$', text)
         text = re.sub(r'([^\n])\$\$', r'\1\n$$', text)
         text = re.sub(r'\$\$([^\n])', r'$$\n\1', text)
-
         fix_count = abs(len(original) - len(text))
         return text, fix_count
 
     def _normalize_references_enhanced(self, text: str) -> Tuple[str, int]:
-        """
-        增强版引用格式规范化
-        处理连接在一起的引用、多个References部分等问题
-        """
         ref_count = 0
-
-        # 找到所有可能的 References 位置
         ref_positions = []
-
-        # 模式1: ## References
         for match in re.finditer(r'##\s*References?\s*\n', text, re.IGNORECASE):
             ref_positions.append(match.start())
-
-        # 模式2: 单独的 References 行（后面紧跟引用内容）
         for match in re.finditer(r'\nReferences?\s+\n', text):
             ref_positions.append(match.start())
-
-        # 模式3: References 后面直接跟作者名
         for match in re.finditer(r'\nReferences?\s+[A-Z][a-z]+', text):
             ref_positions.append(match.start())
-
         if not ref_positions:
             return text, ref_count
-
-        # 取最后一个 References 位置作为真正的引用部分
         ref_start = max(ref_positions)
-
-        # 找到 References 部分的结束（下一个 ## 标题或文件结束）
         after_ref = text[ref_start:]
         next_section = re.search(r'\n##\s+', after_ref)
         if next_section:
@@ -339,18 +520,12 @@ class DataCleanerAgent(BaseAgent):
         else:
             ref_content = after_ref
             after_ref_text = ""
-
-        # 提取并格式化引用
         formatted_refs = self._extract_and_format_references(ref_content)
         ref_count = len(formatted_refs)
-
-        # 删除之前的所有 References 部分
-        # 保留第一个 ## References 之前的内容
         first_ref_match = re.search(r'##\s*References?\s*\n', text, re.IGNORECASE)
         if first_ref_match:
             main_content = text[:first_ref_match.start()]
         else:
-            # 找最后一个 ## 标题作为正文结束
             last_section = None
             for match in re.finditer(r'\n##\s+', text):
                 if match.start() < ref_start:
@@ -359,58 +534,35 @@ class DataCleanerAgent(BaseAgent):
                 main_content = text[:last_section.start()]
             else:
                 main_content = text[:ref_start]
-
-        # 重新组合
         if formatted_refs:
             new_ref_section = "\n## References\n\n" + '\n'.join(formatted_refs)
         else:
             new_ref_section = ""
-
         text = main_content + new_ref_section + after_ref_text
-
         return text, ref_count
 
     def _extract_and_format_references(self, content: str) -> List[str]:
-        """
-        从混乱的 References 内容中提取并格式化单条引用
-        """
         refs = []
-
-        # 移除 References 标题
         content = re.sub(r'^##\s*References?\s*\n', '', content, flags=re.IGNORECASE)
         content = re.sub(r'^References?\s*\n', '', content, flags=re.IGNORECASE)
-
-        # 清理内容
         content = ' '.join(content.split())
-
-        # 方法1: 按作者名模式分割
-        # 匹配 "LastName, FirstName" 或 "LastName, F." 模式
         author_pattern = r'(?=[A-Z][a-z]+,?\s+(?:[A-Z]\.|[A-Z][a-z]+))'
-
-        # 先尝试按已有的 [数字] 标签分割
         if re.search(r'\[\d+\]', content):
             parts = re.split(r'(?=\[\d+\])', content)
             for part in parts:
                 part = part.strip()
                 if part and len(part) > 20:
-                    # 移除标签
                     clean_ref = re.sub(r'^\[\d+\]\s*', '', part)
                     if self._is_valid_reference(clean_ref):
                         refs.append(clean_ref)
-
-        # 如果按标签分割效果不好，按作者模式分割
         if len(refs) < 5:
             refs = []
-            # 按作者名分割
             parts = re.split(author_pattern, content)
-
             current_ref = ""
             for part in parts:
                 part = part.strip()
                 if not part:
                     continue
-
-                # 检查是否是新引用的开始
                 if re.match(r'^[A-Z][a-z]+,?\s+[A-Z]', part):
                     if current_ref and self._is_valid_reference(current_ref):
                         refs.append(current_ref)
@@ -420,23 +572,16 @@ class DataCleanerAgent(BaseAgent):
                         current_ref += " " + part
                     else:
                         current_ref = part
-
             if current_ref and self._is_valid_reference(current_ref):
                 refs.append(current_ref)
-
-        # 方法2: 如果上面效果不好，尝试按年份分割
         if len(refs) < 5:
             refs = []
-            # 按年份+句号分割
             year_pattern = r'(?<=\d{4})\.\s+(?=[A-Z][a-z]+,?\s+[A-Z])'
             parts = re.split(year_pattern, content)
-
             for part in parts:
                 part = part.strip()
                 if part and self._is_valid_reference(part):
                     refs.append(part)
-
-        # 去重
         unique_refs = []
         seen = set()
         for ref in refs:
@@ -444,48 +589,32 @@ class DataCleanerAgent(BaseAgent):
             if key not in seen and len(ref) > 30:
                 seen.add(key)
                 unique_refs.append(ref)
-
-        # 格式化引用
         formatted_refs = []
         for i, ref in enumerate(unique_refs, 1):
             formatted = self._format_single_reference(ref, i)
             formatted_refs.append(formatted)
-
         return formatted_refs
 
     def _is_valid_reference(self, text: str) -> bool:
-        """判断文本是否是一条有效的引用"""
-        # 必须包含年份
         if not re.search(r'\d{4}', text):
             return False
-
-        # 必须足够长
         if len(text) < 30:
             return False
-
-        # 应该包含作者名模式或会议/期刊名
         has_author = re.search(r'[A-Z][a-z]+,?\s+[A-Z]', text)
-        has_venue = re.search(r'(Conference|Journal|Proceedings|arXiv|IEEE|ACM|ICML|NeurIPS|CVPR|ICCV)', text, re.IGNORECASE)
-
+        has_venue = re.search(
+            r'(Conference|Journal|Proceedings|arXiv|IEEE|ACM|ICML|NeurIPS|CVPR|ICCV)',
+            text, re.IGNORECASE
+        )
         return bool(has_author or has_venue)
 
     def _format_single_reference(self, ref: str, index: int) -> str:
-        """格式化单条引用"""
-        # 清理
         ref = ' '.join(ref.split())
-
-        # 提取 arXiv ID
         arxiv_match = re.search(r'arXiv[:\s]+(\d{4}\.\d{4,5})', ref, re.IGNORECASE)
         arxiv_id = arxiv_match.group(1) if arxiv_match else None
-
-        # 移除已有标签
         ref = re.sub(r'^\[\d+\]\s*', '', ref)
-
-        # 清理引用内容
         ref = ref.strip()
         if not ref.endswith('.'):
             ref += '.'
-
         if arxiv_id:
             ref = re.sub(r'[,.]?\s*arXiv[:\s]+\d{4}\.\d{4,5}', '', ref, flags=re.IGNORECASE)
             ref = ref.rstrip('. ')
@@ -494,14 +623,12 @@ class DataCleanerAgent(BaseAgent):
             return f"[{index}] {ref}"
 
     def _cleanup_whitespace(self, text: str) -> str:
-        """清理多余空白"""
         text = re.sub(r'\n{3,}', '\n\n', text)
         text = re.sub(r'[ \t]+\n', '\n', text)
         text = text.rstrip() + '\n'
         return text
 
     def _update_npy_file(self, npy_path: str, cleaned_content: str):
-        """更新 npy 文件"""
         try:
             data = np.load(npy_path, allow_pickle=True).item()
             if isinstance(data, dict) and 'text' in data:
@@ -512,13 +639,10 @@ class DataCleanerAgent(BaseAgent):
             logger.warning(f"处理 NPY 文件失败 {npy_path}: {e}")
 
     def clean_single_paper(self, paper_dir: str) -> Dict:
-        """清洗单个论文"""
         return self._clean_paper_directory(paper_dir)
 
     def get_cleaned_data(self) -> List[Dict]:
-        """获取清洗后的数据"""
         return self.cleaned_data
 
     def get_cleaning_stats(self) -> Dict:
-        """获取清洗统计"""
         return self.cleaning_stats

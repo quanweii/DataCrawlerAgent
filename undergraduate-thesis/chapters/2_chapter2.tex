@@ -133,7 +133,7 @@ Roberts等人\cite{roberts2024scifibench}提出了SciFIBench，专注于科学�
 
 \subsection{文档理解的技术基础}
 
-多模态学术文档理解的技术基础包括文档布局分析、光学字符识别（OCR）和公式识别等。在文档布局分析方面，DocLayout-YOLO\cite{zhao2024doclayoutyolo}通过多样化的合成数据和全局-局部自适应感知机制，在科学文档的版面检测上取得了优异的性能。LayoutLMv3\cite{huang2022layoutlmv3}和DiT\cite{li2022dit}则通过预训练策略学习了文档图像中文本、布局和视觉信息的联合表示。Blecher等人\cite{blecher2023nougat}提出的Nougat模型能够将学术PDF文档转换为结构化的Markdown文本，保留了公式、表格和图片的语义信息。
+多模态学术文档理解的技术基础包括文档布局分析、光学字符识别（OCR）和公式识别等。在文档布局分析方面，DocLayout-YOLO\cite{zhao2024doclayoutyolo}通过多样化的合成数据和全局-局部自适应感知机制，在科学文档的版面检测上取得了优异的性能。LayoutLMv3\cite{huang2022layoutlmv3}和DiT\cite{li2022dit}则通过预训练策略学习了文档图像中文本、布局和视觉信息的联合表示。Blecher等人\cite{blecher2024nougat}提出的Nougat模型能够将学术PDF文档转换为结构化的Markdown文本，保留了公式、表格和图片的语义信息。
 
 在公式识别方面，UniMERNet\cite{wang2024unimernet}提出了一个通用的数学公式识别网络，能够将文档中的数学公式图像转换为LaTeX代码，在真实场景的公式识别任务上表现优异。在OCR方面，PaddleOCR\cite{paddleocr}是一个开源的多语言OCR工具包，支持多种文字识别场景。本文的自动化构建系统正是基于DocLayout-YOLO、UniMERNet和PaddleOCR等技术实现了学术论文的多模态信息提取。
 

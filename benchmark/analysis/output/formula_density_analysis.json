@@ -1,0 +1,50 @@
+{
+  "low_text": {
+    "density_group": "low",
+    "modality": "text",
+    "num_papers": 15001,
+    "test_acc": 0.911029656781073,
+    "test_f1": 0.9093394493507687,
+    "avg_formula_norm": 0.4692371189594269
+  },
+  "low_text+formula": {
+    "density_group": "low",
+    "modality": "text+formula",
+    "num_papers": 15001,
+    "test_acc": 0.9133622125958014,
+    "test_f1": 0.9118244612500683,
+    "avg_formula_norm": 0.4692371189594269
+  },
+  "medium_text": {
+    "density_group": "medium",
+    "modality": "text",
+    "num_papers": 15000,
+    "test_acc": 0.901,
+    "test_f1": 0.8992574497515293,
+    "avg_formula_norm": 0.5115514993667603
+  },
+  "medium_text+formula": {
+    "density_group": "medium",
+    "modality": "text+formula",
+    "num_papers": 15000,
+    "test_acc": 0.9,
+    "test_f1": 0.8977221377976825,
+    "avg_formula_norm": 0.5115514993667603
+  },
+  "high_text": {
+    "density_group": "high",
+    "modality": "text",
+    "num_papers": 15455,
+    "test_acc": 0.9094144289873827,
+    "test_f1": 0.9081267772534524,
+    "avg_formula_norm": 0.6009678840637207
+  },
+  "high_text+formula": {
+    "density_group": "high",
+    "modality": "text+formula",
+    "num_papers": 15455,
+    "test_acc": 0.9048851504367519,
+    "test_f1": 0.9052034609423338,
+    "avg_formula_norm": 0.6009678840637207
+  }
+}

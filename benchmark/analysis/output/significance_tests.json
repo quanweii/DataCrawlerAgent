@@ -1,0 +1,15 @@
+{
+  "name_a": "T+I+F",
+  "name_b": "Text",
+  "mean_a": 0.9021346469622331,
+  "mean_b": 0.9084400656814451,
+  "diff_mean": -0.006305418719211841,
+  "t_statistic": -9.81216509570399,
+  "t_pvalue": 0.0006047873060367163,
+  "t_significant": true,
+  "wilcoxon_statistic": 0.0,
+  "wilcoxon_pvalue": 0.0625,
+  "wilcoxon_significant": false,
+  "cohens_d": -4.388133632088971,
+  "alpha": 0.05
+}

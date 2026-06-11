@@ -1,0 +1,17 @@
+source_id,target_id,source_title,target_title,reference_text
+2505.22277,2405.13697,Deciding characteristic formulae: A journey in the branching-time spectrum,the complexity of deciding characteristic formulae in van glabbeek's branching-time spectrum,"LucaAceto,AntonisAchilleos,AggelikiChalki,andAnnaIngólfsdóttir.Thecomplexityofdeciding characteristic formulae in van Glabbeek’s branching-time spectrum"
+2505.22277,2509.14089,Deciding characteristic formulae: A journey in the branching-time spectrum,the complexity of deciding characteristic formulae modulo nested simulation (extended abstract),The complexity of deciding characteristic formulae modulo nested simulation (extended abstract)
+2505.22277,1108.4464,Deciding characteristic formulae: A journey in the branching-time spectrum,graphical representation of covariant-contravariant modal formulae,Graphical representation of covariant-contravariant modal formulae
+2505.22277,0911.1862,Deciding characteristic formulae: A journey in the branching-time spectrum,characteristic formulae for fixed-point semantics: a general framework,Characteristic formulae for fixed-point semantics: a general framework
+2505.22277,2109.15295,Deciding characteristic formulae: A journey in the branching-time spectrum,deciding all behavioral equivalences at once: a game for linear-time--branching-time spectroscopy,Deciding all behavioral equivalences at once: A game for linear-time-branching-time spectroscopy
+2505.22277,1804.11089,Deciding characteristic formulae: A journey in the branching-time spectrum,fundamentals of parameterized complexity revisited,Fundamentals of Parameterized Complexity
+2505.22277,1503.08792,Deciding characteristic formulae: A journey in the branching-time spectrum,graphs identified by logics with counting,Graphs identified by logics with counting
+2603.24823,2302.10640,A formalization of the Gelfond-Schneider theorem,an elementary formal proof of the group law on weierstrass elliptic curves in any characteristic,An Elementary Formal Proof of the Group Law on Weierstrass Elliptic Curves in Any Characteristic
+2603.24823,1910.09336,A formalization of the Gelfond-Schneider theorem,the lean mathematical library,The Lean mathematical library
+2603.24923,1611.02108,Normal forms in cubical type theory,cubical type theory: a constructive interpretation of the univalence axiom,Cubical type theory: A constructive interpretation of the univalence axiom
+2603.24923,2012.10783,Normal forms in cubical type theory,syntactic categories for dependent type theory: sketching and adequacy,"Syntactic categories for dependent type theory: sketching and adequacy, 2021."
+2603.24923,1801.07664,Normal forms in cubical type theory,internal universes in models of homotopy type theory,Internal universes in models of homotopy type theory
+2603.24923,1712.04864,Normal forms in cubical type theory,axioms for modelling cubical type theory in a topos,Axioms for modelling cubical type theory in a topos
+2603.24923,2101.11479,Normal forms in cubical type theory,normalization for cubical type theory,Normalization for cubical type theory
+2603.24923,2010.08599,Normal forms in cubical type theory,logical relations as types: proof-relevant parametricity for program modules,Logical relations as types: Proofrelevant parametricity for program modules
+2603.24923,1808.00920,Normal forms in cubical type theory,separating path and identity types in presheaf models of univalent type theory,"Separating path and identity types in presheaf models of univalent type theory, 2018"

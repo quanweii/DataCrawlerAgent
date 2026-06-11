@@ -1,0 +1,3750 @@
+{
+  "nodes": [
+    {
+      "id": "2409.15369",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2409.15369",
+        "markdown_length": 484023,
+        "image_count": 63,
+        "markdown_size": 484023
+      }
+    },
+    {
+      "id": "2202.13491",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2202.13491",
+        "markdown_length": 523091,
+        "image_count": 77,
+        "markdown_size": 523091
+      }
+    },
+    {
+      "id": "2203.03602",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2203.03602",
+        "markdown_length": 95149,
+        "image_count": 14,
+        "markdown_size": 95149
+      }
+    },
+    {
+      "id": "2205.14651",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2205.14651",
+        "markdown_length": 778096,
+        "image_count": 88,
+        "markdown_size": 778096
+      }
+    },
+    {
+      "id": "2206.00606",
+      "type": "paper",
+      "attributes": {
+        "arxiv_id": "2206.00606",
+        "markdown_length": 312324,
+        "image_count": 49,
+        "markdown_size": 312324
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "2205.14651",
+      "target": "2309.15809",
+      "type": "citation",
+      "attributes": {
+        "reference_text": ", canonical correlation analysis"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2002.11501",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph Representation Learning"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1912.00552",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "or s graph attention networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1605.08695",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "TensorFlow: A System for Large-Scale Machine Learning"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2008.11406",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Making Neural Networks Interpretable with Attribution: Application to Implicit SignalsPrediction"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1402.0555",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "TamingtheMonster: AFastandSimple Algorithm for Contextual Bandits"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1209.0748",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Force-Directed Graph Drawing using Social GravityandScaling"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1611.00384",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "CB2CF: A Neural Multiview Content-to-Collaborative Filtering Model for Completely Cold Item Recommendations"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "cs/0310049",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "An O(m) Algorithm for Cores Decomposition of Networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2106.03819",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Semi-Personalized System for UserColdStartRecommendationonMusicStreamingApps"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1801.10247",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1901.07291",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cross-Lingual Language Model Pretraining"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1808.00023",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "arXiv preprint arXiv:1808.00023 (2018)."
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1603.05629",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Discriminative Embeddings of Latent Variable Models for Structured Data"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1606.09375",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Convolutional Neural Networks on Graphs with Fast LocalizedSpectralFiltering"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1811.01662",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Matrix Completion with Variational Graph Autoencoders: Application in Hyperlocal Air Quality Inference"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1710.10321",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning Structural Node Embeddings via Diffusion Wavelets"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2009.07755",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multilingual Music Genre Embeddings for Effective Cross-Lingual Music Item Annotation"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2105.06275",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Methodology for the Offline Evaluation of Recommender Systems in a User Interface with Multiple Carousels"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1907.06902",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Are We Really Making Much Progress? A Worrying AnalysisofRecentNeuralRecommendationApproaches"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1903.02428",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fast Graph Representation Learning with PyTorch Geometric"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1402.3722",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "arXiv preprint arXiv:1402.3722 (2014)."
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2004.02658",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometrically Principled Connections in Graph Neural Networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1706.02216",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inductive Representation Learning on Large Graphs"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2007.08053",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inductive Link Prediction for Nodes Having Only Attribute Information"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1708.05024",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fast Matrix Factorization for Online Recommendation with ImplicitFeedback"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1809.07256",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Audio Based Disambiguation of Music Genre Tags"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2009.06770",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Joint Subgraph-to-Subgraph Transitions: GeneralizingTriadicClosureforPowerfulandInterpretableGraphModeling"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2103.09430",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "OGB-LSC: A Large-Scale Challenge for MachineLearningonGraphs"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2005.00687",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Open Graph Benchmark: DatasetsforMachineLearningonGraphs"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2107.02658",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "On Generalization of Graph Autoencoders with AdversarialTraining"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1804.07745",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Loss in Translation: Learning Bilingual Word Mapping with a Retrieval Criterion"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1602.03146",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "DCM Bandits: Learning to Rank with Multiple Clicks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1911.05485",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Diffusion Improves Graph Learning"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1502.02763",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cascading Bandits: Learning to Rank in the Cascade Model"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1705.07664",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cayleynets: Graph Convolutional Neural Networks withComplexRationalSpectralFilters"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2102.04228",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Mask-GVAE: Blind Denoising Graphs viaPartition"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1003.5956",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Unbiased Offline Evaluation of Contextual-Bandit-Based News Article Recommendation Algorithms"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1805.09076",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Constrained Graph Variational Autoencoders for MoleculeDesign"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1905.10350",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Unsupervised Community Detection with Modularity-Based Attention Model"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1905.11136",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Provably Powerful Graph Networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1712.09405",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Advances in Pre-Training Distributed WordRepresentations"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1309.4168",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Exploiting Similarities among Languages for Machine Translation"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1602.07428",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Nonparametric Latent Feature Models for Link Prediction"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2107.08562",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Rethinking Graph Autoencoder Models for AttributedGraphClustering"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1707.05005",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "graph2vec: Learning Distributed Representations of Graphs"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1908.06267",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Message Passing Attention Networks for Document Understanding"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1802.04407",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Adversarially Regularized Graph Autoencoder for GraphEmbedding"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1403.6652",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deepwalk: Online Learning of Social Representations"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1710.02971",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "NetworkEmbeddingasMatrixFactorization: Unifying Deepwalk, LINE, PTE, and node2vec"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2002.01910",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "FastGAE: Scalable Graph AutoencoderswithStochasticSubgraphDecoding"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1902.08813",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Degeneracy Framework for Scalable Graph Autoencoders"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1905.09570",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Gravity-InspiredGraphAutoencoders for Directed Link Prediction"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1704.06905",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Adaptive Submodular Influence Maximization with Myopic Feedback"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1811.05868",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pitfalls of Graph Neural Network Evaluation"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1511.04854",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Survey of Heterogeneous Information Network Analysis"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1911.11322",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "EffectiveDecoding inGraph Auto-Encoderusing Triadic Closure"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1902.10618",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Still a Pain in the Neck: Evaluating Text Representations on Lexical Composition"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1904.07272",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Introduction to Multi-Armed Bandits"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1604.01692",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "An Ensemble Method to Produce High-Quality Word Embeddings"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "2108.04655",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hierarchical Latent Relation Modeling forCollaborativeMetricLearning"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1908.04003",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "RWR-GAE: Random Walk Regularization for Graph Auto Encoders"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1409.2944",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Collaborative Deep Learning for Recommender Systems"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1803.02349",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Billion-Scale Commodity Embedding forE-CommerceRecommendationinAlibaba"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1901.00596",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Comprehensive Survey on Graph Neural Networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1505.04094",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Evaluating Link Prediction Methods"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1806.01973",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "GraphConvolutionalNeural Networks for Web-Scale Recommender Systems"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1802.09691",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Link Prediction Based on Graph Neural Networks"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1604.06743",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Latent Contextual Bandits and their Application to Personalized Recommendations for New Users"
+      }
+    },
+    {
+      "source": "2205.14651",
+      "target": "1304.4182",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Proceedings of the Conference on Uncertainty in Artificial Intelligence (2016),835–844"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2110.13197",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "and graph neural networks"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2306.02199",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Shrinking Embeddings for Hyper-Relational Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2201.09919",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Faithful Embeddings for EL++ Knowledge Bases"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2206.00449",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Ultrahyperbolic Knowledge Graph Embeddings"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2311.10112",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Zero- Shot Relational Learning on Temporal Knowledge Graphs with Large Language Models"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2407.19231",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Alleviating Over-Smoothing via Aggregation over Compact Manifolds"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2408.08248",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Conformalized Answer Set Prediction for Knowledge Graph 240808248 220 Embedding"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2407.11821",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Approximating Probabilistic Inference in Statistical EL with Knowledge Graph Embeddings"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2309.01538",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "ChatRule: Mining Logical Rules with Large Language Models for Knowledge Graph Reasoning"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2007.06267",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "BoxE: a box embedding model for knowledge base completion."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2106.08166",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Query Embedding on Hyper-Relational Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1911.05076",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Constant Curvature Graph Convolutional Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2110.14923",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Modeling Heterogeneous Hierarchies with Relation-specific Hyperbolic Cones."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1905.09791",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multi-relational Poincare´ Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1810.00760",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Riemannian Adaptive Optimization Methods."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1904.10281",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dual Quaternion Knowledge Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2206.12418",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometry Interaction Knowledge Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2005.00545",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Low-Dimensional Hyperbolic Knowledge Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1910.12933",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Graph Convolutional Neural Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2408.15903",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "LLM-Based Multi-Hop Question Answering with Knowledge Graph Integration in Evolving Environments."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2105.14686",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fully hyperbolic neural networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.04597",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Probabilistic Box Embeddings for UncertainKnowledgeGraphReasoning."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2108.06468",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Modeling Scale-free Graphs with Hyperbolic Geometry for Knowledge-aware Recommendation."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2109.04997",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Box Embeddings: An open-source library for representation learning using geometric structures."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1806.00437",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Largemargin classification in hyperbolic space."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2302.02601",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning Representations of Bi-Level Knowledge Graphs for Reasoning beyond Link Prediction."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.06942",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Hyperbolic-to-Hyperbolic Graph Convolutional Network."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2010.04831",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Improving local identifiability in probabilistic box embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1904.05146",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "DeepSphere: towards an equivariant graph-based spherical CNN."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2303.15702",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Distributed Graph Embedding with Information-Oriented Random Walks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1906.00137",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Knowledge Hypergraphs: Prediction Beyond Binary Relations."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2009.10847",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Message Passing for Hyper-Relational Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2006.08210",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Neural Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1804.01882",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic entailment cones for learning hierarchical embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2010.10151",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Coherent Hierarchical Multi- Label Classification Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.10424",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Link prediction on n-ary relational data based on relatedness evaluation."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2109.14401",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "BiQUE: Biquaternionic Embeddings of Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1805.10461",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "From Knowledge Graph EmbeddingtoOntologyEmbedding?AnAnalysisoftheCompatibilitybetween Vector Space Representations and Rules."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1706.02216",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inductive Representation Learning on Large Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2011.03984",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "DyERNIE: Dynamic Evolution of Riemannian Manifold Embeddings for Temporal Knowledge Graph Completion."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2407.09212",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generating SROI Ontologies via Knowledge Graph Query Embedding Learning."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2209.08767",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dual-Geometric Space Embedding Model for Two-View Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2305.06587",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "How Expressive are Spectral-Temporal Graph Neural Networks for Time Series Forecasting?"
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1412.6980",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Adam: A Method for Stochastic Optimization."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1609.02907",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Semi-Supervised Classification with Graph Convolutional Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2111.06077",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Survey on Hyperdimensional Computing aka Vector Symbolic Architectures, Part I: Models and Data Transformations."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2005.02819",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geoopt: Riemannian Optimization in PyTorch."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1902.10499",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "EL Embeddings: Geometric Construction of Models for the Description Logic EL++."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1705.02426",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Analogical Inference for Multirelational Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1910.12892",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Graph Neural Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2007.03988",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generalizing Tensor Decomposition for N-ary Relational Knowledge Bases."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.09780",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Role-Aware Modeling for N-ary Relational Knowledge Bases."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1906.02505",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fine-Grained Entity Typing in Hyperbolic Space."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2304.05973",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "HiPrompt: Few-Shot Biomedical Knowledge Fusion via Hierarchy-Oriented Prompting."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2004.04412",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Anytime Bottom-Up Rule Learning for Knowledge Graph Completion."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1911.01196",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spherical Text Embedding."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1807.05127",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hierarchical Losses and New Resources for Fine-grained Entity Typing and Linking."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2006.04986",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "*Knowledge Graph Embeddings with Projective Transformations."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1705.08039",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Poincare´ Embeddings for Learning Hierarchical Representations."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1911.08935",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Rule-Guided Compositional Representation Learning on Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1911.09419",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Hierarchy-Aware Knowledge Graph Embedding for Link Prediction."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1912.01703",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pytorch: An imperative style, high-performance deep learning library."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2002.05969",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Query box: Reasoning over Knowledge Graphs in Vector Space Using Box Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2010.11465",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Beta embeddings for multi-hop logical reasoning in knowledge graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1911.00055",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "DRUM: End-To-End Differentiable Rule Mining On Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2001.11797",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A comparison of vector symbolic architectures."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2208.14322",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "LearningRepresentations for Hyper-Relational Knowledge Graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1804.10922",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "OPA Vec: combining formal and informal content of biomedical ontologies to improve similaritybased prediction."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1902.10197",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "RotatE:Knowledge Graph Embedding by Relational Rotation in Complex Space."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1902.04335",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic disk embeddings for directed acyclic graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1606.06357",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Complex Embeddings for Simple Link Prediction."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2410.15640",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph Attention Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1511.06361",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Order-embeddings of images and language."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1412.6623",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Word Representations via Gaussian Embedding."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1805.04174",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Joint Embedding of Words and Labels for Text Classification."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2308.02457",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on temporal knowledge graph completion: Taxonomy, progress, and prospects."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2103.14930",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Geometry is Not Necessary: Lightweight Euclidean-Based Models for Low-Dimensional Knowledge Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2105.08476",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Link Prediction on N-ary Relational Facts: A Graph-based Approach."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1604.08642",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Onthe Representation and Embedding of Knowledge Bases beyond Binary Relations."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1902.07153",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplifying Graph Convolutional Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1509.05488",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "TransG: A Generative Model for Knowledge Graph Embedding."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2304.11949",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometric Relational Embeddings: A Survey."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2312.09219",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "NestE: Modeling Nested Relational Structures for Knowledge Graph Reasoning."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2106.03134",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pseudo-Riemannian Graph Convolutional Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1412.6575",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Embedding Entities and Relations for Learning and Inference in Knowledge Bases."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1702.08367",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Differentiable Learning of Logical Rules for Knowledge Base Reasoning."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2207.09051",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hicf: Hyperbolic informative collaborative filtering."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2204.08176",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "HRCF: Enhancing collaborative filtering via hyperbolic geometric regularization."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "1603.08861",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Revisiting Semi- Supervised Learning with Graph Embeddings."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.08167",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Improving Hyper-Relational Knowledge Graph Completion."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2104.07477",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Lorentzian Graph Convolutional Networks."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2110.13715",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "ConE:Cone embeddings for multi-hop reasoning over knowledge graphs."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2202.13852",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hyperbolic Graph Neural Networks: A Tutorial on Methods and Applications."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2010.12135",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph Geometry Interaction Learning."
+      }
+    },
+    {
+      "source": "2409.15369",
+      "target": "2408.08226",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Predictive Multiplicity of Knowledge Graph Embeddings in Link Prediction."
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1507.06217",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Persistence images: a stable vector representation of persistent homology"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1811.04801",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "On Weisfeiler-Leman invariance: subgraph counts and related graph properties"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1803.10091",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Point convolutional neural networks by extension operators"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1409.0473",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural machine translation by jointly learning to align and translate"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1901.08150",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hypergraph convolution and hypergraph attention"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1906.11713",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "GASP, a generalized framework for agglomerative clustering of signed graphs and its application to instance segmentation"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1612.00222",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Interaction networks for learning about objects, relations and physics"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1806.01261",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Relational inductive biases, deep learning, and graph networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.02863",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Directional graph networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2103.05031",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Higher-order network analysis takes off, fueled by classical ideas and new data"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1802.06916",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial closure and higher-order link prediction"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1910.12906",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "STEP: spatial temporal graph convolutional networks for emotion perception from Gaits"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2104.04710",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pyramidal reservoir graph neural network"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1907.00481",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spectral clustering with graph neural networks for graph pooling"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2104.11329",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "What are higher-order networks?"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2111.13171",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Intrinsic dimension, persistent homology and generalization in neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2106.12575",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Weisfeiler and Lehman go cellular: CW networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2006.09252",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Improving graph neural network expressivity via subgraph isomorphism counting"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1611.08097",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometric deep learning: going beyond Euclidean data"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2104.13478",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometric deep learning: grids, groups, graphs, geodesics, and gauges"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2305.05179",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial Hopfield networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2212.10196",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Higher-order signal processing with the Dirac operator"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1811.01122",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Topological approaches to deep learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1811.12814",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph-based global reasoning networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1611.07012",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "GRAM: graph-based attention model for healthcare representation learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1901.10244",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Explicit topological priors for deep-learning based image segmentation using persistent homology"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2106.04714",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "NRGNN: learning a label noise resistant graph neural network on sparsely and noisily labeled graphs"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1802.02669",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "PPFNet: global context aware local features for robust 3D point matching"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.03633",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2105.08190",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph neural networks for knowledge enhanced visual representation of paintings"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2107.08573",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "AffectiveTDA: using topological data analysis to improve analysis and explainability in affective computing"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1809.09401",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hypergraph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1805.10716",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial complexes from graphs towards graph persistence"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1903.02428",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fast graph representation learning with PyTorch Geometric"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1905.12200",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A Topology Layer for Machine Learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2110.08565",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph echo state networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1601.04692",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spectral theory of unsigned and signed graphs. Applications to graph clustering: a survey"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.09834",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Topology-aware graph pooling networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1704.01212",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural message passing for quantum chemistry"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2209.08179",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cell attention networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2204.09455",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial attention networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2207.13895",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generative hypergraph models and spectral embedding"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1705.02801",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph embedding techniques, applications, and performance: a survey"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2110.05292",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Understanding pooling in graph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.00743",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cell complex neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1810.08310",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "An efficient data retrieval parallel Reeb graph algorithm"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2103.04046",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Simplicial complex representation learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1707.06683",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Visual detection of structural changes in time-varying graphs using persistent homology"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1809.05910",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "MeshCNN: a network with an edge"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2211.06513",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Stable and transferable hyper-graph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1512.03385",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deep Residual Learning for Image Recognition"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1707.04041",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deep learning with topological signatures"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1905.10996",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph filtration learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2110.08335",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Trigger hunting with a topological prior for Trojan detection"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2111.12878",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multiway non-rigid point cloud registration via learned functional map synchronization"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2105.00956",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "UniGNN: a unified framework for graph and hypergraph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2103.01488",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multi-level attention pooling for graph neural networks: unifying graph representations with multiple localities"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2101.11174",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph neural network for traffic forecasting: a survey"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2110.15182",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dist2Cycle: a simplicial neural network for homology localization"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2002.02778",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pllay: Efficient topological layer based on persistent landscapes"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1609.02907",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Semi-supervised classification with graph convolutional networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1504.02531",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Imagenet classification with deep convolutional neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1807.07984",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Attention models in graphs: a survey"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1904.08082",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Self-attention graph pooling"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1507.05379",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hodge Laplacians on graphs"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1907.03199",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "What graph neural networks cannot learn: depth vs width"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2101.05778",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Topological deep learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1904.13107",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph convolutional networks with eigenpooling"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1905.11136",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Provably powerful graph networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1501.06297",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geodesic convolutional neural networks on Riemannian manifolds"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.11418",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Rethinking pooling in graph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2010.12455",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Primal-dual mesh convolutional neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1406.6247",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Recurrent models of visual attention"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1611.08402",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Geometric deep learning on graphs and manifolds using mixture model CNNs"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1810.02244",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Weisfeiler and Leman go neural: higher-order graph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1805.12076",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The role of over-parametrization in generalization of neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2105.01275",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph pooling via coarsened graph infomax"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2304.10031",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Architectures of topological deep learning: a survey on topological neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2011.03335",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Automatic differentiation in PyTorch"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1201.0490",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Scikit-learn: machine learning in Python"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2012.06399",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spatial temporal transformer network for skeleton-based action recognition"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1612.00593",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "PointNet: deep learning on point sets for 3D classification and segmentation"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2303.07646",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Clustering with simplicial complexes"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2008.02792",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "CASPR: learning canonical spatiotemporal point cloud representations"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2112.10752",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "High-resolution image synthesis with latent diffusion models"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1505.04597",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "U-Net: convolutional networks for biomedical image segmentation"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2002.09405",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning to simulate complex physics with graph networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1808.02111",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Flow smoothing and denoising: graph signal processing in the edge-space"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1807.05044",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Random walks on simplicial complexes and the normalized Hodge 1- Laplacian"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2101.05510",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Signal processing on higher-order networks: livin’on the edge... and beyond"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2012.00888",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "DiffusionNet: discretization agnostic learning on surfaces"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1409.1556",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Very deep convolutional networks for large-scale image recognition"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2104.12826",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "HodgeNet: learning spectral geometry on triangle meshes"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1409.3215",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Sequence to sequence learning with neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2006.02870",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The why, how, and when of representations for complex systems"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1706.03762",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Attention is all you need"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2202.11097",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Message passing all the way up"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2410.15640",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph attention networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2203.01703",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Capturing Shape Information with Multi-Scale Topological Loss Terms for 3D Reconstruction"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1406.5670",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "D ShapeNets: a deep representation for volumetric shapes"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1901.00596",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A comprehensive survey on graph neural networks"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2204.08770",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "GroupNet: multiscale hypergraph neural networks for trajectory prediction with relational reasoning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1810.00826",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "How powerful are graph neural networks?"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1801.07455",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spatial temporal graph convolutional networks for skeleton-based action recognition"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2301.11163",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Convolutional learning on simplicial complexes"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1704.06199",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dynamic hypergraph convolutional network"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1806.08804",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hierarchical graph representation learning with differentiable pooling"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1703.06114",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "In: arXiv preprint arXiv:1703.06114 (2017)."
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2107.09031",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Topological attention for time series forecasting"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2003.07493",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deep relational reasoning graph network for arbitrary shape text detection"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1911.05954",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Hierarchical graph pooling with structure learning"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "2110.03753",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "From stars to subgraphs: uplifting any GNN with local structure awareness"
+      }
+    },
+    {
+      "source": "2206.00606",
+      "target": "1812.08434",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph neural networks: a review of methods and applications"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1801.04068",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Status updates in a multi-stream M/G/1/1 preemptive queue,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2002.05711",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information with Gilbert-Elliot servers and samplers,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1806.03487",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The age of information in networks: Moments, distributions, and sampling,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1909.06571",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Minimizing age-of-information in multi-hop wireless networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1712.10061",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The age of information in multihop networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1808.05738",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multicast withprioritized delivery: How fresh isyour data?,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1812.10455",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information in two-hop multicast networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1904.11481",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information in multicast networks with multiple update streams,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1701.06734",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Remote estimation of the Wiener process over a channel with random delay,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2007.10200",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Sample, quantize and encode: Timely estimation over noisy channels,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2001.11500",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Who should Google Scholar update more often?,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1802.04724",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Achieving the age-energy trade-off with a finite-battery energy harvesting source,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1801.04907",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Sending information through status updates,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1802.00431",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Coded status updates in an energy harvesting erasure channel,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1803.01462",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Optimal statusupdating for an energy harvesting sensor with a noisy channel,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1802.01563",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age-minimal online policies for energy harvesting sensors with random battery recharges,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1806.07271",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age-minimal transmission for energy harvesting sensors with finite batteries: online policies,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2109.06855",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timelystatus updating over erasure channels using an energy harvesting sensor: Single and multiple sources,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1812.08148",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information with soft updates,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1811.05961",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information scaling in large networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1905.02178",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information scaling in large networks with hierarchical cooperation,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1804.00742",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Minimizing content staleness in dynamo-style replicated storage systems,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1812.08617",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Not just age but age and quality of information,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1901.00826",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Towards the tradeoff between service performance and information freshness,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2012.13214",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The age of incorrect information: an enabler of semantics-empowered communication,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2011.15114",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timely group updating,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2001.05471",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Fundamental limitsof age-of-information instationary and non-stationary environments,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1802.09167",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timeliness in lossless block coding,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1810.01533",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timely lossless source coding for randomly arriving symbols,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2001.09975",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Optimal selective encoding for timely updates,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2004.06091",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Selective encoding policies for maximizing information freshness,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1910.00963",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information with finite horizon and partial updates,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2001.11014",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Partial updates: Losing information for freshness,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1804.06543",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Average peak age-of-information minimization in UAV-assisted IoT networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1812.08286",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "On the role of age of information in the internet of things,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1811.12924",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Joint information freshness and completion time optimization for vehicular networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1909.05930",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information aware cache updating with fileand agedependent update durations,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1912.11847",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Edge caching with real-time guarantees,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2004.09475",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Information freshness in cache updating systems,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2007.02531",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Optimizing information freshness in two-hop status update systems under a resource constraint,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1901.01854",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age-of-information for computation-intensive messages in mobile edge computing,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1901.04654",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Reducing age-of-information for computation-intensive messages via packet replacement,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1907.00928",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Trading off computation with transmission in status update systems,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1904.10444",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information for updates with distortion,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1912.13493",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of information for updates with distortion: Constant and age-dependent distortion constraints,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1910.03564",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timely distributed computation with stragglers,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2012.15831",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timely communication in federated learning,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2006.01816",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age-based coded computation for bias reduction in distributed learning,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2102.02893",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The age of gossip in networks,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2105.02867",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Age of gossip in networks with community structure,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2107.14218",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Gossiping with binary freshness metric,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "2202.00649",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Timely gossiping with file slicing and network coding,"
+      }
+    },
+    {
+      "source": "2203.03602",
+      "target": "1907.06604",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "The ageof incorrect information: A new performance metric for status updates,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2110.13197",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "and graph neural networks"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2203.00667",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "and Generative Adversarial Networks (GANs)"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2401.01626",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "and the expressive power of Graph Neural Networks (GNNs)"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1806.01973",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph convolutional neural networks for web-scale recommender systems,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2007.03634",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pinnersage: Multi-modal user embedding framework for recommendations at pinterest,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1310.4546",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Distributed representations of words and phrases and their compositionality,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1403.6652",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deepwalk: online learning of social representations,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1607.00653",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "node2vec: Scalable feature learning for networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1503.03578",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "LINE: large-scale information network embedding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1704.03165",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "struc2vec: Learning node representations from structural identity,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1709.05584",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Representation learning on graphs: Methods and applications,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1705.04969",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Attributed social network embedding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1603.08861",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Revisiting semi-supervised learning with graph embeddings,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1312.6203",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Spectral networks and locally connected networks on graphs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1606.09375",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Convolutional neural networks on graphs with fast localized spectral filtering,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1609.02907",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Semi-supervised classification with graph convolutional networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2410.15640",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph attention networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1706.02216",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inductive representation learning on large graphs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1806.03536",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Representation learning on graphs with jumping knowledge networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1906.04817",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Position-aware graph neural networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1906.02319",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Demo-net: Degree-specific graph neural networks for node and graph classification,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1711.05697",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Motif-based convolutional neural network on graphs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1701.05291",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Heterogeneous information network embedding for meta path based proximity,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1803.02533",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Metagraph2vec: Complex semantic path augmented heterogeneous network embedding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1803.01848",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Aspem: Embedding learning by aspects in heterogeneous information networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1903.07293",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Heterogeneous graph attention network,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2002.01680",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "MAGNN: metapath aggregated graph neural network for heterogeneous graph embedding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1805.11273",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dyngem: Deep embedding method for dynamic graphs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1809.02657",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "dyngraph2vec: Capturing network dynamics using dynamic graph representation learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1902.10191",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Evolvegcn: Evolving graph convolutional networks for dynamic graphs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1611.05373",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deepcas: An end-to-end predictor of information cascades,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1310.3911",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning user-specific latent influence and susceptibility from information cascades,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1711.10162",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Topological recurrent neural network for diffusion prediction,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1205.2618",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "BPR: bayesian personalized ranking from implicit feedback,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1811.09975",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Variational autoencoders for collaborative filtering,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.08108",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural graph collaborative filtering,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1804.10862",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Collaborative memory network for recommendation systems,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1708.05027",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural factorization machines for sparse predictive analytics,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1707.05176",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Latent relational metric learning via memory-based attention for collaborative ranking,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1909.12301",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dbrec: Dual-bridging recommendation via discovering latent groups,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1606.04080",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Matching networks for one shot learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1703.05175",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Prototypical networks for few-shot learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1701.04783",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Joint deep modeling of users and items using reviews for recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2005.10473",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Transfer learning via contextual invariants for one-to-many cross-domain recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.07854",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "KGAT: knowledge graph attention network for recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1908.00413",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Melu: Meta-learned user preference estimator for cold-start recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2007.03183",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "MAMO: memory-augmented metaoptimization for cold-start recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2010.15982",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A model of two tales: Dual transfer learning framework for improved long-tail item recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1906.00391",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Sequential scenario-specific meta learner for online recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2012.11842",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Personalized adaptive meta learning for cold-start user preference prediction,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1409.0473",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural machine translation by jointly learning to align and translate,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1804.04327",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Interact and decide: Medley of sub-attention networks for effective group recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1402.4645",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on semi-supervised learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1703.02291",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generative adversarial nets,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1906.00446",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generating diverse highfidelity images with VQ-VAE-2,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1707.04993",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Mocogan: Decomposing motion and content for video generation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1607.07539",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Semantic image inpainting with deep generative models,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1711.09357",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generative adversarial network for abstractive text summarization,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1705.10513",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "IRGAN: A minimax game for unifying generative and discriminative information retrieval models,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1807.03748",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Representation learning with contrastive predictive coding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2002.05709",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A simple framework for contrastive learning of visual representations,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1810.04805",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "BERT: pre-training of deep bidirectional transformers for language understanding,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1910.13461",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "BART: denoising sequence-to-sequence pretraining for natural language generation, translation, and comprehension,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1904.05046",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Generalizing from a few examples: A survey on few-shot learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1703.03400",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Model-agnostic meta-learning for fast adaptation of deep networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1901.00596",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A comprehensive survey on graph neural networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1801.07606",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deeper insights into graph convolutional networks for semi-supervised learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1405.7134",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Role discovery in networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1901.10026",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Heterogeneous network motifs,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1704.01212",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Neural message passing for quantum chemistry,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1612.09259",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Motifs in temporal networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1910.13011",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on subgraph counting: Concepts, algorithms, and applications to network motifs and graphlets,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1708.01236",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multiscale mixing patterns in networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1801.04062",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Mutual information neural estimation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1803.09050",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning to reweight examples for robust deep learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1901.05555",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Class-balanced loss based on effective number of samples,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1612.08083",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Language modeling with gated convolutional networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1706.03762",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Attention is all you need,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2006.03736",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Groupim: A mutual information maximization framework for neural group recommendation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1908.08227",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "motif2vec: Motif aware node representation learning for heterogeneous networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1710.10321",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning structural node embeddings via diffusion wavelets,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1811.05868",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pitfalls of graph neural network evaluation,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2001.00132",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inf-vae: A variational autoencoder framework to integrate homophily and influence in diffusion prediction,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1911.06957",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "An induced multi-relational framework for answer selection in community question answer platforms,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2002.01169",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph representation learning via graphical mutual information maximization,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.03670",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "S4l: Self-supervised semi-supervised learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1906.00910",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning representations by maximizing mutual information across views,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2003.01604",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Self-supervised graph representation learning via global context prediction,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2011.09643",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Node similarity preserving graph convolutional networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2010.13902",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graph contrastive learning with augmentations,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2006.09963",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Gcc: Graph contrastive coding for graph neural network pre-training,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2006.10141",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Self-supervised learning on graphs: Deep insights and new direction,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2005.10545",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "ESAM: discriminative domain adaptation with non-displayed items to improve long-tail performance,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2409.04009",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Large margin prototypical network for few-shot relation classification with fine-grained features,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2001.10378",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Metaselector: Meta-learning for recommendation with user-level adaptive model selection,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1904.05160",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Large-scale long-tailed recognition in an open world,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1804.09458",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dynamic few-shot visual learning without forgetting,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1510.01784",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "VBPR: visual bayesian personalized ranking from implicit feedback,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1506.02594",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "SEISMIC: A self-exciting point process model for predicting tweet popularity,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1006.0234",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inferring networks of diffusion and influence,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1807.05560",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deepinf: Social influence prediction with deep learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1812.09430",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dynamic graph representation learning via self-attention networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1611.01604",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Dynamic coattention networks for question answering,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1603.02178",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Modeling information diffusion in implicit networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1202.0031",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Social dynamics of digg,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1707.07435",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Deep learning based recommender system: A survey and new perspectives,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1810.00826",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "How powerful are graph neural networks?"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2011.03335",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Automatic differentiation in pytorch,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1803.02349",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Billion-scale commodity embedding for e-commerce recommendation in alibaba,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2005.10110",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "M2GRL: A multi-task multiview graph representation learning framework for web-scale recommender systems,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1904.12058",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Inductive matrix completion based on graph neural networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1809.05343",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Adaptive sampling towards fast graph representation learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1907.04931",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Graphsaint: Graph sampling based inductive learning method,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.07953",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Cluster-gcn: An efficient algorithm for training deep and large graph convolutional networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.11395",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Multi-modal graph interaction for multi-graph convolution network in urban spatiotemporal forecasting,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2006.15704",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Pytorch distributed: Experiences on accelerating data parallel training,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1603.02754",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Xgboost: A scalable tree boosting system,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2108.01301",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Visualizing data using t-sne,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1803.03324",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Learning deep generative models,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2011.00362",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on contrastive self-supervised learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1905.10760",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Darec: Deep domain adaptation for cross-domain recommendation via transferring rating patterns,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2002.12307",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Heterogeneous graph neural networks for malicious account detection,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1802.00393",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Large scale crowdsourcing and characterization of twitter abusive behavior,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1712.07107",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Adversarial examples: Attacks and defenses for deep learning,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "2005.10322",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on adversarial recommender systems: From attack/defense strategies to generative adversarial networks,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1910.10086",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "Meta matrix factorization for federated rating predictions,"
+      }
+    },
+    {
+      "source": "2202.13491",
+      "target": "1908.09635",
+      "type": "citation",
+      "attributes": {
+        "reference_text": "A survey on bias and fairness in machine learning,"
+      }
+    }
+  ],
+  "metadata": {
+    "name": "demo_multimodal_graph",
+    "created_at": "2026-05-28",
+    "category": "",
+    "statistics": {
+      "node_count": 5,
+      "edge_count": 458,
+      "total_images": 291,
+      "total_markdown_chars": 2192683,
+      "avg_images_per_paper": 58.2,
+      "avg_md_length": 438537
+    },
+    "schema": {
+      "node_types": [
+        "paper"
+      ],
+      "edge_types": [
+        "citation"
+      ],
+      "node_attributes": [
+        "arxiv_id",
+        "markdown_length",
+        "image_count",
+        "markdown_size"
+      ],
+      "edge_attributes": [
+        "reference_text"
+      ]
+    }
+  }
+}

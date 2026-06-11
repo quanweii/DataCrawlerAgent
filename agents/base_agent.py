@@ -1,10 +1,12 @@
 """
 Agent基类 - 提供统一的Agent接口和基础功能
-仿照XianyuAutoAgent架构设计
+支持LLM驱动的任务分析、执行规划和结果评估
 """
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 import os
+import re
+import json
 from openai import OpenAI
 from loguru import logger
 
@@ -17,7 +19,9 @@ class BaseAgent(ABC):
         client: OpenAI,
         system_prompt: str,
         mcp_tool_manager: Optional[Any] = None,
-        agent_name: str = "BaseAgent"
+        agent_name: str = "BaseAgent",
+        blackboard: Optional[Any] = None,
+        message_bus: Optional[Any] = None
     ):
         """
         初始化Agent
@@ -27,11 +31,15 @@ class BaseAgent(ABC):
             system_prompt: 系统提示词
             mcp_tool_manager: MCP工具管理器实例
             agent_name: Agent名称，用于日志记录
+            blackboard: 共享状态存储（多智能体通信用）
+            message_bus: 消息总线（多智能体通信用）
         """
         self.client = client
         self.system_prompt = system_prompt
         self.mcp_tool_manager = mcp_tool_manager
         self.agent_name = agent_name
+        self.blackboard = blackboard
+        self.message_bus = message_bus
         self.execution_history: List[Dict] = []  # 执行历史记录
 
     def generate(
@@ -186,3 +194,92 @@ class BaseAgent(ABC):
     def clear_history(self):
         """清空执行历史"""
         self.execution_history = []
+
+    def reason_about_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        LLM驱动的任务分析：在执行前用LLM理解任务、识别风险、制定策略。
+        这是让Agent具备"智能"的核心方法。
+        """
+        task_str = json.dumps(task, ensure_ascii=False, default=str)[:1500]
+
+        prompt = f"""你是 {self.agent_name}。
+
+角色描述: {self.system_prompt[:400]}
+
+当前任务:
+{task_str}
+
+请分析这个任务，以JSON格式输出你的理解和计划:
+{{
+    "understanding": "你对任务目标的理解（一句话）",
+    "key_points": ["需要关注的要点1", "要点2"],
+    "risks": ["可能遇到的问题"],
+    "strategy": "你的执行策略"
+}}"""
+
+        try:
+            response = self._call_llm(
+                messages=[
+                    {"role": "system", "content": f"你是{self.agent_name}。分析任务并严格以JSON格式输出计划。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=600
+            )
+            match = re.search(r'\{[\s\S]*\}', response)
+            if match:
+                result = json.loads(match.group())
+                logger.info(f"[{self.agent_name}] 任务分析: {result.get('understanding', '')}")
+                if result.get('risks'):
+                    logger.info(f"[{self.agent_name}] 识别风险: {result['risks']}")
+                return result
+        except Exception as e:
+            logger.warning(f"[{self.agent_name}] 任务分析失败: {e}")
+
+        return {"understanding": "分析失败，使用默认策略", "key_points": [], "risks": [], "strategy": "按标准流程执行"}
+
+    def evaluate_own_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        LLM驱动的结果评估：执行后用LLM评估质量并给下游Agent提供建议。
+        """
+        summary = {"status": results.get("status"), "errors": results.get("errors", [])}
+
+        if "papers" in results:
+            summary["paper_count"] = len(results.get("papers", []))
+            summary["extracted_count"] = len(results.get("extracted_folders", []))
+        if "cleaned_papers" in results:
+            summary.update(results.get("stats", {}))
+        if "edge_count" in results:
+            summary["edge_count"] = results.get("edge_count", 0)
+            summary["papers_processed"] = results.get("papers_processed", 0)
+        if "stats" in results and "node_count" in results.get("stats", {}):
+            summary["node_count"] = results["stats"]["node_count"]
+
+        prompt = f"""你是 {self.agent_name}。请评估你的执行结果。
+
+结果摘要: {json.dumps(summary, ensure_ascii=False, indent=2)}
+
+以JSON格式输出评估:
+{{
+    "quality": "好/一般/差",
+    "issues": ["发现的问题"],
+    "suggestions": "对下游Agent的建议",
+    "confidence": 0.8
+}}"""
+
+        try:
+            response = self._call_llm(
+                messages=[
+                    {"role": "system", "content": f"你是{self.agent_name}。评估结果，严格以JSON格式输出。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=400
+            )
+            match = re.search(r'\{[\s\S]*\}', response)
+            if match:
+                return json.loads(match.group())
+        except Exception as e:
+            logger.warning(f"[{self.agent_name}] 结果评估失败: {e}")
+
+        return {"quality": "未知", "issues": [], "suggestions": "", "confidence": 0.5}
