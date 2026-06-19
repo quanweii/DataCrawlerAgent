@@ -325,11 +325,29 @@ class ReActAgent(BaseAgent):
     def _get_blackboard_namespace(self) -> str:
         """获取此Agent在blackboard中的命名空间"""
         name_map = {
+            # ArXiv 领域
             "ArxivBatchDownloaderAgent": "downloader",
             "PaperCollectorAgent": "collector",
             "DataCleanerAgent": "cleaner",
             "ReferenceGraphBuilderAgent": "graph",
             "DatasetFormatterAgent": "formatter",
+            # Reddit 领域
+            "SubredditCollectorAgent": "subreddit_collector",
+            "PostCollectorAgent": "post_collector",
+            "SocialGraphBuilderAgent": "social_graph",
+            # Amazon 领域
+            "ProductCollectorAgent": "product_collector",
+            "ReviewCollectorAgent": "review_collector",
+            "ProductGraphBuilderAgent": "product_graph",
+            # Steam 领域
+            "SteamGameCollectorAgent": "steam_collector",
+            "SteamGameGraphBuilderAgent": "steam_graph",
+            # TMDb 领域
+            "TmdbMovieCollectorAgent": "tmdb_collector",
+            "TmdbMovieGraphBuilderAgent": "tmdb_graph",
+            # WikiArt 领域
+            "WikiartArtworkCollectorAgent": "wikiart_collector",
+            "WikiartArtworkGraphBuilderAgent": "wikiart_graph",
         }
         return name_map.get(self.agent_name, self.agent_name.lower())
 

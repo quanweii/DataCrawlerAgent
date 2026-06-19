@@ -172,16 +172,21 @@ def train_and_eval_link_prediction(
     patience: int = 50,
     device: str = "cuda",
     labels: torch.Tensor = None,
+    clip_grad: bool = True,
 ) -> Dict:
     """
     训练并评估链接预测模型
 
     修复：消息传递只用训练边，避免数据泄露
     修复：同域负采样，避免domain泄露导致任务饱和
+    修复v2：梯度裁剪，防止RevGAT/GIN/GT等大参数模型在高维输入下梯度爆炸
+
+    clip_grad：默认True（统一措施）。RevGAT等可逆架构在高维多模态输入下，
+    梯度裁剪反而导致欠拟合/数值发散（训练26s即崩溃，MRR~0.37），故允许按需关闭。
     """
     encoder = encoder.to(device)
     decoder = decoder.to(device)
-    x = data.x.to(device)
+    x = data.x.float().to(device)
     train_edges = train_edge_index.to(device)
 
     optimizer = torch.optim.Adam(
@@ -216,6 +221,13 @@ def train_and_eval_link_prediction(
         loss = pos_loss + neg_loss
 
         loss.backward()
+        # 修复v2：梯度裁剪，防止RevGAT/GIN/GT等大参数模型在高维输入下梯度爆炸
+        # （clip_grad=False 时跳过：供 RevGAT 等可逆架构按需关闭）
+        if clip_grad:
+            torch.nn.utils.clip_grad_norm_(
+                list(encoder.parameters()) + list(decoder.parameters()),
+                max_norm=1.0
+            )
         optimizer.step()
 
         if epoch % 10 == 0:
@@ -269,14 +281,17 @@ def run_link_prediction(
     hidden_dim: int = 256,
     num_layers: int = 2,
     dropout: float = 0.5,
-    lr: float = 0.01,
+    lr: float = 0.001,
     device: str = "cuda",
     output_dir: str = "./benchmark/results",
     proj_dim: int = None,
     neg_ratio: int = 10,
+    clip_grad: bool = True,
 ) -> Dict:
     """
     运行链接预测实验
+    lr=0.001：与节点分类一致，防止RevGAT/GIN/GT等大参数模型在高维多模态输入下梯度爆炸
+    梯度裁剪(max_norm=1.0)：见 train_and_eval_link_prediction，进一步稳定训练
 
     修复：消息传递阶段严格只用训练边，消除数据泄露
     修复：同域负采样，避免domain泄露导致任务饱和
@@ -330,7 +345,7 @@ def run_link_prediction(
             train_edges, val_pos_edges, val_neg_edges,
             test_pos_edges, test_neg_edges,
             num_epochs=num_epochs, lr=lr, device=device,
-            labels=domain_labels,
+            labels=domain_labels, clip_grad=clip_grad,
         )
         all_run_results.append(result)
         logger.info(f"[Run {run+1}/{num_runs}] {model_name}+{modality}: "

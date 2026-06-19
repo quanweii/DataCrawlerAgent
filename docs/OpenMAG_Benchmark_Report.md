@@ -1,5 +1,7 @@
 # OpenMAG Benchmark 完整实验报告
 
+> ⚠️ **更新提示（2026-06-14）**：本报告所载**链接预测结果为早期 1:1 随机负采样下的饱和值（MRR>0.93）**，已过时。最新的**去饱和链接预测消融（9 模型×7 模态，同域负采样 + neg_ratio=10）及全部 Benchmark 实验的统一整合**见 **[AMMAG_Benchmark_完整实验报告.md](AMMAG_Benchmark_完整实验报告.md)**。本报告保留作历史与详细分析记录。
+
 > **实验环境**：8×NVIDIA RTX 4090, Python 3.10, PyTorch 2.x, PyG
 > **数据集**：45,672 篇学术论文，4 个领域（cs.SI, cs.LO, math.LO, physics.soc-ph），CLIP-ViT-Large-Patch14 (768d) 编码
 > **统一投影**：所有模型通过 learnable Linear(in_dim, 768) 投影至统一 768 维，确保单模态与多模态公平对比

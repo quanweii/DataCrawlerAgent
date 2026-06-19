@@ -7,8 +7,22 @@ from typing import Dict, Any, List, Optional
 import os
 import re
 import json
+import time
 from openai import OpenAI
 from loguru import logger
+
+
+def _is_transient_llm_error(e: Exception) -> bool:
+    """判断 LLM 调用异常是否为可重试的瞬时错误 (429/5xx/超时/连接)."""
+    code = getattr(e, "status_code", None)
+    if code in (429, 500, 502, 503, 504):
+        return True
+    s = str(e).lower()
+    return any(k in s for k in (
+        "429", "rate limit", "rate_limit", "too many requests",
+        "timeout", "timed out", "connection", "temporarily",
+        "overload", "server error", "service unavailable", "retry",
+    ))
 
 
 class BaseAgent(ABC):
@@ -147,6 +161,29 @@ class BaseAgent(ABC):
             )
             return response.choices[0].message.content
         except Exception as e:
+            if _is_transient_llm_error(e):
+                last_exc = e
+                for attempt in range(1, 5):  # 最多额外重试 4 次
+                    wait = min(16, 2 ** attempt)  # 2,4,8,16s 指数退避
+                    logger.warning(
+                        f"[{self.agent_name}] LLM瞬时错误(第{attempt}次重试, "
+                        f"{wait}s后): {e}")
+                    time.sleep(wait)
+                    try:
+                        response = self.client.chat.completions.create(
+                            model=os.getenv("MODEL_NAME", "qwen-max"),
+                            messages=messages,
+                            temperature=temperature,
+                            max_tokens=max_tokens,
+                            top_p=0.8
+                        )
+                        return response.choices[0].message.content
+                    except Exception as e2:
+                        last_exc = e2
+                        if not _is_transient_llm_error(e2):
+                            break
+                logger.warning(f"[{self.agent_name}] LLM调用重试耗尽: {last_exc}")
+                return ""
             logger.warning(f"[{self.agent_name}] LLM调用失败: {e}")
             return ""
 

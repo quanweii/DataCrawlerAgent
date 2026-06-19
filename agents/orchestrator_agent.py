@@ -25,6 +25,165 @@ class PlanStep:
     status: str = "pending"  # pending | running | completed | failed | skipped
 
 
+@dataclass
+class DomainConfig:
+    """领域特定的 Pipeline 配置"""
+    domain: str
+    agents_desc: Dict[str, str]           # agent_name -> 描述
+    default_plan_factory: str             # 工厂方法名
+    critical_agents: set                  # 关键 Agent（失败则终止）
+    task_builders: Dict[str, str]         # agent_name -> _build_task_xxx 方法名
+    namespace_map: Dict[str, str]         # agent_name -> blackboard namespace
+    graph_mode: str = "heterogeneous"     # 建图模式: homogeneous / heterogeneous
+
+
+# ==================== 领域配置注册表 ====================
+
+DOMAIN_CONFIGS = {
+    "arxiv": DomainConfig(
+        domain="arxiv",
+        agents_desc={
+            "arxiv_batch_downloader": "从ArXiv元数据文件中按分类筛选论文，生成下载列表",
+            "paper_collector": "下载论文PDF并用pdf-extract-kit提取文本/图片/公式等多模态数据",
+            "data_cleaner": "用规则管道清洗Markdown：去重、修复断行、规范化公式和引用格式",
+            "reference_graph_builder": "从论文中提取References，在arxiv元数据中匹配并构建引用边",
+            "dataset_formatter": "将节点和边封装为多模态属性图数据集JSON",
+        },
+        default_plan_factory="_default_plan_arxiv",
+        critical_agents={"arxiv_batch_downloader", "paper_collector"},
+        task_builders={
+            "arxiv_batch_downloader": "_build_task_arxiv_downloader",
+            "paper_collector": "_build_task_paper_collector",
+            "data_cleaner": "_build_task_data_cleaner",
+            "reference_graph_builder": "_build_task_ref_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "arxiv_batch_downloader": "downloader",
+            "paper_collector": "collector",
+            "data_cleaner": "cleaner",
+            "reference_graph_builder": "graph",
+            "dataset_formatter": "formatter",
+        },
+    ),
+    "reddit": DomainConfig(
+        domain="reddit",
+        agents_desc={
+            "subreddit_collector": "发现/验证目标subreddit，采集帖子元数据（标题、得分、图片URL等）",
+            "post_collector": "采集帖子评论树（深度限制BFS）、下载帖子图片、收集用户元数据",
+            "data_cleaner": "清洗Reddit文本数据：去除标记残留、规范化URL、处理[deleted]占位符",
+            "social_graph_builder": "构建User-Post-Comment-Subreddit异构图（author_of/reply_to/belongs_to/crosspost边）",
+            "dataset_formatter": "将异构节点和边封装为多模态属性图数据集JSON",
+        },
+        default_plan_factory="_default_plan_reddit",
+        critical_agents={"subreddit_collector", "post_collector"},
+        task_builders={
+            "subreddit_collector": "_build_task_subreddit_collector",
+            "post_collector": "_build_task_post_collector",
+            "data_cleaner": "_build_task_data_cleaner",
+            "social_graph_builder": "_build_task_social_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "subreddit_collector": "subreddit_collector",
+            "post_collector": "post_collector",
+            "data_cleaner": "cleaner",
+            "social_graph_builder": "social_graph",
+            "dataset_formatter": "formatter",
+        },
+    ),
+    "amazon": DomainConfig(
+        domain="amazon",
+        agents_desc={
+            "product_collector": "加载McAuley Amazon产品元数据、下载产品图片、提取共买/共看关系",
+            "review_collector": "加载/过滤/采样产品评论，构建用户-产品交互数据",
+            "data_cleaner": "清洗产品描述和评论文本：去除HTML标签、规范化格式",
+            "product_graph_builder": "构建Product-User-Category-Brand异构图（review/also_bought/also_viewed/belongs_to/made_by边）",
+            "dataset_formatter": "将异构节点和边封装为多模态属性图数据集JSON",
+        },
+        default_plan_factory="_default_plan_amazon",
+        critical_agents={"product_collector"},
+        task_builders={
+            "product_collector": "_build_task_product_collector",
+            "review_collector": "_build_task_review_collector",
+            "data_cleaner": "_build_task_data_cleaner",
+            "product_graph_builder": "_build_task_product_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "product_collector": "product_collector",
+            "review_collector": "review_collector",
+            "data_cleaner": "cleaner",
+            "product_graph_builder": "product_graph",
+            "dataset_formatter": "formatter",
+        },
+    ),
+    "steam": DomainConfig(
+        domain="steam",
+        agents_desc={
+            "steam_game_collector": "加载/爬取Steam游戏元数据(genres/developers/publishers/categories)，确保cs_lo提取目录就绪",
+            "steam_game_graph_builder": "构建Steam游戏同构图：小类过滤+密度优化co_attribute边(shared_genre/same_developer/same_publisher/shared_category)，产出带label/label_index的节点和边",
+            "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+        },
+        default_plan_factory="_default_plan_steam",
+        critical_agents={"steam_game_collector"},
+        task_builders={
+            "steam_game_collector": "_build_task_steam_collector",
+            "steam_game_graph_builder": "_build_task_steam_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "steam_game_collector": "steam_collector",
+            "steam_game_graph_builder": "steam_graph",
+            "dataset_formatter": "formatter",
+        },
+        graph_mode="homogeneous",
+    ),
+    "tmdb": DomainConfig(
+        domain="tmdb",
+        agents_desc={
+            "tmdb_movie_collector": "加载/爬取TMDb电影元数据(genres/directors/actors)，确保cs_lo提取目录就绪",
+            "tmdb_movie_graph_builder": "构建TMDb电影同构图：小类过滤+密度优化co_attribute边(shared_genre/same_director/shared_actor)，产出带label/label_index的节点和边",
+            "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+        },
+        default_plan_factory="_default_plan_tmdb",
+        critical_agents={"tmdb_movie_collector"},
+        task_builders={
+            "tmdb_movie_collector": "_build_task_tmdb_collector",
+            "tmdb_movie_graph_builder": "_build_task_tmdb_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "tmdb_movie_collector": "tmdb_collector",
+            "tmdb_movie_graph_builder": "tmdb_graph",
+            "dataset_formatter": "formatter",
+        },
+        graph_mode="homogeneous",
+    ),
+    "wikiart": DomainConfig(
+        domain="wikiart",
+        agents_desc={
+            "wikiart_artwork_collector": "加载/爬取WikiArt画作元数据(style/artist/title)，确保cs_lo提取目录就绪",
+            "wikiart_artwork_graph_builder": "构建WikiArt画作同构图：密度优化co_attribute边(same_artist/shared_style)，产出带label/label_index的节点和边",
+            "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+        },
+        default_plan_factory="_default_plan_wikiart",
+        critical_agents={"wikiart_artwork_collector"},
+        task_builders={
+            "wikiart_artwork_collector": "_build_task_wikiart_collector",
+            "wikiart_artwork_graph_builder": "_build_task_wikiart_graph",
+            "dataset_formatter": "_build_task_dataset_formatter",
+        },
+        namespace_map={
+            "wikiart_artwork_collector": "wikiart_collector",
+            "wikiart_artwork_graph_builder": "wikiart_graph",
+            "dataset_formatter": "formatter",
+        },
+        graph_mode="homogeneous",
+    ),
+}
+
+
 class OrchestratorAgent:
     """
     动态编排Agent — 多智能体系统的调度核心
@@ -53,13 +212,10 @@ class OrchestratorAgent:
     def analyze_task(self, task_config: Dict) -> List[PlanStep]:
         """LLM分析任务并生成动态执行计划"""
 
-        agents_desc = {
-            "arxiv_batch_downloader": "从ArXiv元数据文件中按分类筛选论文，生成下载列表",
-            "paper_collector": "下载论文PDF并用pdf-extract-kit提取文本/图片/公式等多模态数据",
-            "data_cleaner": "用规则管道清洗Markdown：去重、修复断行、规范化公式和引用格式",
-            "reference_graph_builder": "从论文中提取References，在arxiv元数据中匹配并构建引用边",
-            "dataset_formatter": "将节点和边封装为多模态属性图数据集JSON"
-        }
+        domain = task_config.get("domain", "arxiv")
+        domain_cfg = DOMAIN_CONFIGS.get(domain, DOMAIN_CONFIGS["arxiv"])
+
+        agents_desc = domain_cfg.agents_desc
 
         task_summary = {k: v for k, v in task_config.items()
                         if k not in ['cleaning_rules']}
@@ -67,6 +223,7 @@ class OrchestratorAgent:
 
         prompt = f"""你是多智能体系统的动态编排器。分析任务并制定执行计划。
 
+当前领域: {domain}
 可用Agent:
 {json.dumps(agents_desc, ensure_ascii=False, indent=2)}
 
@@ -192,14 +349,29 @@ class OrchestratorAgent:
         return steps
 
     def _default_plan(self, task_config: Dict) -> List[PlanStep]:
-        """默认执行计划（LLM规划失败时使用）"""
+        """默认执行计划 — 按领域分发"""
+        domain = task_config.get("domain", "arxiv")
+
+        if domain == "reddit":
+            return self._default_plan_reddit(task_config)
+        elif domain == "amazon":
+            return self._default_plan_amazon(task_config)
+        elif domain == "steam":
+            return self._default_plan_steam(task_config)
+        elif domain == "tmdb":
+            return self._default_plan_tmdb(task_config)
+        elif domain == "wikiart":
+            return self._default_plan_wikiart(task_config)
+        else:
+            return self._default_plan_arxiv(task_config)
+
+    def _default_plan_arxiv(self, task_config: Dict) -> List[PlanStep]:
+        """ArXiv 默认执行计划"""
         has_paper_sources = bool(task_config.get("paper_sources"))
         has_category = bool(task_config.get("category"))
         has_metadata = bool(task_config.get("metadata_path"))
 
         if has_paper_sources:
-            # 已有paper_sources，直接从collector开始
-            # metadata_path仅用于graph builder的引用匹配，不触发batch模式
             return [
                 PlanStep("paper_collector", "下载和提取论文",
                          max_retries=1),
@@ -214,7 +386,6 @@ class OrchestratorAgent:
                          max_retries=1),
             ]
         elif has_category:
-            # 按分类筛选论文，需要batch downloader
             return [
                 PlanStep("arxiv_batch_downloader", "筛选论文",
                          max_retries=1),
@@ -239,6 +410,83 @@ class OrchestratorAgent:
                          depends_on=["data_cleaner"],
                          max_retries=1),
             ]
+
+    def _default_plan_reddit(self, task_config: Dict) -> List[PlanStep]:
+        """Reddit 默认执行计划"""
+        return [
+            PlanStep("subreddit_collector", "发现subreddit并采集帖子",
+                     max_retries=1),
+            PlanStep("post_collector", "采集评论和下载图片",
+                     depends_on=["subreddit_collector"],
+                     max_retries=1),
+            PlanStep("data_cleaner", "清洗文本数据",
+                     depends_on=["post_collector"],
+                     max_retries=1),
+            PlanStep("social_graph_builder", "构建社交图",
+                     depends_on=["post_collector"],
+                     max_retries=1),
+            PlanStep("dataset_formatter", "封装数据集",
+                     depends_on=["social_graph_builder"],
+                     max_retries=1),
+        ]
+
+    def _default_plan_amazon(self, task_config: Dict) -> List[PlanStep]:
+        """Amazon 默认执行计划"""
+        return [
+            PlanStep("product_collector", "加载产品元数据和图片",
+                     max_retries=1),
+            PlanStep("review_collector", "加载产品评论",
+                     depends_on=["product_collector"],
+                     max_retries=1),
+            PlanStep("data_cleaner", "清洗文本数据",
+                     depends_on=["review_collector"],
+                     max_retries=1),
+            PlanStep("product_graph_builder", "构建产品图",
+                     depends_on=["product_collector", "review_collector"],
+                     max_retries=1),
+            PlanStep("dataset_formatter", "封装数据集",
+                     depends_on=["product_graph_builder"],
+                     max_retries=1),
+        ]
+
+    def _default_plan_steam(self, task_config: Dict) -> List[PlanStep]:
+        """Steam 默认执行计划 (无 cleaner: cs_lo 文本已优质)"""
+        return [
+            PlanStep("steam_game_collector", "加载Steam游戏元数据",
+                     max_retries=1),
+            PlanStep("steam_game_graph_builder", "构建游戏同构图",
+                     depends_on=["steam_game_collector"],
+                     max_retries=1),
+            PlanStep("dataset_formatter", "封装数据集",
+                     depends_on=["steam_game_graph_builder"],
+                     max_retries=1),
+        ]
+
+    def _default_plan_tmdb(self, task_config: Dict) -> List[PlanStep]:
+        """TMDb 默认执行计划 (无 cleaner)"""
+        return [
+            PlanStep("tmdb_movie_collector", "加载TMDb电影元数据",
+                     max_retries=1),
+            PlanStep("tmdb_movie_graph_builder", "构建电影同构图",
+                     depends_on=["tmdb_movie_collector"],
+                     max_retries=1),
+            PlanStep("dataset_formatter", "封装数据集",
+                     depends_on=["tmdb_movie_graph_builder"],
+                     max_retries=1),
+        ]
+
+    def _default_plan_wikiart(self, task_config: Dict) -> List[PlanStep]:
+        """WikiArt 默认执行计划 (无 cleaner)"""
+        return [
+            PlanStep("wikiart_artwork_collector", "加载WikiArt画作元数据",
+                     max_retries=1),
+            PlanStep("wikiart_artwork_graph_builder", "构建画作同构图",
+                     depends_on=["wikiart_artwork_collector"],
+                     max_retries=1),
+            PlanStep("dataset_formatter", "封装数据集",
+                     depends_on=["wikiart_artwork_graph_builder"],
+                     max_retries=1),
+        ]
 
     def decide_next_agent(self, plan: List[PlanStep],
                           completed: List[str]) -> Optional[PlanStep]:
@@ -464,8 +712,9 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
 
     def _build_agent_task(self, agent_name: str, task_config: Dict,
                           overrides: Dict) -> Dict:
-        """根据Agent类型构建任务参数"""
+        """根据Agent类型构建任务参数 — 支持多领域"""
         base = dict(task_config)
+        domain = base.get("domain", "arxiv")
 
         # 调试：记录overrides中可能导致问题的字段
         if overrides:
@@ -474,64 +723,26 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
                 f"{json.dumps(overrides, ensure_ascii=False, default=str)[:500]}"
             )
 
-        if agent_name == "arxiv_batch_downloader":
-            task = {
-                "metadata_path": base.get("metadata_path"),
-                "category": base.get("category", "cs.AI"),
-                "limit": base.get("limit", 20),
-                "output_dir": base.get("output_dirs", {}).get("papers", "./data/papers"),
-                "sort_by_date": base.get("sort_by_date", True),
-                "paper_sources": base.get("paper_sources", [])
-            }
-        elif agent_name == "paper_collector":
-            # 从blackboard读取paper_sources
-            paper_sources = self.blackboard.read("downloader", "paper_sources", [])
-            if not paper_sources:
-                paper_sources = base.get("paper_sources", [])
-            task = {
-                "paper_sources": paper_sources,
-                "output_dir": base.get("output_dirs", {}).get("papers", "./data/papers"),
-                "extract_multimodal": base.get("extract_multimodal", True),
-                "device": base.get("device", "cuda:0"),
-                "parallel_extraction": base.get("parallel_extraction",
-                                                 base.get("parallel", {}).get("enabled", True)),
-                "num_gpus": base.get("parallel", {}).get("num_gpus", 8),
-                "batch_size": base.get("parallel", {}).get("batch_size", 20),
-                "batch_download": True
-            }
-        elif agent_name == "data_cleaner":
-            papers_dir = base.get("output_dirs", {}).get("papers", "./data/papers")
-            task = {
-                "parallel": base.get("parallel", {}).get("enabled", False),
-                "num_workers": base.get("parallel", {}).get("num_workers", 8),
-                "output_dir": base.get("output_dirs", {}).get("cleaned", "./data/cleaned"),
-                "data_dir": papers_dir
-            }
-        elif agent_name == "reference_graph_builder":
-            task = {
-                "metadata_path": base.get("metadata_path"),
-                "output_dir": base.get("output_dirs", {}).get("graphs", "./data/graphs"),
-                "parallel": base.get("parallel", {}).get("enabled", True),
-                "num_workers": base.get("parallel", {}).get("num_workers", 8)
-            }
-        elif agent_name == "dataset_formatter":
-            # 优先使用 config 中的 edges_file，否则从 blackboard 读取
-            edges_file = base.get("edges_file", "")
-            if not edges_file:
-                edges_file = self.blackboard.read("graph", "edges_file", "")
-            task = {
-                "dataset_name": base.get("dataset_name",
-                                          f"multimodal_graph_{datetime.now().strftime('%Y%m%d_%H%M%S')}"),
-                "output_format": base.get("output_format", "json"),
-                "output_dir": base.get("output_dirs", {}).get("datasets", "./data/datasets"),
-                "include_metadata": base.get("include_metadata", True),
-                "edges_file": edges_file
-            }
+        # 按领域 + agent 分发
+        task = {}
+        if domain == "arxiv":
+            task = self._build_task_arxiv(agent_name, base)
+        elif domain == "reddit":
+            task = self._build_task_reddit(agent_name, base)
+        elif domain == "amazon":
+            task = self._build_task_amazon(agent_name, base)
+        elif domain == "steam":
+            task = self._build_task_steam(agent_name, base)
+        elif domain == "tmdb":
+            task = self._build_task_tmdb(agent_name, base)
+        elif domain == "wikiart":
+            task = self._build_task_wikiart(agent_name, base)
         else:
             task = base
 
         # LLM的task_overrides不应包含由编排器自动管理的字段
-        protected_keys = {"paper_sources", "output_dir", "metadata_path"}
+        protected_keys = {"paper_sources", "output_dir", "metadata_path",
+                          "posts", "products", "reviews"}
         clean_overrides = {k: v for k, v in overrides.items()
                            if k not in protected_keys}
         if len(clean_overrides) < len(overrides):
@@ -542,6 +753,253 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
         task.update(clean_overrides)
 
         return task
+
+    # ==================== ArXiv 任务构建 ====================
+
+    def _build_task_arxiv(self, agent_name: str, base: Dict) -> Dict:
+        if agent_name == "arxiv_batch_downloader":
+            return self._build_task_arxiv_downloader(base)
+        elif agent_name == "paper_collector":
+            return self._build_task_paper_collector(base)
+        elif agent_name == "data_cleaner":
+            return self._build_task_data_cleaner(base)
+        elif agent_name == "reference_graph_builder":
+            return self._build_task_ref_graph(base)
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base)
+        return base
+
+    def _build_task_arxiv_downloader(self, base: Dict) -> Dict:
+        return {
+            "metadata_path": base.get("metadata_path"),
+            "category": base.get("category", "cs.AI"),
+            "limit": base.get("limit", 20),
+            "output_dir": base.get("output_dirs", {}).get("papers", "./data/papers"),
+            "sort_by_date": base.get("sort_by_date", True),
+            "paper_sources": base.get("paper_sources", [])
+        }
+
+    def _build_task_paper_collector(self, base: Dict) -> Dict:
+        paper_sources = self.blackboard.read("downloader", "paper_sources", [])
+        if not paper_sources:
+            paper_sources = base.get("paper_sources", [])
+        return {
+            "paper_sources": paper_sources,
+            "output_dir": base.get("output_dirs", {}).get("papers", "./data/papers"),
+            "extract_multimodal": base.get("extract_multimodal", True),
+            "device": base.get("device", "cuda:0"),
+            "parallel_extraction": base.get("parallel_extraction",
+                                             base.get("parallel", {}).get("enabled", True)),
+            "num_gpus": base.get("parallel", {}).get("num_gpus", 8),
+            "batch_size": base.get("parallel", {}).get("batch_size", 20),
+            "batch_download": True
+        }
+
+    def _build_task_data_cleaner(self, base: Dict) -> Dict:
+        domain = base.get("domain", "arxiv")
+        if domain == "arxiv":
+            data_dir = base.get("output_dirs", {}).get("papers", "./data/papers")
+        elif domain == "reddit":
+            data_dir = base.get("output_dirs", {}).get("raw", "./data/reddit_raw")
+        elif domain == "amazon":
+            data_dir = base.get("output_dirs", {}).get("raw", "./data/amazon_raw")
+        elif domain in ("steam", "tmdb", "wikiart"):
+            data_dir = base.get("output_dirs", {}).get("raw", f"./data/{domain}_raw")
+        else:
+            data_dir = base.get("output_dirs", {}).get("papers", "./data/papers")
+
+        return {
+            "domain": domain,
+            "parallel": base.get("parallel", {}).get("enabled", False),
+            "num_workers": base.get("parallel", {}).get("num_workers", 8),
+            "output_dir": base.get("output_dirs", {}).get("cleaned", "./data/cleaned"),
+            "data_dir": data_dir
+        }
+
+    def _build_task_ref_graph(self, base: Dict) -> Dict:
+        return {
+            "metadata_path": base.get("metadata_path"),
+            "output_dir": base.get("output_dirs", {}).get("graphs", "./data/graphs"),
+            "parallel": base.get("parallel", {}).get("enabled", True),
+            "num_workers": base.get("parallel", {}).get("num_workers", 8)
+        }
+
+    def _build_task_dataset_formatter(self, base: Dict) -> Dict:
+        domain = base.get("domain", "arxiv")
+        edges_file = base.get("edges_file", "")
+
+        # 按领域从不同 blackboard 命名空间读取
+        if domain == "arxiv" and not edges_file:
+            edges_file = self.blackboard.read("graph", "edges_file", "")
+        elif domain in ("reddit", "amazon", "steam", "tmdb", "wikiart"):
+            edges_file = ""  # 非arxiv域从各自 graph 命名空间读取
+
+        return {
+            "domain": domain,
+            "graph_mode": base.get("graph_mode", "heterogeneous"),
+            "dataset_name": base.get("dataset_name",
+                                      f"multimodal_graph_{domain}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"),
+            "output_format": base.get("output_format", "json"),
+            "output_dir": base.get("output_dirs", {}).get("datasets", "./data/datasets"),
+            "include_metadata": base.get("include_metadata", True),
+            "edges_file": edges_file,
+        }
+
+    # ==================== Reddit 任务构建 ====================
+
+    def _build_task_reddit(self, agent_name: str, base: Dict) -> Dict:
+        common = {
+            "domain": "reddit",
+            "graph_mode": base.get("graph_mode", "heterogeneous"),
+            "data_source": base.get("data_source", "api"),
+            "load_from_files": base.get("load_from_files", False),
+        }
+        base_with_domain = {**base, **common}
+
+        if agent_name == "subreddit_collector":
+            return {
+                **common,
+                "subreddits": base.get("subreddits", []),
+                "posts_per_subreddit": base.get("posts_per_subreddit", 100),
+                "sort": base.get("sort", "hot"),
+                "time_filter": base.get("time_filter", "year"),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "post_collector":
+            return {
+                **common,
+                "comments_per_post": base.get("comments_per_post", 25),
+                "comment_depth": base.get("comment_depth", 3),
+                "max_user_profiles": base.get("max_user_profiles", 500),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "data_cleaner":
+            return self._build_task_data_cleaner(base_with_domain)
+        elif agent_name == "social_graph_builder":
+            return {
+                **common,
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base_with_domain)
+        return base
+
+    # ==================== Amazon 任务构建 ====================
+
+    def _build_task_amazon(self, agent_name: str, base: Dict) -> Dict:
+        common = {"domain": "amazon", "graph_mode": base.get("graph_mode", "heterogeneous")}
+        base_with_domain = {**base, **common}
+
+        if agent_name == "product_collector":
+            return {
+                **common,
+                "categories": base.get("categories", []),
+                "products_per_category": base.get("products_per_category", 5000),
+                "require_images": base.get("require_images", True),
+                "require_description": base.get("require_description", False),
+                "max_products": base.get("max_products", None),
+                "max_images_per_product": base.get("max_images_per_product", 3),
+                "metadata_path": base.get("metadata_path", None),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "review_collector":
+            return {
+                **common,
+                "categories": base.get("categories", []),
+                "reviews_per_product": base.get("reviews_per_product", 10),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "data_cleaner":
+            return self._build_task_data_cleaner(base_with_domain)
+        elif agent_name == "product_graph_builder":
+            return {
+                **common,
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base_with_domain)
+        return base
+
+    # ==================== Steam 任务构建 ====================
+
+    def _build_task_steam(self, agent_name: str, base: Dict) -> Dict:
+        common = {
+            "domain": "steam",
+            "graph_mode": base.get("graph_mode", "homogeneous"),
+            "data_source": base.get("data_source", "file"),
+            "load_from_files": base.get("load_from_files", True),
+        }
+        base_with_domain = {**base, **common}
+
+        if agent_name == "steam_game_collector":
+            return {
+                **common,
+                "max_games": base.get("max_games", 10000),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "steam_game_graph_builder":
+            return {
+                **common,
+                "graph_opts": base.get("graph_opts", {}),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base_with_domain)
+        return base
+
+    # ==================== TMDb 任务构建 ====================
+
+    def _build_task_tmdb(self, agent_name: str, base: Dict) -> Dict:
+        common = {
+            "domain": "tmdb",
+            "graph_mode": base.get("graph_mode", "homogeneous"),
+            "data_source": base.get("data_source", "file"),
+            "load_from_files": base.get("load_from_files", True),
+        }
+        base_with_domain = {**base, **common}
+
+        if agent_name == "tmdb_movie_collector":
+            return {
+                **common,
+                "max_movies": base.get("max_movies", 13000),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "tmdb_movie_graph_builder":
+            return {
+                **common,
+                "graph_opts": base.get("graph_opts", {}),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base_with_domain)
+        return base
+
+    # ==================== WikiArt 任务构建 ====================
+
+    def _build_task_wikiart(self, agent_name: str, base: Dict) -> Dict:
+        common = {
+            "domain": "wikiart",
+            "graph_mode": base.get("graph_mode", "homogeneous"),
+            "data_source": base.get("data_source", "file"),
+            "load_from_files": base.get("load_from_files", True),
+        }
+        base_with_domain = {**base, **common}
+
+        if agent_name == "wikiart_artwork_collector":
+            return {
+                **common,
+                "max_artworks": base.get("max_artworks", 22000),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "wikiart_artwork_graph_builder":
+            return {
+                **common,
+                "graph_opts": base.get("graph_opts", {}),
+                "output_dirs": base.get("output_dirs", {}),
+            }
+        elif agent_name == "dataset_formatter":
+            return self._build_task_dataset_formatter(base_with_domain)
+        return base
 
     def _get_upstream_data(self, completed: List[str]) -> Optional[Dict]:
         """从blackboard构建上游数据"""
@@ -566,40 +1024,60 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
         return upstream
 
     def _should_continue(self, failed: List[str], completed: List[str]) -> bool:
-        """LLM决定是否在Agent失败后继续"""
-        # 简单规则：关键Agent失败则终止
-        critical_agents = {"arxiv_batch_downloader", "paper_collector"}
-        if any(f in critical_agents for f in failed):
-            return False
+        """判断Agent失败后是否继续 — 按领域获取关键Agent列表"""
+        domain = self.blackboard.read("global", "task_config", {}).get("domain", "arxiv")
+        domain_cfg = DOMAIN_CONFIGS.get(domain, DOMAIN_CONFIGS["arxiv"])
+        critical = domain_cfg.critical_agents
 
-        # 非关键Agent（如reference_graph_builder）失败可以继续
+        if any(f in critical for f in failed):
+            return False
         return True
 
     def _build_final_output(self, pipeline_result: Dict, task_config: Dict):
-        """构建最终输出"""
+        """构建最终输出 — 按领域聚合"""
         stages = pipeline_result.get("stages", {})
+        domain = task_config.get("domain", "arxiv")
 
-        collector_result = stages.get("paper_collector", {})
-        graph_result = stages.get("reference_graph_builder", {})
+        if domain == "reddit":
+            collector_result = stages.get("subreddit_collector", {})
+            graph_result = stages.get("social_graph_builder", {})
+        elif domain == "amazon":
+            collector_result = stages.get("product_collector", {})
+            graph_result = stages.get("product_graph_builder", {})
+        elif domain == "steam":
+            collector_result = stages.get("steam_game_collector", {})
+            graph_result = stages.get("steam_game_graph_builder", {})
+        elif domain == "tmdb":
+            collector_result = stages.get("tmdb_movie_collector", {})
+            graph_result = stages.get("tmdb_movie_graph_builder", {})
+        elif domain == "wikiart":
+            collector_result = stages.get("wikiart_artwork_collector", {})
+            graph_result = stages.get("wikiart_artwork_graph_builder", {})
+        else:
+            collector_result = stages.get("paper_collector", {})
+            graph_result = stages.get("reference_graph_builder", {})
+
         formatter_result = stages.get("dataset_formatter", {})
 
+        # node_count: 优先用 formatter stats (对所有域都准确); 缺失时回退旧逻辑
+        fmt_stats = formatter_result.get("stats", {})
+        node_count = (fmt_stats.get("node_count")
+                      if fmt_stats else len(collector_result.get('papers', [])))
+
         pipeline_result["final_output"] = {
+            "domain": domain,
             "dataset_path": formatter_result.get("output_path", ""),
             "nodes_path": formatter_result.get("output_path", ""),
-            "edges_path": graph_result.get("edges_file", ""),
-            "node_count": len(collector_result.get('papers', [])),
-            "edge_count": graph_result.get("edge_count", 0),
-            "modality_distribution": formatter_result.get("stats", {}).get(
+            "edges_path": graph_result.get("edges_file", "") or graph_result.get("edge_file", ""),
+            "node_count": node_count,
+            "edge_count": graph_result.get("edge_count", 0) or graph_result.get("total_edges", 0),
+            "modality_distribution": fmt_stats.get(
                 "modality_distribution", {}
             )
         }
 
     def _agent_namespace(self, agent_name: str) -> str:
-        name_map = {
-            "arxiv_batch_downloader": "downloader",
-            "paper_collector": "collector",
-            "data_cleaner": "cleaner",
-            "reference_graph_builder": "graph",
-            "dataset_formatter": "formatter",
-        }
-        return name_map.get(agent_name, agent_name)
+        """获取 agent 的 blackboard 命名空间 — 支持多领域"""
+        domain = self.blackboard.read("global", "task_config", {}).get("domain", "arxiv")
+        domain_cfg = DOMAIN_CONFIGS.get(domain, DOMAIN_CONFIGS["arxiv"])
+        return domain_cfg.namespace_map.get(agent_name, agent_name)

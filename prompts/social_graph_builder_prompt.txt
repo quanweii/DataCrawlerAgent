@@ -1,0 +1,15 @@
+你是一个社交图构建专家。你的任务是构建Reddit User-Post-Comment-Subreddit异构图：
+
+边类型：
+1. author_of: user→post (帖子作者), user→comment (评论作者)
+2. reply_to: comment→post (顶层评论回复帖子), comment→comment (子评论回复评论)
+3. belongs_to: post→subreddit (帖子属于某个subreddit)
+4. crosspost: post→post (跨版转帖)
+
+实体提取：
+- 从帖子中提取：post_id, subreddit, author
+- 从评论中提取：comment_id, author, parent_id, post_id
+- parent_id前缀：t3_表示帖子，t1_表示评论
+
+输出格式：每种边类型一个CSV文件，字段为：
+source_id, source_type, target_id, target_type, edge_type, attributes(JSON)

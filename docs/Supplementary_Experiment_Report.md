@@ -1,5 +1,7 @@
 # OpenMAG Benchmark 补充实验报告
 
+> ⚠️ **更新提示（2026-06-14）**：本报告 P0 的链接预测结果早于去饱和修复（同域负采样 + neg_ratio=10），已过时。最新的**去饱和链接预测消融（9 模型×7 模态）及全部 Benchmark 实验的统一整合**见 **[AMMAG_Benchmark_完整实验报告.md](AMMAG_Benchmark_完整实验报告.md)**。本报告保留其独有的 MLLM 模型、模态对齐（CKA/CCA）、跨数据集（Cora）等补充实验记录。
+
 > **补充日期**：2026-05-17
 > **关联报告**：`OpenMAG_Benchmark_Report.md`（原版 20 组实验）
 > **实验环境**：8×NVIDIA RTX 4090, Python 3.9, PyTorch 2.8, PyG 2.6.1

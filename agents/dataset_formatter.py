@@ -3,6 +3,7 @@
 将数据封装成多模态属性图数据集，支持LLM驱动的迭代决策
 """
 from typing import Dict, Any, Optional, List
+from collections import defaultdict
 from openai import OpenAI
 from loguru import logger
 import os
@@ -127,7 +128,20 @@ class DatasetFormatterAgent(ReActAgent):
     # ==================== 行动方法 ====================
 
     def action_collect_data(self, task: Dict, upstream_data=None) -> Dict:
-        """从blackboard或上游数据收集数据"""
+        """从blackboard或上游数据收集数据 — 支持多领域"""
+        domain = task.get("domain", "arxiv")
+
+        if domain == "reddit":
+            return self._collect_data_reddit(task)
+        elif domain == "amazon":
+            return self._collect_data_amazon(task)
+        elif domain in ("steam", "tmdb", "wikiart"):
+            return self._collect_data_bundle(domain, task)
+        else:
+            return self._collect_data_arxiv(task, upstream_data)
+
+    def _collect_data_arxiv(self, task: Dict, upstream_data=None) -> Dict:
+        """ArXiv 数据收集（原有逻辑）"""
         cleaned_papers = []
         cleaned_multimodal = []
         edges_file = task.get("edges_file", "")
@@ -156,7 +170,6 @@ class DatasetFormatterAgent(ReActAgent):
             if "modality" in item:
                 normalized_multimodal.append(item)
             elif "output_folder" in item:
-                # GPU提取结果格式 → 转换
                 normalized_multimodal.append({
                     "modality": "text",
                     "source": item.get("pdf_path", ""),
@@ -177,6 +190,7 @@ class DatasetFormatterAgent(ReActAgent):
                     })
 
         self._formatter_data = {
+            "domain": "arxiv",
             "cleaned_papers": cleaned_papers,
             "cleaned_multimodal": normalized_multimodal,
             "edges_file": edges_file
@@ -189,6 +203,159 @@ class DatasetFormatterAgent(ReActAgent):
             "has_edges_file": bool(edges_file)
         }
 
+    def _collect_data_reddit(self, task: Dict) -> Dict:
+        """Reddit 数据收集"""
+        posts = []
+        comments_map = {}
+        user_metadata = {}
+        subreddits = []
+
+        if self.blackboard:
+            posts = self.blackboard.read("subreddit_collector", "posts", [])
+            comments_map = self.blackboard.read("post_collector", "comments_map", {})
+            user_metadata = self.blackboard.read("post_collector", "user_metadata", {})
+            subreddits = self.blackboard.read("subreddit_collector", "subreddits", [])
+
+        self._formatter_data = {
+            "domain": "reddit",
+            "posts": posts,
+            "comments_map": comments_map,
+            "user_metadata": user_metadata,
+            "subreddits": subreddits,
+        }
+
+        total_comments = sum(len(c) for c in comments_map.values())
+        return {
+            "status": "success",
+            "posts_count": len(posts),
+            "comments_count": total_comments,
+            "users_count": len(user_metadata),
+            "subreddits_count": len(subreddits),
+        }
+
+    def _collect_data_amazon(self, task: Dict) -> Dict:
+        """Amazon 数据收集"""
+        products = {}
+        reviews = {}
+        categories = {}
+        brands = {}
+
+        if self.blackboard:
+            products = self.blackboard.read("product_collector", "products", {})
+            reviews = self.blackboard.read("review_collector", "reviews", {})
+            categories = self.blackboard.read("product_collector", "categories", {})
+            brands = self.blackboard.read("product_collector", "brands", {})
+
+        self._formatter_data = {
+            "domain": "amazon",
+            "products": products,
+            "reviews": reviews,
+            "categories": categories,
+            "brands": brands,
+        }
+
+        total_reviews = sum(len(r) for r in reviews.values())
+        return {
+            "status": "success",
+            "products_count": len(products),
+            "reviews_count": total_reviews,
+            "categories_count": len(categories),
+            "brands_count": len(brands),
+        }
+
+    # ==================== Steam/TMDb/WikiArt 领域 (bundle 透传) ====================
+    # 三域 GraphBuilder 已产出完整 bundle (nodes+edges+stats), formatter 只透传 + 元数据
+
+    _BUNDLE_DOMAIN_CONFIG = {
+        "steam": {
+            "graph_ns": "steam_graph",
+            "node_type": "game", "id_field": "appid",
+            "edge_relations": ["shared_genre", "same_developer", "same_publisher", "shared_category"],
+            "node_attributes": ["appid", "name", "markdown_length", "image_count",
+                                "markdown_size", "label", "label_index"],
+        },
+        "tmdb": {
+            "graph_ns": "tmdb_graph",
+            "node_type": "movie", "id_field": "movie_id",
+            "edge_relations": ["shared_genre", "same_director", "shared_actor"],
+            "node_attributes": ["movie_id", "title", "markdown_length", "image_count",
+                                "markdown_size", "label", "label_index"],
+        },
+        "wikiart": {
+            "graph_ns": "wikiart_graph",
+            "node_type": "artwork", "id_field": "painting_id",
+            "edge_relations": ["same_artist", "shared_style"],
+            "node_attributes": ["painting_id", "title", "markdown_length", "image_count",
+                                "markdown_size", "label", "label_index"],
+        },
+    }
+
+    def _collect_data_bundle(self, domain: str, task: Dict) -> Dict:
+        """从 {domain}_graph 命名空间读取 GraphBuilder 产出的完整 bundle"""
+        cfg = self._BUNDLE_DOMAIN_CONFIG[domain]
+        nodes, edges, stats = [], [], {}
+        if self.blackboard:
+            nodes = self.blackboard.read(cfg["graph_ns"], "nodes", [])
+            edges = self.blackboard.read(cfg["graph_ns"], "edges", [])
+            stats = self.blackboard.read(cfg["graph_ns"], "stats", {})
+        self._formatter_data = {
+            "domain": domain, "nodes": nodes, "edges": edges, "stats": stats,
+        }
+        return {
+            "status": "success",
+            "nodes_count": len(nodes),
+            "edges_count": len(edges),
+            "homophily": stats.get("homophily"),
+        }
+
+    def _build_nodes_bundle(self, data: Dict) -> List[Dict]:
+        """透传 GraphBuilder 已构建的节点 (含 label/label_index)"""
+        nodes = data.get("nodes", [])
+        logger.info(f"[DatasetFormatter] {data.get('domain')} 同构节点: {len(nodes)}")
+        return nodes
+
+    def _build_edges_bundle(self, data: Dict) -> List[Dict]:
+        """透传 GraphBuilder 已构建的边"""
+        edges = data.get("edges", [])
+        logger.info(f"[DatasetFormatter] {data.get('domain')} 同构边: {len(edges)}")
+        return edges
+
+    def _build_metadata_bundle(self, domain: str, dataset_name: str,
+                               nodes: List[Dict], edges: List[Dict]) -> Dict:
+        """v3 风格元数据 (homogeneous, text+image 双模态, label_field)"""
+        cfg = self._BUNDLE_DOMAIN_CONFIG[domain]
+        stats = self._formatter_data.get("stats", {}) if hasattr(self, '_formatter_data') and self._formatter_data else {}
+        n_nodes = len(nodes)
+        total_img = sum(n.get("attributes", {}).get("image_count", 0) for n in nodes)
+        nodes_with_img = sum(1 for n in nodes if n.get("attributes", {}).get("image_count", 0) > 0)
+        total_md = sum(n.get("attributes", {}).get("markdown_length", 0) for n in nodes)
+        return {
+            "name": dataset_name,
+            "domain": domain,
+            "graph_mode": "homogeneous",
+            "created_at": datetime.now().strftime('%Y-%m-%d'),
+            "statistics": {
+                "node_count": n_nodes,
+                "edge_count": len(edges),
+                "total_images": total_img,
+                "nodes_with_images": nodes_with_img,
+                "total_markdown_chars": total_md,
+                "avg_md_length": round(total_md / max(n_nodes, 1)),
+                "avg_degree": stats.get("avg_degree", round(2 * len(edges) / max(n_nodes, 1), 1)),
+                "homophily": stats.get("homophily", 0),
+                "num_labels": stats.get("num_labels", 0),
+                "label_distribution": stats.get("label_distribution", {}),
+            },
+            "schema": {
+                "node_types": [cfg["node_type"]],
+                "edge_types": ["co_attribute"],
+                "node_attributes": cfg["node_attributes"],
+                "edge_relations": cfg["edge_relations"],
+                "modalities": ["text", "image"],
+                "label_field": "label",
+            },
+        }
+
     def action_build_nodes(self) -> Dict:
         existing = self._accumulated_results.get("nodes", [])
         if existing:
@@ -196,10 +363,19 @@ class DatasetFormatterAgent(ReActAgent):
                     "message": f"节点已构建({len(existing)}个)，跳过重复构建"}
 
         data = self._ensure_collected()
-        papers = data.get("cleaned_papers", [])
-        multimodal = data.get("cleaned_multimodal", [])
+        domain = data.get("domain", "arxiv")
 
-        nodes = self._build_nodes(papers, multimodal)
+        if domain == "reddit":
+            nodes = self._build_nodes_reddit(data)
+        elif domain == "amazon":
+            nodes = self._build_nodes_amazon(data)
+        elif domain in ("steam", "tmdb", "wikiart"):
+            nodes = self._build_nodes_bundle(data)
+        else:
+            nodes = self._build_nodes(
+                data.get("cleaned_papers", []),
+                data.get("cleaned_multimodal", [])
+            )
 
         if self.blackboard:
             self.blackboard.write("formatter", "nodes", nodes)
@@ -214,11 +390,20 @@ class DatasetFormatterAgent(ReActAgent):
                     "message": f"边已构建({len(existing)}条)，跳过重复构建"}
 
         data = self._ensure_collected()
-        papers = data.get("cleaned_papers", [])
-        multimodal = data.get("cleaned_multimodal", [])
-        nodes = self._accumulated_results.get("nodes", [])
+        domain = data.get("domain", "arxiv")
 
-        edges = self._build_edges(nodes, papers, multimodal)
+        if domain == "reddit":
+            edges = self._build_edges_reddit(data)
+        elif domain == "amazon":
+            edges = self._build_edges_amazon(data)
+        elif domain in ("steam", "tmdb", "wikiart"):
+            edges = self._build_edges_bundle(data)
+        else:
+            edges = self._build_edges(
+                self._accumulated_results.get("nodes", []),
+                data.get("cleaned_papers", []),
+                data.get("cleaned_multimodal", [])
+            )
 
         if self.blackboard:
             self.blackboard.write("formatter", "edges", edges)
@@ -613,6 +798,29 @@ class DatasetFormatterAgent(ReActAgent):
     def _build_metadata(self, dataset_name: str, nodes: List[Dict], edges: List[Dict]) -> Dict:
         node_count = len(nodes)
         edge_count = len(edges)
+
+        domain = "arxiv"
+        if hasattr(self, '_formatter_data') and self._formatter_data:
+            domain = self._formatter_data.get("domain", "arxiv")
+
+        if domain == "reddit":
+            return self._build_metadata_reddit(dataset_name, nodes, edges)
+        elif domain == "amazon":
+            return self._build_metadata_amazon(dataset_name, nodes, edges)
+        elif domain in ("steam", "tmdb", "wikiart"):
+            return self._build_metadata_bundle(domain, dataset_name, nodes, edges)
+        else:
+            return self._build_metadata_arxiv(dataset_name, nodes, edges)
+
+    def _get_graph_mode(self) -> str:
+        """获取当前 graph_mode"""
+        if hasattr(self, '_current_task') and self._current_task:
+            return self._current_task.get("graph_mode", "heterogeneous")
+        return "heterogeneous"
+
+    def _build_metadata_arxiv(self, dataset_name: str, nodes: List[Dict], edges: List[Dict]) -> Dict:
+        node_count = len(nodes)
+        edge_count = len(edges)
         total_images = sum(n.get("attributes", {}).get("image_count", 0) for n in nodes)
         total_md_chars = sum(n.get("attributes", {}).get("markdown_length", 0) for n in nodes)
 
@@ -620,6 +828,7 @@ class DatasetFormatterAgent(ReActAgent):
 
         return {
             "name": dataset_name,
+            "domain": "arxiv",
             "created_at": datetime.now().strftime('%Y-%m-%d'),
             "category": category,
             "statistics": {
@@ -638,6 +847,94 @@ class DatasetFormatterAgent(ReActAgent):
             }
         }
 
+    def _build_metadata_reddit(self, dataset_name: str, nodes: List[Dict], edges: List[Dict]) -> Dict:
+        node_count = len(nodes)
+        edge_count = len(edges)
+        graph_mode = self._get_graph_mode()
+
+        # 按类型统计节点
+        node_type_dist = {}
+        for n in nodes:
+            ntype = n.get("type", "unknown")
+            node_type_dist[ntype] = node_type_dist.get(ntype, 0) + 1
+
+        # 按类型统计边
+        edge_type_dist = {}
+        for e in edges:
+            etype = e.get("type", "unknown")
+            edge_type_dist[etype] = edge_type_dist.get(etype, 0) + 1
+
+        if graph_mode == "homogeneous":
+            schema = {
+                "node_types": ["post"],
+                "edge_types": ["co_comment"],
+                "modalities": ["text", "image"],
+                "label_field": "subreddit",
+            }
+        else:
+            schema = {
+                "node_types": ["user", "post", "comment", "subreddit"],
+                "edge_types": ["author_of", "reply_to", "belongs_to", "crosspost"],
+                "modalities": ["text", "image", "metadata"],
+            }
+
+        return {
+            "name": dataset_name,
+            "domain": "reddit",
+            "graph_mode": graph_mode,
+            "created_at": datetime.now().strftime('%Y-%m-%d'),
+            "statistics": {
+                "node_count": node_count,
+                "edge_count": edge_count,
+                "node_type_distribution": node_type_dist,
+                "edge_type_distribution": edge_type_dist,
+            },
+            "schema": schema,
+        }
+
+    def _build_metadata_amazon(self, dataset_name: str, nodes: List[Dict], edges: List[Dict]) -> Dict:
+        node_count = len(nodes)
+        edge_count = len(edges)
+        graph_mode = self._get_graph_mode()
+
+        node_type_dist = {}
+        for n in nodes:
+            ntype = n.get("type", "unknown")
+            node_type_dist[ntype] = node_type_dist.get(ntype, 0) + 1
+
+        edge_type_dist = {}
+        for e in edges:
+            etype = e.get("type", "unknown")
+            edge_type_dist[etype] = edge_type_dist.get(etype, 0) + 1
+
+        if graph_mode == "homogeneous":
+            schema = {
+                "node_types": ["product"],
+                "edge_types": ["co_purchase"],
+                "modalities": ["text", "image"],
+                "label_field": "leaf_category",
+            }
+        else:
+            schema = {
+                "node_types": ["product", "user", "category", "brand"],
+                "edge_types": ["review", "also_bought", "also_viewed", "belongs_to", "made_by"],
+                "modalities": ["text", "image", "price_rating"],
+            }
+
+        return {
+            "name": dataset_name,
+            "domain": "amazon",
+            "graph_mode": graph_mode,
+            "created_at": datetime.now().strftime('%Y-%m-%d'),
+            "statistics": {
+                "node_count": node_count,
+                "edge_count": edge_count,
+                "node_type_distribution": node_type_dist,
+                "edge_type_distribution": edge_type_dist,
+            },
+            "schema": schema,
+        }
+
     def _generate_dataset_description(self, results: Dict) -> str:
         prompt = f"""请根据以下信息生成数据集说明：
 数据集名称: {results.get('dataset_name', '')}
@@ -649,3 +946,610 @@ class DatasetFormatterAgent(ReActAgent):
 
     def get_formatted_dataset(self) -> Dict:
         return self.formatted_dataset
+
+    # ==================== Reddit 领域构建方法 ====================
+
+    def _build_nodes_reddit(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 图节点 — 支持 homogeneous/heterogeneous 双模"""
+        graph_mode = self._get_graph_mode()
+
+        if graph_mode == "homogeneous":
+            return self._build_nodes_reddit_homogeneous(data)
+        else:
+            return self._build_nodes_reddit_heterogeneous(data)
+
+    def _build_nodes_reddit_homogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 同构图节点：只有 post"""
+        nodes = []
+        seen_ids = set()
+        posts = data.get("posts", [])
+
+        for post in posts:
+            node_id = f"post_{post['post_id']}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                nodes.append({
+                    "id": node_id,
+                    "type": "post",
+                    "attributes": {
+                        "post_id": post["post_id"],
+                        "title": post.get("title", ""),
+                        "text_length": post.get("text_length", 0),
+                        "score": post.get("score", 0),
+                        "upvote_ratio": post.get("upvote_ratio", 0),
+                        "num_comments": post.get("num_comments", 0),
+                        "has_image": post.get("has_image", False),
+                        "created_utc": post.get("created_utc", 0),
+                        "subreddit": post.get("subreddit", ""),  # label
+                    }
+                })
+
+        logger.info(
+            f"[DatasetFormatter] Reddit 同构节点: {len(nodes)} (post only)"
+        )
+        return nodes
+
+    def _build_nodes_reddit_heterogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 异构图节点：user, post, comment, subreddit"""
+        nodes = []
+        seen_ids = set()
+
+        posts = data.get("posts", [])
+        comments_map = data.get("comments_map", {})
+        user_metadata = data.get("user_metadata", {})
+        subreddits = data.get("subreddits", [])
+
+        # Subreddit 节点
+        for sub in subreddits:
+            node_id = f"subreddit_{sub.get('name', '')}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                nodes.append({
+                    "id": node_id,
+                    "type": "subreddit",
+                    "attributes": {
+                        "name": sub.get("name", ""),
+                        "subscribers": sub.get("subscribers", 0),
+                        "description_length": sub.get("description_length", 0),
+                    }
+                })
+
+        # 也从帖子中收集 subreddit（如果 subreddits 列表为空）
+        for post in posts:
+            sub_name = post.get("subreddit", "")
+            if sub_name:
+                node_id = f"subreddit_{sub_name}"
+                if node_id not in seen_ids:
+                    seen_ids.add(node_id)
+                    nodes.append({
+                        "id": node_id,
+                        "type": "subreddit",
+                        "attributes": {
+                            "name": sub_name,
+                            "subscribers": 0,
+                            "description_length": 0,
+                        }
+                    })
+
+        # Post 节点 — 多模态属性：文本(title + selftext) + 图片URL + 数值(score)
+        for post in posts:
+            node_id = f"post_{post['post_id']}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                post_attrs = {
+                    "title": post.get("title", ""),
+                    "selftext": post.get("selftext", ""),
+                    "title_length": post.get("title_length", len(post.get("title", ""))),
+                    "text_length": post.get("text_length", 0),
+                    "score": post.get("score", 0),
+                    "upvote_ratio": post.get("upvote_ratio", 0),
+                    "num_comments": post.get("num_comments", 0),
+                    "has_image": post.get("has_image", False),
+                    "image_count": post.get("image_count", 0),
+                    "created_utc": post.get("created_utc", 0),
+                    "link_flair_text": post.get("link_flair_text", ""),
+                    "subreddit": post.get("subreddit", ""),
+                }
+                # 图片URL（多模态关键属性）
+                if post.get("url"):
+                    post_attrs["url"] = post["url"]
+                if post.get("thumbnail") and post["thumbnail"].startswith("http"):
+                    post_attrs["thumbnail"] = post["thumbnail"]
+
+                nodes.append({
+                    "id": node_id,
+                    "type": "post",
+                    "attributes": post_attrs,
+                })
+
+        # Comment 节点 — 文本属性
+        for post_id, comments in comments_map.items():
+            for comment in comments:
+                node_id = f"comment_{comment['comment_id']}"
+                if node_id not in seen_ids:
+                    seen_ids.add(node_id)
+                    nodes.append({
+                        "id": node_id,
+                        "type": "comment",
+                        "attributes": {
+                            "body": comment.get("body", ""),
+                            "text_length": comment.get("body_length", 0),
+                            "score": comment.get("score", 0),
+                            "is_submitter": comment.get("is_submitter", False),
+                            "created_utc": comment.get("created_utc", 0),
+                            "depth": comment.get("depth", 0),
+                        }
+                    })
+
+        # User 节点
+        all_users = set()
+        for post in posts:
+            author = post.get("author", "")
+            if author and author not in ("[deleted]", "[removed]"):
+                all_users.add(author)
+        for comments in comments_map.values():
+            for comment in comments:
+                author = comment.get("author", "")
+                if author and author not in ("[deleted]", "[removed]"):
+                    all_users.add(author)
+
+        for username in all_users:
+            node_id = f"user_{username}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                meta = user_metadata.get(username, {})
+                nodes.append({
+                    "id": node_id,
+                    "type": "user",
+                    "attributes": {
+                        "username": username,
+                        "karma": meta.get("total_karma", 0),
+                        "link_karma": meta.get("link_karma", 0),
+                        "comment_karma": meta.get("comment_karma", 0),
+                        "account_age_days": meta.get("account_age_days", 0),
+                        "is_verified": meta.get("is_verified", False),
+                    }
+                })
+
+        logger.info(
+            f"[DatasetFormatter] Reddit 节点: {len(nodes)} "
+            f"(types: {self._count_node_types(nodes)})"
+        )
+        return nodes
+
+    def _build_edges_reddit(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 图边 — 支持 homogeneous/heterogeneous 双模"""
+        graph_mode = self._get_graph_mode()
+
+        if graph_mode == "homogeneous":
+            return self._build_edges_reddit_homogeneous(data)
+        else:
+            return self._build_edges_reddit_heterogeneous(data)
+
+    def _build_edges_reddit_homogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 同构图边：co-commenting (MAGB兼容)"""
+        edges = []
+        posts = data.get("posts", [])
+        comments_map = data.get("comments_map", {})
+
+        # 构建 user → set(post_ids) 映射
+        user_to_posts = defaultdict(set)
+        for post in posts:
+            author = post.get("author", "")
+            if author and author not in ("[deleted]", "[removed]"):
+                user_to_posts[author].add(post["post_id"])
+
+        for post_id, comments in comments_map.items():
+            for comment in comments:
+                author = comment.get("author", "")
+                if author and author not in ("[deleted]", "[removed]"):
+                    user_to_posts[author].add(post_id)
+
+        # 对每个参与 >=2 帖子的用户，生成帖子对的无向边
+        from itertools import combinations
+        edge_set = set()
+        for user, post_ids in user_to_posts.items():
+            if len(post_ids) < 2:
+                continue
+            for p1, p2 in combinations(sorted(post_ids), 2):
+                edge_key = frozenset([p1, p2])
+                if edge_key not in edge_set:
+                    edge_set.add(edge_key)
+                    edges.append({
+                        "source": f"post_{p1}",
+                        "target": f"post_{p2}",
+                        "type": "co_comment",
+                        "attributes": {}
+                    })
+                    edges.append({
+                        "source": f"post_{p2}",
+                        "target": f"post_{p1}",
+                        "type": "co_comment",
+                        "attributes": {}
+                    })
+
+        logger.info(
+            f"[DatasetFormatter] Reddit 同构边: {len(edges)} "
+            f"({len(edges) // 2} 无向 co_comment 边)"
+        )
+        return edges
+
+    def _build_edges_reddit_heterogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Reddit 异构图边"""
+        edges = []
+        posts = data.get("posts", [])
+        comments_map = data.get("comments_map", {})
+        post_ids = {p["post_id"] for p in posts}
+
+        # author_of: user→post
+        for post in posts:
+            author = post.get("author", "")
+            if author and author not in ("[deleted]", "[removed]"):
+                edges.append({
+                    "source": f"user_{author}",
+                    "target": f"post_{post['post_id']}",
+                    "type": "author_of",
+                    "attributes": {"created_utc": post.get("created_utc", 0)}
+                })
+
+        # author_of: user→comment + reply_to: comment→post/comment
+        for post_id, comments in comments_map.items():
+            for comment in comments:
+                author = comment.get("author", "")
+                if author and author not in ("[deleted]", "[removed]"):
+                    edges.append({
+                        "source": f"user_{author}",
+                        "target": f"comment_{comment['comment_id']}",
+                        "type": "author_of",
+                        "attributes": {"created_utc": comment.get("created_utc", 0)}
+                    })
+
+                parent_id = comment.get("parent_id", "")
+                if parent_id.startswith("t3_"):
+                    edges.append({
+                        "source": f"comment_{comment['comment_id']}",
+                        "target": f"post_{parent_id[3:]}",
+                        "type": "reply_to",
+                        "attributes": {"depth": comment.get("depth", 0)}
+                    })
+                elif parent_id.startswith("t1_"):
+                    edges.append({
+                        "source": f"comment_{comment['comment_id']}",
+                        "target": f"comment_{parent_id[3:]}",
+                        "type": "reply_to",
+                        "attributes": {"depth": comment.get("depth", 0)}
+                    })
+
+        # belongs_to: post→subreddit
+        for post in posts:
+            subreddit = post.get("subreddit", "")
+            if subreddit:
+                edges.append({
+                    "source": f"post_{post['post_id']}",
+                    "target": f"subreddit_{subreddit}",
+                    "type": "belongs_to",
+                    "attributes": {}
+                })
+
+        # crosspost: post→post
+        for post in posts:
+            crosspost_parent = post.get("crosspost_parent", "")
+            if crosspost_parent:
+                parent_id = crosspost_parent.replace("t3_", "")
+                if parent_id in post_ids:
+                    edges.append({
+                        "source": f"post_{post['post_id']}",
+                        "target": f"post_{parent_id}",
+                        "type": "crosspost",
+                        "attributes": {"original_subreddit": post.get("subreddit", "")}
+                    })
+
+        edge_type_counts = {}
+        for e in edges:
+            etype = e.get("type", "")
+            edge_type_counts[etype] = edge_type_counts.get(etype, 0) + 1
+
+        logger.info(
+            f"[DatasetFormatter] Reddit 边: {len(edges)} ({edge_type_counts})"
+        )
+        return edges
+
+    # ==================== Amazon 领域构建方法 ====================
+
+    def _build_nodes_amazon(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 图节点 — 支持 homogeneous/heterogeneous 双模"""
+        graph_mode = self._get_graph_mode()
+
+        if graph_mode == "homogeneous":
+            return self._build_nodes_amazon_homogeneous(data)
+        else:
+            return self._build_nodes_amazon_heterogeneous(data)
+
+    def _build_nodes_amazon_homogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 同构图节点：只有 product"""
+        nodes = []
+        seen_ids = set()
+        products = data.get("products", {})
+
+        for asin, meta in products.items():
+            node_id = f"product_{asin}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                # 标签 = 叶品类
+                cat_path = meta.get("category_path", "")
+                leaf_cat = ""
+                if cat_path:
+                    parts = [p.strip() for p in cat_path.split("|") if p.strip()]
+                    if parts:
+                        leaf_cat = parts[-1]
+
+                nodes.append({
+                    "id": node_id,
+                    "type": "product",
+                    "attributes": {
+                        "asin": asin,
+                        "title": meta.get("title", ""),
+                        "title_length": meta.get("title_length", 0),
+                        "price": meta.get("price", 0),
+                        "image_count": meta.get("image_count", 0),
+                        "has_image": bool(meta.get("image_url", "")),
+                        "leaf_category": leaf_cat,  # label
+                        "category_path": cat_path,
+                    }
+                })
+
+        logger.info(
+            f"[DatasetFormatter] Amazon 同构节点: {len(nodes)} (product only)"
+        )
+        return nodes
+
+    def _build_nodes_amazon_heterogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 异构图节点：product, user, category, brand"""
+        nodes = []
+        seen_ids = set()
+
+        products = data.get("products", {})
+        reviews = data.get("reviews", {})
+        categories = data.get("categories", {})
+        brands = data.get("brands", {})
+
+        # Product 节点
+        for asin, meta in products.items():
+            node_id = f"product_{asin}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                # 多模态属性：文本(title + description) + 图片URL + 数值(price) + 类别(brand/category)
+                attrs = {
+                    "asin": asin,
+                    "title": meta.get("title", ""),
+                    "title_length": meta.get("title_length", 0),
+                    "description": meta.get("description", ""),
+                    "description_length": meta.get("description_length", 0),
+                    "has_description": bool(meta.get("description", "")),
+                    "price": meta.get("price", 0),
+                    "brand": meta.get("brand", ""),
+                    "image_count": meta.get("image_count", 0),
+                    "has_image": bool(meta.get("image_url", "")),
+                    "category_path": meta.get("category_path", ""),
+                    "main_cat": meta.get("main_cat", ""),
+                    "leaf_category": meta.get("category_path", "").split("|")[-1].strip() if meta.get("category_path") else "",
+                }
+                # 图片URL（多模态关键属性）
+                if meta.get("image_url"):
+                    attrs["image_url"] = meta["image_url"]
+                if meta.get("image_urls_highres"):
+                    attrs["image_urls_highres"] = meta["image_urls_highres"]
+                elif meta.get("image_urls"):
+                    attrs["image_urls"] = meta["image_urls"]
+
+                nodes.append({
+                    "id": node_id,
+                    "type": "product",
+                    "attributes": attrs,
+                })
+
+        # User 节点（从评论中提取）
+        user_review_counts = {}
+        user_total_rating = {}
+        for review_list in reviews.values():
+            for review in review_list:
+                rid = review.get("reviewer_id", "")
+                if rid:
+                    user_review_counts[rid] = user_review_counts.get(rid, 0) + 1
+                    user_total_rating[rid] = user_total_rating.get(rid, 0) + review.get("rating", 0)
+
+        for rid, count in user_review_counts.items():
+            node_id = f"user_{rid}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                avg_rating = user_total_rating.get(rid, 0) / count if count > 0 else 0
+                nodes.append({
+                    "id": node_id,
+                    "type": "user",
+                    "attributes": {
+                        "reviewer_id": rid,
+                        "review_count": count,
+                        "avg_rating": round(avg_rating, 2),
+                    }
+                })
+
+        # Category 节点
+        for cat_key, cat_info in categories.items():
+            cat_name = cat_info.get("name", cat_key)
+            node_id = f"cat_{cat_name}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                nodes.append({
+                    "id": node_id,
+                    "type": "category",
+                    "attributes": {
+                        "name": cat_name,
+                        "level": cat_info.get("level", 0),
+                        "product_count": cat_info.get("count", 0),
+                    }
+                })
+
+        # Brand 节点
+        for brand_name, brand_info in brands.items():
+            node_id = f"brand_{brand_name}"
+            if node_id not in seen_ids:
+                seen_ids.add(node_id)
+                nodes.append({
+                    "id": node_id,
+                    "type": "brand",
+                    "attributes": {
+                        "name": brand_name,
+                        "product_count": brand_info.get("product_count", 0),
+                    }
+                })
+
+        logger.info(
+            f"[DatasetFormatter] Amazon 节点: {len(nodes)} "
+            f"(types: {self._count_node_types(nodes)})"
+        )
+        return nodes
+
+    def _build_edges_amazon(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 图边 — 支持 homogeneous/heterogeneous 双模"""
+        graph_mode = self._get_graph_mode()
+
+        if graph_mode == "homogeneous":
+            return self._build_edges_amazon_homogeneous(data)
+        else:
+            return self._build_edges_amazon_heterogeneous(data)
+
+    def _build_edges_amazon_homogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 同构图边：co-purchasing (MAGB兼容)"""
+        edges = []
+        products = data.get("products", {})
+        product_asins = set(products.keys())
+
+        edge_set = set()
+        for asin, meta in products.items():
+            # 合并 also_buy + also_view
+            related_all = list(set(
+                meta.get("also_buy", []) + meta.get("also_view", [])
+            ))
+
+            for related in related_all:
+                if related == asin:
+                    continue
+                if related not in product_asins:
+                    continue
+
+                edge_key = tuple(sorted([asin, related]))
+                if edge_key not in edge_set:
+                    edge_set.add(edge_key)
+                    edges.append({
+                        "source": f"product_{asin}",
+                        "target": f"product_{related}",
+                        "type": "co_purchase",
+                        "attributes": {}
+                    })
+                    edges.append({
+                        "source": f"product_{related}",
+                        "target": f"product_{asin}",
+                        "type": "co_purchase",
+                        "attributes": {}
+                    })
+
+        logger.info(
+            f"[DatasetFormatter] Amazon 同构边: {len(edges)} "
+            f"({len(edges) // 2} 无向 co_purchase 边)"
+        )
+        return edges
+
+    def _build_edges_amazon_heterogeneous(self, data: Dict) -> List[Dict]:
+        """构建 Amazon 异构图边"""
+        edges = []
+        products = data.get("products", {})
+        reviews = data.get("reviews", {})
+        product_asins = set(products.keys())
+
+        # review: user→product
+        for asin, review_list in reviews.items():
+            if asin not in product_asins:
+                continue
+            for review in review_list:
+                edges.append({
+                    "source": f"user_{review['reviewer_id']}",
+                    "target": f"product_{asin}",
+                    "type": "review",
+                    "attributes": {
+                        "rating": review.get("rating", 0),
+                        "review_text": review.get("review_text", ""),
+                        "review_text_length": review.get("review_text_length", 0),
+                        "summary": review.get("summary", ""),
+                        "helpful_votes": review.get("helpful_votes", 0),
+                        "verified": review.get("verified", False),
+                        "timestamp": review.get("timestamp", 0),
+                    }
+                })
+
+        # also_bought: product→product
+        for asin, meta in products.items():
+            for related in meta.get("also_buy", []):
+                if related in product_asins:
+                    edges.append({
+                        "source": f"product_{asin}",
+                        "target": f"product_{related}",
+                        "type": "also_bought",
+                        "attributes": {}
+                    })
+
+        # also_viewed: product→product
+        for asin, meta in products.items():
+            for related in meta.get("also_view", []):
+                if related in product_asins:
+                    edges.append({
+                        "source": f"product_{asin}",
+                        "target": f"product_{related}",
+                        "type": "also_viewed",
+                        "attributes": {}
+                    })
+
+        # belongs_to: product→category
+        for asin, meta in products.items():
+            cat_path = meta.get("category_path", "")
+            if cat_path:
+                parts = [p.strip() for p in cat_path.split("|") if p.strip()]
+                if parts:
+                    leaf_cat = parts[-1]
+                    edges.append({
+                        "source": f"product_{asin}",
+                        "target": f"cat_{leaf_cat}",
+                        "type": "belongs_to",
+                        "attributes": {"category_level": len(parts) - 1}
+                    })
+
+        # made_by: product→brand
+        for asin, meta in products.items():
+            brand = meta.get("brand", "")
+            if brand:
+                edges.append({
+                    "source": f"product_{asin}",
+                    "target": f"brand_{brand}",
+                    "type": "made_by",
+                    "attributes": {}
+                })
+
+        edge_type_counts = {}
+        for e in edges:
+            etype = e.get("type", "")
+            edge_type_counts[etype] = edge_type_counts.get(etype, 0) + 1
+
+        logger.info(
+            f"[DatasetFormatter] Amazon 边: {len(edges)} ({edge_type_counts})"
+        )
+        return edges
+
+    # ==================== 辅助方法 ====================
+
+    @staticmethod
+    def _count_node_types(nodes: List[Dict]) -> Dict[str, int]:
+        """统计各类型节点数"""
+        counts = {}
+        for n in nodes:
+            ntype = n.get("type", "unknown")
+            counts[ntype] = counts.get(ntype, 0) + 1
+        return counts

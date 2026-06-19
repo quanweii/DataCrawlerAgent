@@ -52,6 +52,16 @@ data/recent_papers/
 data/*.json
 # Paper directories (very large)
 data/*_papers/
+# Generated per-domain data (raw crawls, graphs, datasets, LP splits — large)
+data/*_raw/
+data/*_games/
+data/*_movies/
+data/*_products/
+data/*_posts/
+data/*_artworks*/
+data/*_datasets/
+data/*_graphs/
+data/*_lp/
 # Benchmark data (exclude large files, track code)
 benchmark/results/
 benchmark/processed/
