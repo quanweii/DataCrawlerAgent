@@ -239,3 +239,24 @@ agent 的 load-bearing 支柱**只有三个**，每个都有诚实约束：
 ### 3 个投稿前 TODO 状态
 ① label 稳健性 ✅过（P5-A）；② 关系召回 🟡仍稀疏（待加"多提议候选"步骤）；③ 端到端建图 ✅过（P5-B amazon）。
 
+
+### §A6.1 P6 关系召回增强（2026-07-21，修 C1 软肋 ②）
+
+**问题**：P4/P5 agent 只提 1-2 个显眼关系（spotify 只 track_artist；amazon 只 same_brand）。双重根因：① LLM 不系统枚举字段；② 严格结构阈值漏稀疏但有效的关系。脚本 `benchmark/path_b/probe_p6_recall.py`。
+
+**修法（诚实分工）**：LLM 发现 label → **确定性宽松枚举**（产生≥少量共享边+非连续+非id+非label 的字段全列候选）→ **LLM 语义 curate**（丢 url/slug/date/freetext 垃圾、命名、保留 *_id 外键）→ **verifier 安全网**（含新增**语义定义性检查**：group_by→label 近函数依赖 **且基数相近** 才判定义性，区分 style_slug≡style(64≈64,重编码=泄露) vs brand→main_cat(1849≫7,相关≠泄露)）。
+
+**结果**：
+| 域 | P4 关系数 → P6 | P6 relations | 去泄露 |
+|---|---|---|---|
+| spotify | 1 → **2** | track_artist, playlist_subgenre | ok |
+| wikiart | 1 → 1 | artist（**style_slug 重编码泄露被语义检查剔除**）| ✅改进 |
+| steam | 3 → 3 | categories, developers, publishers（全召回）| ok |
+| tmdb | 1 → **3** | actors, directors, production_companies | ok |
+| amazon | 1 → **2** | same_brand, shared_category（用户诉求达成）| ok |
+
+**满足用户诉求**：amazon 不止 same_brand(+category)、spotify 不止 track_artist(+subgenre)。
+**额外收益**：语义定义性检查（基数守卫）抓重编码泄露 style_slug——C2 去泄露增强。
+**残留（老实写 limitation）**：稀疏 opaque-id 关系（spotify track_album_id, 181 边, 值是不透明 album 码）仍被 LLM curate 丢——defensible（id-looking），但损失召回。
+
+**TODO ② 状态更新**：🟡→**✅ 大幅改善**（丰富度 1→2-3，接近人写；3/4 域全召回；残留稀疏 opaque-id 关系）。

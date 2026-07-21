@@ -53,7 +53,7 @@
 | 引用匹配（fuzzy OCR） | ❌ 不独有 | **P2: embedding fuzzy 0.778 = LLM 0.778**（廉价代理等价）|
 
 **红线（不可违反）**：① 不声称 LLM 决策 > 规则（greedy=oracle）；② 不声称引用匹配 LLM 独有（P2 embedding 等价）；③ "self-verifying" 改称 **audit-capable pipeline**。
-**软肋（写进 limitation）**：① 关系召回偏稀疏（有效子集，非最优）；② "合理但非最优"的替代 label 不会被 loop 纠（只纠退化/连续的硬错误）。
+**软肋（写进 limitation）**：① 关系召回——已用「宽松枚举 + LLM curate + 语义定义性检查」**大幅改善**（P6：丰富度 1→2-3 关系/域，3/4 域全召回，amazon/spotify 满足"不止一个关系"；残留：稀疏 opaque-id 关系如 spotify track_album_id 仍被丢，defensible）；② "合理但非最优"的替代 label 不会被 loop 纠（只纠退化/连续的硬错误）。
 **诚实核心**：agent 的可靠性来自 **verifier 嵌入 C2 测量**；LLM 贡献发现+编排，verifier 贡献去泄露+纠错兜底。回答 reviewer"拆掉 LLM 会怎样"：label 发现退化（要人写 YAML），去泄露仍由测量保证——端到端自治（含 label 发现）正是 agent 区别于确定性脚本的价值。
 
 ---
