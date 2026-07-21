@@ -124,6 +124,7 @@ DOMAIN_CONFIGS = {
             "steam_game_collector": "加载/爬取Steam游戏元数据(genres/developers/publishers/categories)，确保cs_lo提取目录就绪",
             "steam_game_graph_builder": "构建Steam游戏同构图：小类过滤+密度优化co_attribute边(shared_genre/same_developer/same_publisher/shared_category)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)、节点覆盖——发现缺陷发reprocess_request给上游",
         },
         default_plan_factory="_default_plan_steam",
         critical_agents={"steam_game_collector"},
@@ -131,11 +132,13 @@ DOMAIN_CONFIGS = {
             "steam_game_collector": "_build_task_steam_collector",
             "steam_game_graph_builder": "_build_task_steam_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
+            "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "steam_game_collector": "steam_collector",
             "steam_game_graph_builder": "steam_graph",
             "dataset_formatter": "formatter",
+            "graph_verifier": "verifier",
         },
         graph_mode="homogeneous",
     ),
@@ -145,6 +148,7 @@ DOMAIN_CONFIGS = {
             "tmdb_movie_collector": "加载/爬取TMDb电影元数据(genres/directors/actors)，确保cs_lo提取目录就绪",
             "tmdb_movie_graph_builder": "构建TMDb电影同构图：小类过滤+密度优化co_attribute边(shared_genre/same_director/shared_actor)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)、节点覆盖——发现缺陷发reprocess_request给上游",
         },
         default_plan_factory="_default_plan_tmdb",
         critical_agents={"tmdb_movie_collector"},
@@ -152,11 +156,13 @@ DOMAIN_CONFIGS = {
             "tmdb_movie_collector": "_build_task_tmdb_collector",
             "tmdb_movie_graph_builder": "_build_task_tmdb_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
+            "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "tmdb_movie_collector": "tmdb_collector",
             "tmdb_movie_graph_builder": "tmdb_graph",
             "dataset_formatter": "formatter",
+            "graph_verifier": "verifier",
         },
         graph_mode="homogeneous",
     ),
@@ -166,6 +172,7 @@ DOMAIN_CONFIGS = {
             "wikiart_artwork_collector": "加载/爬取WikiArt画作元数据(style/artist/title)，确保cs_lo提取目录就绪",
             "wikiart_artwork_graph_builder": "构建WikiArt画作同构图：密度优化co_attribute边(same_artist/shared_style)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
+            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)——WikiArt的shared_style边homophily≈1.0是经典泄漏，必须标记并触发reprocess",
         },
         default_plan_factory="_default_plan_wikiart",
         critical_agents={"wikiart_artwork_collector"},
@@ -173,15 +180,22 @@ DOMAIN_CONFIGS = {
             "wikiart_artwork_collector": "_build_task_wikiart_collector",
             "wikiart_artwork_graph_builder": "_build_task_wikiart_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
+            "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "wikiart_artwork_collector": "wikiart_collector",
             "wikiart_artwork_graph_builder": "wikiart_graph",
             "dataset_formatter": "formatter",
+            "graph_verifier": "verifier",
         },
         graph_mode="homogeneous",
     ),
 }
+
+
+def register_domain_config(name: str, config: DomainConfig):
+    """动态注册域配置 (供 YAML 驱动域使用)。线程安全。"""
+    DOMAIN_CONFIGS[name] = config
 
 
 class OrchestratorAgent:
@@ -349,24 +363,29 @@ class OrchestratorAgent:
         return steps
 
     def _default_plan(self, task_config: Dict) -> List[PlanStep]:
-        """默认执行计划 — 按领域分发"""
+        """默认执行计划 -- 按 DomainConfig.default_plan_factory 分发。
+        对于硬编码域: 使用预定义的 factory 方法名。
+        对于 YAML 动态域: 使用 _default_plan_co_attribute。
+        """
         domain = task_config.get("domain", "arxiv")
-
-        if domain == "reddit":
-            return self._default_plan_reddit(task_config)
-        elif domain == "amazon":
-            return self._default_plan_amazon(task_config)
-        elif domain == "steam":
-            return self._default_plan_steam(task_config)
-        elif domain == "tmdb":
-            return self._default_plan_tmdb(task_config)
-        elif domain == "wikiart":
-            return self._default_plan_wikiart(task_config)
-        else:
-            return self._default_plan_arxiv(task_config)
+        domain_cfg = DOMAIN_CONFIGS.get(domain)
+        if domain_cfg:
+            factory_name = domain_cfg.default_plan_factory
+            factory = getattr(self, factory_name, None)
+            if factory:
+                return factory(task_config)
+        # 未知域 / 无 DomainConfig: 回退到 arxiv 计划
+        return self._default_plan_arxiv(task_config)
 
     def _default_plan_arxiv(self, task_config: Dict) -> List[PlanStep]:
         """ArXiv 默认执行计划"""
+        # 统一模式 (A′): 仅跑 formatter, 把 reference_graph_builder 已构造的引用网络
+        # (graph_data.pt) 统一成 newdomain MAG。不爬取、不需要 OAI 快照。
+        if task_config.get("arxiv_unify"):
+            return [
+                PlanStep("dataset_formatter", "统一封装 arxiv MAG",
+                         max_retries=1),
+            ]
         has_paper_sources = bool(task_config.get("paper_sources"))
         has_category = bool(task_config.get("category"))
         has_metadata = bool(task_config.get("metadata_path"))
@@ -451,42 +470,44 @@ class OrchestratorAgent:
 
     def _default_plan_steam(self, task_config: Dict) -> List[PlanStep]:
         """Steam 默认执行计划 (无 cleaner: cs_lo 文本已优质)"""
-        return [
-            PlanStep("steam_game_collector", "加载Steam游戏元数据",
-                     max_retries=1),
-            PlanStep("steam_game_graph_builder", "构建游戏同构图",
-                     depends_on=["steam_game_collector"],
-                     max_retries=1),
-            PlanStep("dataset_formatter", "封装数据集",
-                     depends_on=["steam_game_graph_builder"],
-                     max_retries=1),
-        ]
+        return self._default_plan_co_attribute(task_config)
 
     def _default_plan_tmdb(self, task_config: Dict) -> List[PlanStep]:
         """TMDb 默认执行计划 (无 cleaner)"""
-        return [
-            PlanStep("tmdb_movie_collector", "加载TMDb电影元数据",
-                     max_retries=1),
-            PlanStep("tmdb_movie_graph_builder", "构建电影同构图",
-                     depends_on=["tmdb_movie_collector"],
-                     max_retries=1),
-            PlanStep("dataset_formatter", "封装数据集",
-                     depends_on=["tmdb_movie_graph_builder"],
-                     max_retries=1),
-        ]
+        return self._default_plan_co_attribute(task_config)
 
     def _default_plan_wikiart(self, task_config: Dict) -> List[PlanStep]:
         """WikiArt 默认执行计划 (无 cleaner)"""
-        return [
-            PlanStep("wikiart_artwork_collector", "加载WikiArt画作元数据",
-                     max_retries=1),
-            PlanStep("wikiart_artwork_graph_builder", "构建画作同构图",
-                     depends_on=["wikiart_artwork_collector"],
-                     max_retries=1),
-            PlanStep("dataset_formatter", "封装数据集",
-                     depends_on=["wikiart_artwork_graph_builder"],
-                     max_retries=1),
-        ]
+        return self._default_plan_co_attribute(task_config)
+
+    def _default_plan_co_attribute(self, task_config: Dict) -> List[PlanStep]:
+        """共享 co_attribute 域默认计划 (steam/tmdb/wikiart + YAML 动态域)。
+
+        从 DomainConfig.agents_desc 动态发现 agent 名称, 而非硬编码。
+        计划: collector -> graph_builder -> formatter -> verifier
+        """
+        domain = task_config.get("domain", "")
+        domain_cfg = DOMAIN_CONFIGS.get(domain)
+        if not domain_cfg:
+            return self._default_plan_arxiv(task_config)
+
+        agent_names = list(domain_cfg.agents_desc.keys())
+        collector = next((a for a in agent_names if "collector" in a), None)
+        builder = next((a for a in agent_names if "graph" in a and "builder" in a), None)
+
+        steps = []
+        if collector:
+            steps.append(PlanStep(collector, f"加载{domain}元数据", max_retries=1))
+        if builder:
+            depends = [collector] if collector else []
+            steps.append(PlanStep(builder, f"构建{domain}同构图",
+                                  depends_on=depends, max_retries=1))
+        depends_on = [builder] if builder else ([collector] if collector else [])
+        steps.append(PlanStep("dataset_formatter", "封装数据集",
+                              depends_on=depends_on, max_retries=1))
+        steps.append(PlanStep("graph_verifier", "对抗性校验图质量",
+                              depends_on=["dataset_formatter"], max_retries=1))
+        return steps
 
     def decide_next_agent(self, plan: List[PlanStep],
                           completed: List[str]) -> Optional[PlanStep]:
@@ -668,6 +689,71 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
                         f"[OrchestratorAgent] {step.agent_name} 完成 "
                         f"(迭代: {result.get('iterations', 'N/A')})"
                     )
+
+                    # ---- 多智能体反馈回路 (multi-agent quality loop) ----
+                    # 接住 MessageBus 上的 reprocess_request, 让已完成 agent 重新执行。
+                    # 这是 "multi-agent" 承重的关节: Verifier→Builder 的 reprocess
+                    # 回路使图构建从单次流水线变成对抗性质量闭环。
+                    self._reprocess_count = getattr(self, '_reprocess_count', {})
+                    MAX_REPROCESS_ROUNDS = 2
+                    for src_agent in list(self.message_bus._queues.keys()):
+                        msgs = self.message_bus.receive(src_agent)
+                        for msg in msgs:
+                            if msg.msg_type != "reprocess_request" or msg.priority < 1:
+                                continue
+                            target = msg.recipient
+                            if target not in completed and target not in [
+                                s.agent_name for s in plan if s.status == "pending"
+                            ]:
+                                continue
+                            cnt = self._reprocess_count.get(target, 0)
+                            if cnt >= MAX_REPROCESS_ROUNDS:
+                                logger.warning(
+                                    f"[OrchestratorAgent] {target} 已达 reprocess 上限 "
+                                    f"({cnt}/{MAX_REPROCESS_ROUNDS}), 跳过"
+                                )
+                                continue
+                            self._reprocess_count[target] = cnt + 1
+                            reprocess_step = PlanStep(
+                                agent_name=target,
+                                purpose=f"[Reprocess #{cnt+1}] {msg.content.get('reason', str(msg.content)[:80])}",
+                                depends_on=[src_agent],
+                                max_retries=1,
+                                task_overrides={"reprocess_context": msg.content},
+                            )
+                            plan.append(reprocess_step)
+                            # 级联: 标记 target 的所有下游 completed→pending
+                            def _downstream(agent_name, all_steps, visited=None):
+                                if visited is None:
+                                    visited = set()
+                                if agent_name in visited:
+                                    return set()
+                                visited.add(agent_name)
+                                ds = set()
+                                for s in all_steps:
+                                    if agent_name in s.depends_on:
+                                        ds.add(s.agent_name)
+                                        ds |= _downstream(s.agent_name, all_steps, visited)
+                                return ds
+                            cascade = _downstream(target, plan)
+                            for s in plan:
+                                if s.agent_name in cascade and s.status == "completed":
+                                    s.status = "pending"
+                                    # 从 completed 列表移除 (下游需要重新在 target 之后运行)
+                                    if s.agent_name in completed:
+                                        completed.remove(s.agent_name)
+                                    logger.info(
+                                        f"[OrchestratorAgent] ⟲ Cascade: {s.agent_name} "
+                                        f"→ pending (upstream {target} reprocessed)"
+                                    )
+                            logger.info(
+                                f"[OrchestratorAgent] ⟲ Feedback loop: "
+                                f"{src_agent} → reprocess {target}"
+                                f"(round {cnt+1}/{MAX_REPROCESS_ROUNDS})"
+                                f" + cascade {sorted(cascade)}: "
+                                f"{msg.content.get('reason', '')[:100]}"
+                            )
+                    # ---- 反馈回路结束 ----
                 else:
                     # 检查是否重试
                     if self.should_retry(step, result):
@@ -738,7 +824,25 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
         elif domain == "wikiart":
             task = self._build_task_wikiart(agent_name, base)
         else:
-            task = base
+            # 动态域 (YAML 驱动) — 从 DomainConfig.task_builders 分发
+            dc = DOMAIN_CONFIGS.get(domain)
+            if dc and agent_name in dc.task_builders:
+                builder_name = dc.task_builders[agent_name]
+                common = {
+                    "domain": domain,
+                    "graph_mode": dc.graph_mode,
+                    "data_source": base.get("data_source", "file"),
+                    "load_from_files": base.get("load_from_files", True),
+                }
+                base_with_domain = {**base, **common}
+                # 分发: co_attribute 方法需要 agent_name，共享方法不需要
+                if builder_name in ("_build_task_co_attribute_collector",
+                                     "_build_task_co_attribute_graph"):
+                    task = getattr(self, builder_name)(agent_name, base_with_domain)
+                else:
+                    task = getattr(self, builder_name)(base_with_domain)
+            else:
+                task = base
 
         # LLM的task_overrides不应包含由编排器自动管理的字段
         protected_keys = {"paper_sources", "output_dir", "metadata_path",
@@ -843,6 +947,23 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             "output_dir": base.get("output_dirs", {}).get("datasets", "./data/datasets"),
             "include_metadata": base.get("include_metadata", True),
             "edges_file": edges_file,
+            "arxiv_unify": base.get("arxiv_unify", False),
+            "graph_data_pt": base.get("graph_data_pt"),
+        }
+
+    def _build_task_verifier(self, base: Dict) -> Dict:
+        """Verifier 任务: 从 blackboard 读图, 对抗性校验, 发现缺陷→发 reprocess。"""
+        domain = base.get("domain", "")
+        builder_map = {
+            "steam": "steam_game_graph_builder",
+            "tmdb": "tmdb_movie_graph_builder",
+            "wikiart": "wikiart_artwork_graph_builder",
+            "arxiv": "reference_graph_builder",
+        }
+        return {
+            "domain": domain,
+            "graph_builder_agent": builder_map.get(domain, f"{domain}_graph_builder"),
+            "output_dirs": base.get("output_dirs", {}),
         }
 
     # ==================== Reddit 任务构建 ====================
@@ -945,6 +1066,8 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             }
         elif agent_name == "dataset_formatter":
             return self._build_task_dataset_formatter(base_with_domain)
+        elif agent_name == "graph_verifier":
+            return self._build_task_verifier(base_with_domain)
         return base
 
     # ==================== TMDb 任务构建 ====================
@@ -972,6 +1095,8 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             }
         elif agent_name == "dataset_formatter":
             return self._build_task_dataset_formatter(base_with_domain)
+        elif agent_name == "graph_verifier":
+            return self._build_task_verifier(base_with_domain)
         return base
 
     # ==================== WikiArt 任务构建 ====================
@@ -999,7 +1124,34 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             }
         elif agent_name == "dataset_formatter":
             return self._build_task_dataset_formatter(base_with_domain)
+        elif agent_name == "graph_verifier":
+            return self._build_task_verifier(base_with_domain)
         return base
+
+    def _build_task_co_attribute_collector(self, agent_name: str, base: Dict) -> Dict:
+        """通用 co_attribute collector 任务构建 (YAML 动态域 + steam/tmdb/wikiart)。"""
+        domain = base.get("domain", "")
+        return {
+            "domain": domain,
+            "graph_mode": base.get("graph_mode", "homogeneous"),
+            "data_source": base.get("data_source", "file"),
+            "load_from_files": base.get("load_from_files", True),
+            "max_items": base.get("max_items", 10000),
+            "data_file": base.get("data_file", ""),
+            "output_dirs": base.get("output_dirs", {}),
+        }
+
+    def _build_task_co_attribute_graph(self, agent_name: str, base: Dict) -> Dict:
+        """通用 co_attribute graph builder 任务构建 (YAML 动态域 + steam/tmdb/wikiart)。"""
+        domain = base.get("domain", "")
+        return {
+            "domain": domain,
+            "graph_mode": base.get("graph_mode", "homogeneous"),
+            "data_source": base.get("data_source", "file"),
+            "load_from_files": base.get("load_from_files", True),
+            "graph_opts": base.get("graph_opts", {}),
+            "output_dirs": base.get("output_dirs", {}),
+        }
 
     def _get_upstream_data(self, completed: List[str]) -> Optional[Dict]:
         """从blackboard构建上游数据"""
@@ -1034,35 +1186,23 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
         return True
 
     def _build_final_output(self, pipeline_result: Dict, task_config: Dict):
-        """构建最终输出 — 按领域聚合"""
+        """构建最终输出 — 通过 DomainConfig 动态发现 agent 名称。"""
         stages = pipeline_result.get("stages", {})
         domain = task_config.get("domain", "arxiv")
+        domain_cfg = DOMAIN_CONFIGS.get(domain, DOMAIN_CONFIGS.get("arxiv"))
 
-        if domain == "reddit":
-            collector_result = stages.get("subreddit_collector", {})
-            graph_result = stages.get("social_graph_builder", {})
-        elif domain == "amazon":
-            collector_result = stages.get("product_collector", {})
-            graph_result = stages.get("product_graph_builder", {})
-        elif domain == "steam":
-            collector_result = stages.get("steam_game_collector", {})
-            graph_result = stages.get("steam_game_graph_builder", {})
-        elif domain == "tmdb":
-            collector_result = stages.get("tmdb_movie_collector", {})
-            graph_result = stages.get("tmdb_movie_graph_builder", {})
-        elif domain == "wikiart":
-            collector_result = stages.get("wikiart_artwork_collector", {})
-            graph_result = stages.get("wikiart_artwork_graph_builder", {})
-        else:
-            collector_result = stages.get("paper_collector", {})
-            graph_result = stages.get("reference_graph_builder", {})
+        # 从 DomainConfig 动态发现 collector/builder 名称
+        agent_names = list(domain_cfg.agents_desc.keys()) if domain_cfg else []
+        collector = next((a for a in agent_names if "collector" in a), None)
+        builder = next((a for a in agent_names if "graph" in a and "builder" in a), None)
 
+        collector_result = stages.get(collector, {}) if collector else {}
+        graph_result = stages.get(builder, {}) if builder else {}
         formatter_result = stages.get("dataset_formatter", {})
 
-        # node_count: 优先用 formatter stats (对所有域都准确); 缺失时回退旧逻辑
         fmt_stats = formatter_result.get("stats", {})
         node_count = (fmt_stats.get("node_count")
-                      if fmt_stats else len(collector_result.get('papers', [])))
+                      if fmt_stats else len(collector_result.get("papers", [])))
 
         pipeline_result["final_output"] = {
             "domain": domain,

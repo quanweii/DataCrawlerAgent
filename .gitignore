@@ -62,6 +62,13 @@ data/*_artworks*/
 data/*_datasets/
 data/*_graphs/
 data/*_lp/
+data/*_splits/
+# Raw per-item crawls (e.g. spotify track .md dumps — tens of thousands of tiny files)
+data/spotify_cslo/
+data/spotify_*/
+
+# Logs (whole directory, incl. non-.log artifacts)
+logs/
 # Benchmark data (exclude large files, track code)
 benchmark/results/
 benchmark/processed/

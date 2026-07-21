@@ -14,9 +14,10 @@ from pathlib import Path
 from collections import defaultdict, Counter
 
 DOMAINS = {
-    "steam":   ("data/steam_datasets/steam_multimodal_graph_v3.json",   "data/steam_games"),
-    "tmdb":    ("data/tmdb_datasets/tmdb_multimodal_graph_v3.json",     "data/tmdb_movies"),
-    "wikiart": ("data/wikiart_datasets/wikiart_multimodal_graph_v3.json","data/wikiart_artworks_v2"),
+    # canonical = 多智能体产物 (*_agent.json); arxiv 暂沿用 v3。
+    "steam":   ("data/steam_datasets/steam_multimodal_graph_agent.json",   "data/steam_games"),
+    "tmdb":    ("data/tmdb_datasets/tmdb_multimodal_graph_agent.json",     "data/tmdb_movies"),
+    "wikiart": ("data/wikiart_datasets/wikiart_multimodal_graph_agent.json","data/wikiart_artworks_v2"),
 }
 
 def load(path):

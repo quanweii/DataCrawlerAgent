@@ -138,6 +138,8 @@ class DatasetFormatterAgent(ReActAgent):
         elif domain in ("steam", "tmdb", "wikiart"):
             return self._collect_data_bundle(domain, task)
         else:
+            if task.get("arxiv_unify"):
+                return self._collect_data_arxiv_unified(task)
             return self._collect_data_arxiv(task, upstream_data)
 
     def _collect_data_arxiv(self, task: Dict, upstream_data=None) -> Dict:
@@ -201,6 +203,27 @@ class DatasetFormatterAgent(ReActAgent):
             "papers_count": len(cleaned_papers),
             "multimodal_count": len(normalized_multimodal),
             "has_edges_file": bool(edges_file)
+        }
+
+    def _collect_data_arxiv_unified(self, task: Dict) -> Dict:
+        """arxiv 统一 MAG 模式 (A′): 由 crawlers.arxiv.build_arxiv_graph 把
+        reference_graph_builder 已构造的引用网络(benchmark/processed/graph_data.pt)
+        统一成 newdomain 协议的单一 MAG(4 子域, label=子域, relation="cites")。
+        跳过逐篇重爬/重抽引用, 直接拿到完整 nodes/edges/stats, 后续 build/save 走与
+        steam/tmdb/wikiart 一致的透传路径。引用边由 agent(reference_graph_builder)造,
+        本步只做统一+封装, 不造数据。
+        """
+        from crawlers import build_arxiv_graph
+        nodes, edges, stats = build_arxiv_graph(task.get("graph_data_pt"))
+        self._formatter_data = {
+            "domain": "arxiv", "nodes": nodes, "edges": edges,
+            "stats": stats, "unified": True,
+        }
+        logger.info(f"[DatasetFormatter] arxiv 统一 MAG: nodes={len(nodes)} "
+                    f"edges={len(edges)} homophily={stats.get('homophily')}")
+        return {
+            "status": "success", "nodes_count": len(nodes),
+            "edges_count": len(edges), "homophily": stats.get("homophily"),
         }
 
     def _collect_data_reddit(self, task: Dict) -> Dict:
@@ -365,7 +388,9 @@ class DatasetFormatterAgent(ReActAgent):
         data = self._ensure_collected()
         domain = data.get("domain", "arxiv")
 
-        if domain == "reddit":
+        if data.get("unified"):
+            nodes = data.get("nodes", [])
+        elif domain == "reddit":
             nodes = self._build_nodes_reddit(data)
         elif domain == "amazon":
             nodes = self._build_nodes_amazon(data)
@@ -392,7 +417,9 @@ class DatasetFormatterAgent(ReActAgent):
         data = self._ensure_collected()
         domain = data.get("domain", "arxiv")
 
-        if domain == "reddit":
+        if data.get("unified"):
+            edges = data.get("edges", [])
+        elif domain == "reddit":
             edges = self._build_edges_reddit(data)
         elif domain == "amazon":
             edges = self._build_edges_amazon(data)

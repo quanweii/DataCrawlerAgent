@@ -1,0 +1,95 @@
+# 新域（steam / tmdb / wikiart）基准配置
+# ==========================================================================
+# 这三个域由 DataCrawlerAgent 多智能体系统自动构建，与 arxiv 论文域共同构成
+# 4 域跨「模态主导性 × 图同质性」设计空间。
+#
+# 关键差异 vs arxiv：
+#   - 无 formula 模态（游戏 / 电影 / 绘画没有公式）
+#   - 模态空间 = {text, image}（arxiv = {text, image, formula}）
+#   - 同质性谱覆盖强异质 → 强同质，是天然的 GNN 同质性实验台
+#
+# 统计已在 2026-06-19 由 v3.json 实测核实（见下 homophily）。
+# ==========================================================================
+
+domains:
+  steam:
+    graph: data/steam_datasets/steam_multimodal_graph_v3.json
+    raw:   data/steam_games
+    nodes: 2760
+    edges: 54424            # unique undirected
+    classes: 8              # 游戏类型 Action/Racing/...
+    homophily: 0.526        # 中等同质性
+    dominant_modality: image+text    # 截图 + 描述
+    label_imbalance: severe # Action 1403 / Racing 58
+    relations: [shared_genre, same_developer, same_publisher, shared_category]
+
+  tmdb:
+    graph: data/tmdb_datasets/tmdb_multimodal_graph_v3.json
+    raw:   data/tmdb_movies
+    nodes: 13037
+    edges: 193346
+    classes: 18
+    homophily: 0.237        # 强异质性（跨类型推荐/演职员连接）
+    dominant_modality: image+text    # 海报 + 简介
+    label_imbalance: moderate        # 2690 / 84
+    relations: [shared_genre, same_director, shared_actor]
+
+  wikiart:
+    graph: data/wikiart_datasets/wikiart_multimodal_graph_v3.json
+    raw:   data/wikiart_artworks_v2
+    nodes: 21968
+    edges: 520570
+    classes: 64
+    homophily: 0.894        # 强同质性（same_artist/shared_style 按定义连同类）
+    dominant_modality: image          # 绘画为主，文本为辅
+    label_imbalance: moderate         # 540 / 21
+    relations: [same_artist, shared_style]
+
+# 同质性谱（论文 §5.2 灵魂图的数据基础）
+homophily_spectrum:
+  low:  tmdb    # 0.237 — GNN 应显著优于 MLP（结构信号强）
+  mid:  steam   # 0.526
+  high: wikiart # 0.894 — LP 任务在随机负采样下饱和，必须硬负采样
+
+modalities:
+  available: [text, image]                 # 无 formula
+  encoder: openai/clip-vit-large-patch14
+  dim: 768
+  combinations: [text, image, text+image]
+
+models:
+  nc: [mlp, gcn, gat, graphsage, gin, gcnii]
+  lp: [mlp, gcn, gat, graphsage, gin]
+
+training:
+  nc: {runs: 3, epochs: 300, hidden_dim: 256, num_layers: 2, dropout: 0.5, lr: 0.01, split: supervised}
+  lp: {seeds: 3, epochs: 300, hidden_dim: 256, num_layers: 2, dropout: 0.5, lr: 0.001, patience: 40}
+
+# ==========================================================================
+# 运行命令（steam 端到端验证 → 通过后批量上 tmdb/wikiart）
+# ==========================================================================
+run:
+  encode: >
+    python benchmark/encode_domain.py --domain steam --gpu 0 --modalities text,image
+  nc: >
+    python benchmark/run_newdomain_nc.py --domain steam --gpu 0
+    --modalities text,image,text+image
+    --models mlp,gcn,gat,graphsage,gin,gcnii --runs 3 --epochs 300
+  lp: >
+    python benchmark/run_newdomain_lp.py --domain steam --gpu 0
+    --modalities text+image
+    --models mlp,gcn,gat,graphsage,gin --seeds 3 --epochs 300
+
+# ==========================================================================
+# LP 去饱和协议（scripts/lp_hard_negative_sampler.py 已为三域生成）
+# ==========================================================================
+lp_protocol:
+  neg_sets: [random, hard, hard_degree]
+  random:      均匀随机非边（baseline；高同质性图上让任务饱和）
+  hard:        同标签约束非边（消除「标签一致」捷径；主协议）
+  hard_degree: 同标签 + 同对数度数桶非边（再消除「度数」捷径）
+  split: {train: 0.80, val: 0.10, test: 0.10}
+  seed: 42
+  # label_agreement = 负样本中「恰好同标签」的比例；random 应≈1/num_labels，hard≈1.0
+  # （实测，来自各域 protocol.json）
+  label_agreement_steam:    {test_pos: 0.526, neg_random: 0.313, neg_hard: 1.0, neg_hard_degree: 1.0}

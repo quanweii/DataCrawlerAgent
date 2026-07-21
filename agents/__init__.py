@@ -1,5 +1,6 @@
 from .base_agent import BaseAgent
 from .react_agent import ReActAgent
+from .domain_graph_builder import DomainGraphBuilderAgent
 from .messages import Blackboard, MessageBus, Message
 from .paper_collector import PaperCollectorAgent
 from .data_cleaner import DataCleanerAgent
@@ -30,10 +31,17 @@ from .tmdb_movie_graph_builder import TmdbMovieGraphBuilderAgent
 from .wikiart_artwork_collector import WikiartArtworkCollectorAgent
 from .wikiart_artwork_graph_builder import WikiartArtworkGraphBuilderAgent
 
+# 对抗性校验 Agent (多智能体闭环)
+from .graph_verifier import GraphVerifierAgent
+
+# 通用参数化 Agent (YAML 驱动域)
+from .domain_collector import DomainCollectorAgent
+
 __all__ = [
     "BaseAgent",
     "ReActAgent",
-    "Blackboard",
+    "DomainGraphBuilderAgent",
+    "GraphVerifierAgent",     # 对抗性校验 — 多智能体闭环关节
     "MessageBus",
     "Message",
     # ArXiv
@@ -60,4 +68,6 @@ __all__ = [
     # WikiArt
     "WikiartArtworkCollectorAgent",
     "WikiartArtworkGraphBuilderAgent",
+    # Generic (YAML-driven)
+    "DomainCollectorAgent",
 ]

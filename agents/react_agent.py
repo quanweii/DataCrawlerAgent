@@ -348,6 +348,8 @@ class ReActAgent(BaseAgent):
             # WikiArt 领域
             "WikiartArtworkCollectorAgent": "wikiart_collector",
             "WikiartArtworkGraphBuilderAgent": "wikiart_graph",
+            # 对抗性校验 (多智能体闭环)
+            "GraphVerifierAgent": "verifier",
         }
         return name_map.get(self.agent_name, self.agent_name.lower())
 

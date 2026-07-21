@@ -2,6 +2,11 @@
 图像编码器 - 使用 CLIP-ViT-Large-Patch14 编码论文图片
 统一输出768维，与文本/公式编码器维度一致
 每篇论文的多张图片编码后取平均池化
+
+注：曾尝试 use_fast=True 加速，但 transformers 4.52.4 的 CLIPProcessor.__call__
+在 fast 子处理器上崩（缺 `_valid_processor_keys`）；手搓 GPU 预处理（F.interpolate
+bicubic）会对 ~15% 节点产生零/NaN 漂移。故保留 slow CLIPProcessor——数值规范、零漂移，
+是当前环境的正确基线。编码为一次性成本（tmdb~23min / wikiart~40min），非阻塞。
 """
 import os
 import torch

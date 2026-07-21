@@ -1,0 +1,57 @@
+domain,file_path,loc,raw_wc_l,bucket,notes
+shared,orchestrator.py,591,734,shared,top-level pipeline; load_orchestrator_from_yaml (generic YAML factory)
+shared,orchestrator_parallel.py,45,57,shared,parallel orchestrator
+shared,main.py,311,379,shared,CLI entry; --domain-config YAML path bypasses hardcoded DOMAIN_CONFIGS (spotify route)
+shared,agents/orchestrator_agent.py,1053,1223,shared,scheduling logic; NOTE: embeds ~6 legacy DOMAIN_CONFIGS blocks (~23 lines each) for arxiv/reddit/amazon/steam/tmdb/wikiart; spotify bypasses via register_domain_config
+shared,agents/base_agent.py,275,322,shared,agent base class
+shared,agents/react_agent.py,298,376,shared,ReAct loop
+shared,agents/messages.py,136,163,shared,Blackboard + MessageBus
+shared,agents/data_cleaner.py,555,648,shared,data cleaning agent
+shared,agents/dataset_formatter.py,1328,1582,shared,MAG JSON formatter
+shared,agents/graph_verifier.py,273,323,shared,adversarial verifier (LP-ceiling/homophily)
+shared,agents/__init__.py,51,73,shared,package init
+shared,crawlers/common.py,126,142,shared,DensityEdgeBuilder + homophily + stats + filter_small_classes
+shared,crawlers/config_driven.py,201,256,shared,build_graph_from_config (the zero-code graph engine; used by spotify)
+shared,crawlers/__init__.py,14,15,shared,package init; exports build_X_graph + build_graph_from_config
+shared,agents/domain_graph_builder.py,205,239,shared,parameterized graph-builder base (post-dedup shared base; docstring records old ~155 LOC/domain wrappers)
+shared,agents/domain_collector.py,231,276,shared,parameterized collector base
+shared,domains/domain_schema.py,232,295,shared,YAML schema + validation + DomainConfig bridge
+shared,domains/__init__.py,20,22,shared,load_domain_yaml export
+shared,.claude/skills/build-mag-dataset.md,231,304,shared,build-mag-dataset skill (MARKDOWN, not Python; framework artifact)
+shared,benchmark/encode_domain.py,95,119,shared,encoder runner
+shared,benchmark/data/domain_loader.py,250,309,shared,domain->path dicts (data registration); spotify registered as path entries
+shared,benchmark/data/dataset.py,208,256,shared,dataset loader
+shared,benchmark/data/preprocessor.py,319,393,shared,feature preprocessor
+shared,benchmark/data/splits.py,102,121,shared,leak-free splits
+shared,benchmark/tasks/node_classification.py,167,203,shared,NC task
+shared,benchmark/tasks/link_prediction.py,375,476,shared,LP task
+shared,benchmark/models/gnn.py,317,381,shared,GNN models
+shared,benchmark/run_newdomain_nc.py,184,223,shared,NC runner
+shared,benchmark/run_newdomain_lp.py,297,345,shared,LP runner
+shared,scripts/lp_hard_negative_sampler.py,289,355,shared,hard-negative sampler; spotify registered as path entry
+steam,crawlers/steam.py,80,101,per_domain,build_steam_graph
+steam,agents/steam_game_collector.py,152,177,per_domain,steam collector
+steam,agents/steam_game_graph_builder.py,27,31,per_domain,thin subclass (31 raw wc -l); post-dedup
+steam,tools/steam_tools.py,65,80,per_domain,SteamToolManager (data extraction glue; excluded from original-2026-07-07 swap surface)
+tmdb,crawlers/tmdb.py,80,100,per_domain,build_tmdb_graph
+tmdb,agents/tmdb_movie_collector.py,128,145,per_domain,tmdb collector
+tmdb,agents/tmdb_movie_graph_builder.py,27,31,per_domain,thin subclass (31 raw wc -l); post-dedup
+tmdb,tools/tmdb_tools.py,50,60,per_domain,TmdbToolManager (data extraction glue; excluded from original swap surface)
+wikiart,crawlers/wikiart.py,77,95,per_domain,build_wikiart_graph + sanitize_pid
+wikiart,agents/wikiart_artwork_collector.py,131,148,per_domain,wikiart collector
+wikiart,agents/wikiart_artwork_graph_builder.py,28,32,per_domain,thin subclass (32 raw wc -l); post-dedup
+wikiart,tools/wikiart_tools.py,48,58,per_domain,WikiartToolManager (data extraction glue; excluded from original swap surface)
+arxiv,crawlers/arxiv.py,58,73,per_domain,build_arxiv_graph
+arxiv,agents/paper_collector.py,630,762,per_domain,paper collector (762 raw wc -l)
+arxiv,agents/arxiv_batch_downloader.py,290,358,per_domain,arxiv batch download
+arxiv,agents/reference_graph_builder.py,1493,2037,per_domain,citation/fuzzy-OCR engine (2037 raw wc -l; LLM value evidence E2)
+spotify,domains/spotify/domain.yaml,25,40,per_domain,YAML ONLY; 41 raw lines; ZERO Python framework code; built zero-code via skill 2026-07-11
+EXCLUDED_amazon,agents/product_collector.py,304,367,excluded,amazon/reddit legacy (PAPER_THESIS_v2 line 63 excludes ~1186 LOC product/social graph_builder)
+EXCLUDED_amazon,agents/product_graph_builder.py,496,589,excluded,legacy standalone ReAct builder (pre-dedup pattern)
+EXCLUDED_amazon,agents/review_collector.py,265,325,excluded,legacy
+EXCLUDED_reddit,agents/social_graph_builder.py,493,597,excluded,legacy standalone ReAct builder (pre-dedup pattern)
+EXCLUDED_reddit,agents/subreddit_collector.py,327,411,excluded,legacy
+EXCLUDED_reddit,agents/post_collector.py,322,406,excluded,legacy
+EXCLUDED_amazon,tools/amazon_tools.py,503,613,excluded,legacy data glue
+EXCLUDED_reddit,tools/reddit_tools.py,484,598,excluded,legacy data glue
+EXCLUDED_reddit,tools/pushshift_loader.py,375,466,excluded,legacy data glue

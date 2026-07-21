@@ -12,7 +12,19 @@ from datetime import datetime
 
 from agents import (
     PaperCollectorAgent, DatasetFormatterAgent,
-    ArxivBatchDownloaderAgent, ReferenceGraphBuilderAgent, DataCleanerAgent
+    ArxivBatchDownloaderAgent, ReferenceGraphBuilderAgent, DataCleanerAgent,
+    # Reddit
+    SubredditCollectorAgent, PostCollectorAgent, SocialGraphBuilderAgent,
+    # Amazon
+    ProductCollectorAgent, ReviewCollectorAgent, ProductGraphBuilderAgent,
+    # Steam
+    SteamGameCollectorAgent, SteamGameGraphBuilderAgent,
+    # TMDb
+    TmdbMovieCollectorAgent, TmdbMovieGraphBuilderAgent,
+    # WikiArt
+    WikiartArtworkCollectorAgent, WikiartArtworkGraphBuilderAgent,
+    # 对抗性校验 (多智能体闭环关节)
+    GraphVerifierAgent,
 )
 from agents.orchestrator_agent import OrchestratorAgent
 from tools import create_mcp_tool_manager
@@ -21,6 +33,11 @@ from tools import create_mcp_tool_manager
 class DataCrawlerOrchestrator:
     """
     数据爬取多Agent系统主协调器
+
+    支持三个领域：
+    - arxiv: 学术论文多模态属性图
+    - reddit: 社交媒体异构图
+    - amazon: 电商产品推荐异构图
 
     内部委托给 OrchestratorAgent 进行动态编排：
     - LLM分析任务 → 动态决定执行顺序
@@ -31,19 +48,20 @@ class DataCrawlerOrchestrator:
     公开API与旧版完全兼容。
     """
 
-    def __init__(self, context_manager: Optional[Any] = None):
+    def __init__(self, context_manager: Optional[Any] = None, domain: str = "arxiv"):
         self.client = OpenAI(
             api_key=os.getenv("API_KEY"),
             base_url=os.getenv("MODEL_BASE_URL"),
         )
         self.context_manager = context_manager
+        self.domain = domain
         self._init_system_prompts()
         self.mcp_tool_manager = create_mcp_tool_manager()
         self._register_custom_tools()
         self._init_agents()
         self.execution_history: List[Dict] = []
         self.current_status: str = "idle"
-        logger.info("DataCrawlerOrchestrator 初始化完成 (多智能体动态编排模式)")
+        logger.info(f"DataCrawlerOrchestrator 初始化完成 (领域={domain}, 多智能体动态编排模式)")
 
     def _init_system_prompts(self):
         """初始化各Agent的系统提示词"""
@@ -55,47 +73,55 @@ class DataCrawlerOrchestrator:
                 file_path = target_path
             else:
                 file_path = os.path.join(prompt_dir, f"{name}_example.txt")
+                if not os.path.exists(file_path):
+                    return None
 
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 logger.debug(f"已加载 {name} 提示词，路径: {file_path}")
                 return content
 
-        try:
-            self.paper_collector_prompt = load_prompt_content("paper_collector_prompt")
-            self.data_cleaner_prompt = load_prompt_content("data_cleaner_prompt")
-            self.dataset_formatter_prompt = load_prompt_content("dataset_formatter_prompt")
-            logger.info("成功加载所有提示词")
-        except Exception as e:
-            logger.warning(f"加载提示词时出错: {e}，使用默认提示词")
-            self.paper_collector_prompt = self._default_paper_collector_prompt()
-            self.data_cleaner_prompt = self._default_data_cleaner_prompt()
-            self.dataset_formatter_prompt = self._default_dataset_formatter_prompt()
+        # ArXiv 提示词
+        self.paper_collector_prompt = load_prompt_content("paper_collector_prompt") or self._default_paper_collector_prompt()
+        self.data_cleaner_prompt = load_prompt_content("data_cleaner_prompt") or self._default_data_cleaner_prompt()
+        self.dataset_formatter_prompt = load_prompt_content("dataset_formatter_prompt") or self._default_dataset_formatter_prompt()
+
+        # Reddit 提示词
+        self.subreddit_collector_prompt = load_prompt_content("subreddit_collector_prompt") or self._default_subreddit_collector_prompt()
+        self.post_collector_prompt = load_prompt_content("post_collector_prompt") or self._default_post_collector_prompt()
+        self.social_graph_builder_prompt = load_prompt_content("social_graph_builder_prompt") or self._default_social_graph_builder_prompt()
+
+        # Amazon 提示词
+        self.product_collector_prompt = load_prompt_content("product_collector_prompt") or self._default_product_collector_prompt()
+        self.review_collector_prompt = load_prompt_content("review_collector_prompt") or self._default_review_collector_prompt()
+        self.product_graph_builder_prompt = load_prompt_content("product_graph_builder_prompt") or self._default_product_graph_builder_prompt()
+
+        # Steam 提示词
+        self.steam_game_collector_prompt = load_prompt_content("steam_game_collector_prompt") or self._default_steam_game_collector_prompt()
+        self.steam_game_graph_builder_prompt = load_prompt_content("steam_game_graph_builder_prompt") or self._default_steam_game_graph_builder_prompt()
+
+        # TMDb 提示词
+        self.tmdb_movie_collector_prompt = load_prompt_content("tmdb_movie_collector_prompt") or self._default_tmdb_movie_collector_prompt()
+        self.tmdb_movie_graph_builder_prompt = load_prompt_content("tmdb_movie_graph_builder_prompt") or self._default_tmdb_movie_graph_builder_prompt()
+
+        # WikiArt 提示词
+        self.wikiart_artwork_collector_prompt = load_prompt_content("wikiart_artwork_collector_prompt") or self._default_wikiart_artwork_collector_prompt()
+        self.wikiart_artwork_graph_builder_prompt = load_prompt_content("wikiart_artwork_graph_builder_prompt") or self._default_wikiart_artwork_graph_builder_prompt()
+        # 对抗性校验 (多智能体闭环关节)
+        self.graph_verifier_prompt = load_prompt_content("graph_verifier_prompt") or self._default_graph_verifier_prompt()
+
+        logger.info(f"成功加载所有提示词 (领域={self.domain})")
 
     def _register_custom_tools(self):
         pass
 
     def _init_agents(self):
-        """初始化各分管Agent"""
-        self.agents = {
-            'arxiv_batch_downloader': ArxivBatchDownloaderAgent(
-                client=self.client,
-                system_prompt=self._default_arxiv_batch_downloader_prompt(),
-                mcp_tool_manager=self.mcp_tool_manager
-            ),
-            'paper_collector': PaperCollectorAgent(
-                client=self.client,
-                system_prompt=self.paper_collector_prompt,
-                mcp_tool_manager=self.mcp_tool_manager
-            ),
+        """初始化各分管Agent — 按领域动态选择"""
+        # 所有领域共享的 Agent
+        shared_agents = {
             'data_cleaner': DataCleanerAgent(
                 client=self.client,
                 system_prompt=self.data_cleaner_prompt,
-                mcp_tool_manager=self.mcp_tool_manager
-            ),
-            'reference_graph_builder': ReferenceGraphBuilderAgent(
-                client=self.client,
-                system_prompt=self._default_reference_graph_builder_prompt(),
                 mcp_tool_manager=self.mcp_tool_manager
             ),
             'dataset_formatter': DatasetFormatterAgent(
@@ -103,8 +129,162 @@ class DataCrawlerOrchestrator:
                 system_prompt=self.dataset_formatter_prompt,
                 mcp_tool_manager=self.mcp_tool_manager
             ),
+            # 对抗性校验 Agent — 所有域共享, 主动发现图缺陷并触发 Builder reprocess 回路
+            'graph_verifier': GraphVerifierAgent(
+                client=self.client,
+                system_prompt=self.graph_verifier_prompt,
+                mcp_tool_manager=self.mcp_tool_manager,
+                agent_name="GraphVerifierAgent",
+            ),
         }
-        logger.info("所有分管Agent初始化完成")
+
+        # 领域特定 Agent
+        if self.domain == "reddit":
+            try:
+                from tools.reddit_tools import RedditToolManager
+                reddit_tools = RedditToolManager()
+            except Exception:
+                reddit_tools = None
+                logger.warning("Reddit 工具初始化失败，将在运行时尝试")
+
+            domain_agents = {
+                'subreddit_collector': SubredditCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.subreddit_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    reddit_tools=reddit_tools,
+                ),
+                'post_collector': PostCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.post_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    reddit_tools=reddit_tools,
+                ),
+                'social_graph_builder': SocialGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self.social_graph_builder_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                ),
+            }
+
+        elif self.domain == "amazon":
+            try:
+                from tools.amazon_tools import AmazonToolManager
+                amazon_tools = AmazonToolManager()
+            except Exception:
+                amazon_tools = None
+                logger.warning("Amazon 工具初始化失败，将在运行时尝试")
+
+            domain_agents = {
+                'product_collector': ProductCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.product_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    amazon_tools=amazon_tools,
+                ),
+                'review_collector': ReviewCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.review_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    amazon_tools=amazon_tools,
+                ),
+                'product_graph_builder': ProductGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self.product_graph_builder_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                ),
+            }
+
+        elif self.domain == "steam":
+            try:
+                from tools.steam_tools import SteamToolManager
+                steam_tools = SteamToolManager()
+            except Exception:
+                steam_tools = None
+                logger.warning("Steam 工具初始化失败，将在运行时尝试")
+
+            domain_agents = {
+                'steam_game_collector': SteamGameCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.steam_game_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    steam_tools=steam_tools,
+                ),
+                'steam_game_graph_builder': SteamGameGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self.steam_game_graph_builder_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                ),
+            }
+
+        elif self.domain == "tmdb":
+            try:
+                from tools.tmdb_tools import TmdbToolManager
+                tmdb_tools = TmdbToolManager()
+            except Exception:
+                tmdb_tools = None
+                logger.warning("TMDb 工具初始化失败，将在运行时尝试")
+
+            domain_agents = {
+                'tmdb_movie_collector': TmdbMovieCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.tmdb_movie_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    tmdb_tools=tmdb_tools,
+                ),
+                'tmdb_movie_graph_builder': TmdbMovieGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self.tmdb_movie_graph_builder_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                ),
+            }
+
+        elif self.domain == "wikiart":
+            try:
+                from tools.wikiart_tools import WikiartToolManager
+                wikiart_tools = WikiartToolManager()
+            except Exception:
+                wikiart_tools = None
+                logger.warning("WikiArt 工具初始化失败，将在运行时尝试")
+
+            domain_agents = {
+                'wikiart_artwork_collector': WikiartArtworkCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.wikiart_artwork_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                    wikiart_tools=wikiart_tools,
+                ),
+                'wikiart_artwork_graph_builder': WikiartArtworkGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self.wikiart_artwork_graph_builder_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager,
+                ),
+            }
+
+        else:  # arxiv (默认)
+            domain_agents = {
+                'arxiv_batch_downloader': ArxivBatchDownloaderAgent(
+                    client=self.client,
+                    system_prompt=self._default_arxiv_batch_downloader_prompt(),
+                    mcp_tool_manager=self.mcp_tool_manager
+                ),
+                'paper_collector': PaperCollectorAgent(
+                    client=self.client,
+                    system_prompt=self.paper_collector_prompt,
+                    mcp_tool_manager=self.mcp_tool_manager
+                ),
+                'reference_graph_builder': ReferenceGraphBuilderAgent(
+                    client=self.client,
+                    system_prompt=self._default_reference_graph_builder_prompt(),
+                    mcp_tool_manager=self.mcp_tool_manager
+                ),
+            }
+
+        self.agents = {**domain_agents, **shared_agents}
+        logger.info(
+            f"所有分管Agent初始化完成: {list(self.agents.keys())} "
+            f"(领域={self.domain})"
+        )
 
     # ==================== 动态编排入口 ====================
 
@@ -265,6 +445,289 @@ class DataCrawlerOrchestrator:
 3. 在arxiv元数据数据库中搜索匹配的论文
 4. 构建引用关系有向图，记录节点和边的信息
 5. 输出CSV格式的边列表"""
+
+    # ==================== Reddit 默认提示词 ====================
+
+    def _default_subreddit_collector_prompt(self) -> str:
+        return """你是一个Reddit subreddit数据采集专家。你的任务是：
+1. 发现和验证目标subreddit
+2. 采集帖子元数据（标题、得分、图片URL、评论数等）
+3. 确保采集足够数量和多样性的帖子
+4. 验证数据完整性，报告质量问题"""
+
+    def _default_post_collector_prompt(self) -> str:
+        return """你是一个Reddit帖子深度采集专家。你的任务是：
+1. 采集帖子评论树（BFS深度限制）
+2. 下载帖子图片
+3. 收集用户元数据（karma等）
+4. 确保评论覆盖度和图片下载成功率"""
+
+    def _default_social_graph_builder_prompt(self) -> str:
+        return """你是一个社交图构建专家。你的任务是：
+1. 从帖子、评论数据中提取所有实体（用户、帖子、评论、subreddit）
+2. 构建 author_of 边（用户→帖子、用户→评论）
+3. 构建 reply_to 边（评论→帖子、评论→评论）
+4. 构建 belongs_to 边（帖子→subreddit）
+5. 构建 crosspost 边（帖子→帖子）
+6. 输出各类型边的CSV文件"""
+
+    # ==================== Amazon 默认提示词 ====================
+
+    def _default_product_collector_prompt(self) -> str:
+        return """你是一个Amazon产品数据采集专家。你的任务是：
+1. 加载McAuley Amazon产品元数据（JSON Lines格式）
+2. 按品类过滤产品，确保有图片和描述
+3. 下载产品图片
+4. 提取共买(also_bought)和共看(also_viewed)关系
+5. 提取类目树和品牌信息
+6. 验证数据完整性"""
+
+    def _default_review_collector_prompt(self) -> str:
+        return """你是一个Amazon评论采集专家。你的任务是：
+1. 加载目标产品的评论数据
+2. 过滤低质量评论（过短、无意义等）
+3. 限制每产品评论数量，按帮助度排序
+4. 提取唯一用户ID
+5. 验证评论覆盖度"""
+
+    def _default_product_graph_builder_prompt(self) -> str:
+        return """你是一个产品图构建专家。你的任务是：
+1. 从产品元数据和评论中提取所有实体（产品、用户、类目、品牌）
+2. 构建 review 边（用户→产品，含评分）
+3. 构建 also_bought 边（产品→产品，共买关系）
+4. 构建 also_viewed 边（产品→产品，共看关系）
+5. 构建 belongs_to 边（产品→类目）
+6. 构建 made_by 边（产品→品牌）
+7. 输出各类型边的CSV文件"""
+
+    # ==================== Steam 默认提示词 ====================
+
+    def _default_steam_game_collector_prompt(self) -> str:
+        return """你是一个Steam游戏元数据采集专家。你的任务是：
+1. 加载/爬取Steam游戏元数据（genres/developers/publishers/categories）
+2. 确保每个游戏的cs_lo提取目录（markdown+图片）就绪
+3. 验证游戏数据质量（标签覆盖率、目录完整性）
+4. 将采集结果写入blackboard供下游图构建Agent使用"""
+
+    def _default_steam_game_graph_builder_prompt(self) -> str:
+        return """你是一个Steam游戏同构图构建专家。你的任务是：
+1. 从collector读取游戏items
+2. 构建Steam游戏同构图：用首个genre作为节点标签，过滤<20样本的小类
+3. 构建密度优化的co_attribute边（shared_genre/same_developer/same_publisher/shared_category），
+   跨关系去重，控制边密度使平均度在合理区间
+4. 计算同质性homophily，输出带label/label_index的节点和边bundle
+5. 将图结果写入blackboard供formatter封装"""
+
+    # ==================== TMDb 默认提示词 ====================
+
+    def _default_tmdb_movie_collector_prompt(self) -> str:
+        return """你是一个TMDb电影元数据采集专家。你的任务是：
+1. 加载/爬取TMDb电影元数据（genres/directors/actors）
+2. 确保每部电影的cs_lo提取目录（markdown+海报图片）就绪
+3. 验证数据质量（流派标签覆盖率、目录完整性）
+4. 将采集结果写入blackboard供下游图构建Agent使用"""
+
+    def _default_tmdb_movie_graph_builder_prompt(self) -> str:
+        return """你是一个TMDb电影同构图构建专家。你的任务是：
+1. 从collector读取电影items
+2. 构建TMDb电影同构图：用首个genre作为节点标签，过滤<20样本的小类
+3. 构建密度优化的co_attribute边（shared_genre/same_director/shared_actor），
+   跨关系去重，控制边密度
+4. 计算同质性homophily（TMDb预期为异质~0.24），输出带label/label_index的节点和边bundle
+5. 将图结果写入blackboard供formatter封装"""
+
+    # ==================== WikiArt 默认提示词 ====================
+
+    def _default_wikiart_artwork_collector_prompt(self) -> str:
+        return """你是一个WikiArt画作元数据采集专家。你的任务是：
+1. 加载/爬取WikiArt画作元数据（style/artist/title）
+2. 确保每幅画作的cs_lo提取目录（markdown文本+高清图片）就绪
+3. 验证数据质量（风格标签覆盖率、目录完整性）
+4. 将采集结果写入blackboard供下游图构建Agent使用"""
+
+    def _default_wikiart_artwork_graph_builder_prompt(self) -> str:
+        return """你是一个WikiArt画作同构图构建专家。你的任务是：
+1. 从collector读取画作items
+2. 构建WikiArt画作同构图：用style作为节点标签
+3. 构建密度优化的co_attribute边（same_artist/shared_style），跨关系去重
+4. 计算同质性homophily（WikiArt预期为高同质~0.89）
+   注意：shared_style边定义性同质，链路预测必须用硬负采样（见docs/wikiart_lp_protocol.md）
+5. 输出带label/label_index的节点和边bundle，写入blackboard供formatter封装"""
+
+    def _default_graph_verifier_prompt(self) -> str:
+        return """你是一个对抗性图质量校验专家。你的角色是Builder的对偶:
+Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"为目标。
+
+你必须逐项检查:
+1. 加载图数据(从blackboard)
+2. 检测标签泄露: 计算LP-ceiling(原始图 vs 剪枝图)。若原始图LP-ceiling
+   显著高于多数类基线(差值>0.10)，说明存在结构泄露。
+3. 检测定义性同质: 逐关系计算同质性。若某关系的homophily>0.95且边数≥50，
+   该关系等同于标签 → 必须标记为exclude。
+4. 检查节点覆盖: 是否有大量孤立节点(>30%) — 说明collector或edge builder不完整。
+5. 汇总所有问题。若有问题，发reprocess_request给图构建agent
+   (携带exclude_relations列表)，触发重建回路。
+
+你是多智能体质量闭环的关键一环:没有你，泄露边不会被发现和修正。
+对wikiart:shared_style边homophily≈1.0 → 你必须标记它并触发重建。」"""
+
+    # ==================== YAML 驱动域支持 ====================
+
+    def _default_generic_collector_prompt(self) -> str:
+        return """你是一个数据元数据采集专家。你的任务是:
+1. 加载领域元数据(标签、属性等)
+2. 确保每个条目的cs_lo提取目录(markdown+图片)就绪
+3. 验证数据质量(标签覆盖率、目录完整性)
+4. 将采集结果写入blackboard供下游图构建Agent使用"""
+
+    def _default_generic_builder_prompt(self) -> str:
+        return """你是一个同构图构建专家。你的任务是:
+1. 从collector读取items
+2. 构建同构图:用label作为节点标签，过滤小类
+3. 构建密度优化的co_attribute边，跨关系去重，控制边密度
+4. 计算同质性homophily，输出带label/label_index的节点和边
+5. 将图结果写入blackboard供formatter封装"""
+
+    def _init_agents_from_yaml(self, yc):
+        """从 DomainYamlConfig 动态初始化域 agent 池。
+
+        对已内置 Collector 的域 (steam/tmdb/wikiart): 使用原 Collector,
+        GraphBuilder 使用 build_graph_from_config。
+        对全新域: 使用 DomainCollectorAgent + DomainGraphBuilderAgent。
+        """
+        from agents.domain_graph_builder import DomainGraphBuilderAgent
+        from crawlers.config_driven import build_graph_from_config
+        from domains.domain_schema import yaml_to_graph_config
+
+        domain = yc.domain
+        graph_config = yaml_to_graph_config(yc)
+
+        # --- Collector ---
+        collector_name = yc.agents.collector_agent_name or f"{domain}_collector"
+        collector_prompt = (yc.collector_prompt or
+                           self._load_prompt_for(collector_name) or
+                           self._default_generic_collector_prompt())
+
+        # 优先用内置 Collector (向后兼容), 否则用通用 DomainCollectorAgent
+        builtin_collectors = {
+            "steam": ("SteamGameCollectorAgent", "steam_tools", "SteamToolManager"),
+            "tmdb": ("TmdbMovieCollectorAgent", "tmdb_tools", "TmdbToolManager"),
+            "wikiart": ("WikiartArtworkCollectorAgent", "wikiart_tools", "WikiartToolManager"),
+        }
+        if domain in builtin_collectors:
+            cls_name, tool_mod, tool_cls = builtin_collectors[domain]
+            from agents import (SteamGameCollectorAgent, TmdbMovieCollectorAgent,
+                              WikiartArtworkCollectorAgent)
+            cls_map = {"SteamGameCollectorAgent": SteamGameCollectorAgent,
+                      "TmdbMovieCollectorAgent": TmdbMovieCollectorAgent,
+                      "WikiartArtworkCollectorAgent": WikiartArtworkCollectorAgent}
+            collector_cls = cls_map[cls_name]
+            # Load tool manager
+            tool_manager = None
+            try:
+                import importlib
+                mod = importlib.import_module(f"tools.{tool_mod}")
+                tool_manager = getattr(mod, tool_cls)()
+            except Exception as e:
+                logger.warning(f"Tool manager {tool_cls} not available: {e}")
+            collector = collector_cls(
+                client=self.client, system_prompt=collector_prompt,
+                mcp_tool_manager=self.mcp_tool_manager)
+            if tool_manager:
+                setattr(collector, f"{domain}_tools", tool_manager)
+        else:
+            from agents.domain_collector import DomainCollectorAgent
+            collector_config = {
+                "domain": domain,
+                "agent_name": collector_name,
+                "id_field": yc.data.id_field,
+                "label_field": yc.data.label_field,
+                "data_source": yc.data.data_source,
+                "data_file": yc.data.data_file,
+                "data_dir": yc.output_dirs.raw,
+                "max_items": yc.data.max_items,
+                "collector_ns": f"{domain}_collector",
+                "cslo_dir_key": "items",
+            }
+            if yc.agents.tool_manager_class:
+                collector_config["tool_manager_class"] = yc.agents.tool_manager_class
+                collector_config["max_items_param"] = f"max_{domain}s"
+            collector = DomainCollectorAgent(
+                client=self.client, system_prompt=collector_prompt,
+                mcp_tool_manager=self.mcp_tool_manager,
+                agent_name=collector_name, config=collector_config)
+
+        # --- Graph Builder ---
+        builder_name = yc.agents.builder_agent_name or f"{domain}_graph_builder"
+        builder_prompt = (yc.builder_prompt or
+                         self._load_prompt_for(builder_name) or
+                         self._default_generic_builder_prompt())
+        builder = DomainGraphBuilderAgent(
+            client=self.client, system_prompt=builder_prompt,
+            mcp_tool_manager=self.mcp_tool_manager,
+            domain=domain,
+            # Wrap build_graph_from_config so the 3-arg signature (items, cs_lo_dir, opts)
+            # used by DomainGraphBuilderAgent.build_action is compatible with the 4-arg
+            # signature (items, cs_lo_dir, config, opts) required by build_graph_from_config.
+            build_fn=lambda items, cs_lo_dir, opts=None:
+                build_graph_from_config(items, cs_lo_dir, graph_config, opts),
+            config={
+                "collector_ns": f"{domain}_collector",
+                "graph_ns": f"{domain}_graph",
+                "default_data_dir": yc.output_dirs.items,
+                "graphs_subdir": "graphs",
+                "degree_range": (5, 80),
+            })
+
+        # Store graph_config on builder for build_fn to access
+        builder._graph_config = graph_config
+
+        return {
+            collector_name: collector,
+            builder_name: builder,
+        }
+
+    def _load_prompt_for(self, agent_name: str) -> str:
+        """尝试从 prompts/ 加载 agent 的 prompt 文件。"""
+        from pathlib import Path
+        prompt_path = Path(__file__).resolve().parent / "prompts" / f"{agent_name}_prompt.txt"
+        if prompt_path.exists():
+            return prompt_path.read_text(encoding="utf-8")
+        return ""
+
+
+def load_orchestrator_from_yaml(yaml_path: str) -> DataCrawlerOrchestrator:
+    """从 YAML 域配置创建 orchestrator (模块级工厂函数)。
+
+    Usage:
+        orch = load_orchestrator_from_yaml("domains/spotify/domain.yaml")
+        result = orch.execute_pipeline(task_config)
+    """
+    from domains.domain_schema import load_domain_yaml, yaml_to_domain_config
+    from agents.orchestrator_agent import register_domain_config
+
+    yc = load_domain_yaml(yaml_path)
+
+    # 注册 DomainConfig (供 OrchestratorAgent 调度)
+    domain_cfg = yaml_to_domain_config(yc)
+    register_domain_config(yc.domain, domain_cfg)
+
+    # 创建 orchestrator
+    orch = DataCrawlerOrchestrator(domain=yc.domain)
+    orch._domain_yaml_config = yc
+
+    # 用 YAML 驱动的 agent 替换硬编码 agent
+    yaml_agents = orch._init_agents_from_yaml(yc)
+    orch.agents = {
+        **yaml_agents,
+        "data_cleaner": orch.agents.get("data_cleaner"),
+        "dataset_formatter": orch.agents.get("dataset_formatter"),
+        "graph_verifier": orch.agents.get("graph_verifier"),
+    }
+
+    logger.info(f"[YAML domain] {yc.domain}: {len(yc.relations)} relations, "
+                f"collector={'builtin' if yc.domain in ('steam','tmdb','wikiart') else 'generic'}")
+    return orch
 
 
 def create_orchestrator() -> DataCrawlerOrchestrator:

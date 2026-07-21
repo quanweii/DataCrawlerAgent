@@ -41,9 +41,12 @@ from collections import defaultdict, Counter
 from loguru import logger
 
 DOMAINS = {
-    "steam":   "data/steam_datasets/steam_multimodal_graph_v3.json",
-    "tmdb":    "data/tmdb_datasets/tmdb_multimodal_graph_v3.json",
-    "wikiart": "data/wikiart_datasets/wikiart_multimodal_graph_v3.json",
+    # canonical = 多智能体产物 (*_agent.json); 与 v3 节点集一致, LP 负采样口径随之对齐。
+    "steam":   "data/steam_datasets/steam_multimodal_graph_agent.json",
+    "tmdb":    "data/tmdb_datasets/tmdb_multimodal_graph_agent.json",
+    "wikiart": "data/wikiart_datasets/wikiart_multimodal_graph_agent.json",
+    "arxiv":   "data/arxiv_datasets/arxiv_multimodal_graph_agent.json",  # formatter agent 产物 (A′)
+    "spotify": "data/spotify_datasets/spotify_multimodal_graph_agent.json",  # zero-code new domain (2026-07-11)
 }
 
 # 默认切分比例 (OGB 风格): 训练 80% / 验证 10% / 测试 10%
@@ -234,7 +237,7 @@ def write_csv(path, pairs):
             w.writerow([a, b])
 
 
-def run_domain(domain, seed, ratio, val_ratio, test_ratio):
+def run_domain(domain, seed, ratio, val_ratio, test_ratio, eval_ratio=100.0):
     gpath = DOMAINS[domain]
     out_dir = Path("data") / f"{domain}_lp"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -256,6 +259,10 @@ def run_domain(domain, seed, ratio, val_ratio, test_ratio):
     rng = random.Random(seed)
     def neg_count(n_pos):
         return int(n_pos * ratio)
+    # 测试负样本用大 eval-ratio：标准 LP Hits@k/MRR 需大候选集（rank 才有区分度）。
+    # 训练/验证保持 ratio=1 保训练效率（val_auc 仅需相对排序）。
+    def eval_count(n_pos):
+        return int(n_pos * eval_ratio)
 
     # random
     s_rand_train = RandomNegSampler(id_list, adj, random.Random(seed + 1))
@@ -263,15 +270,15 @@ def run_domain(domain, seed, ratio, val_ratio, test_ratio):
     s_rand_val = RandomNegSampler(id_list, adj, random.Random(seed + 2))
     val_neg = s_rand_val.sample(neg_count(len(val_pos)))
     s_rand_test = RandomNegSampler(id_list, adj, random.Random(seed + 3))
-    test_neg = s_rand_test.sample(neg_count(len(test_pos)))
+    test_neg = s_rand_test.sample(eval_count(len(test_pos)))
 
     # hard (同标签)
     val_neg_hard = HardNegSampler(label2nodes, adj, random.Random(seed + 4)).sample(neg_count(len(val_pos)))
-    test_neg_hard = HardNegSampler(label2nodes, adj, random.Random(seed + 5)).sample(neg_count(len(test_pos)))
+    test_neg_hard = HardNegSampler(label2nodes, adj, random.Random(seed + 5)).sample(eval_count(len(test_pos)))
 
     # hard_degree (同标签+同度数桶)
     val_neg_hd = HardDegreeNegSampler(label2nodes, adj, degree, random.Random(seed + 6)).sample(neg_count(len(val_pos)))
-    test_neg_hd = HardDegreeNegSampler(label2nodes, adj, degree, random.Random(seed + 7)).sample(neg_count(len(test_pos)))
+    test_neg_hd = HardDegreeNegSampler(label2nodes, adj, degree, random.Random(seed + 7)).sample(eval_count(len(test_pos)))
 
     # 3. 写文件
     write_csv(out_dir / "train_pos.csv", train_pos)
@@ -327,12 +334,14 @@ def main():
     ap.add_argument("--ratio", type=float, default=1.0, help="负:正比例")
     ap.add_argument("--val_ratio", type=float, default=DEFAULT_VAL_RATIO)
     ap.add_argument("--test_ratio", type=float, default=DEFAULT_TEST_RATIO)
+    ap.add_argument("--eval-ratio", type=float, default=100.0,
+                    help="测试负:正比例（Hits@k/MRR 需大候选集；训练/验证仍用 --ratio）")
     args = ap.parse_args()
 
     targets = list(DOMAINS) if args.domain == "all" else [args.domain]
     all_stats = {}
     for dom in targets:
-        all_stats[dom] = run_domain(dom, args.seed, args.ratio, args.val_ratio, args.test_ratio)
+        all_stats[dom] = run_domain(dom, args.seed, args.ratio, args.val_ratio, args.test_ratio, args.eval_ratio)
 
     # 汇总
     logger.info("汇总 (test 集 label-agreement):")

@@ -379,3 +379,15 @@ def get_model(model_name: str, in_dim: int, hidden_dim: int, out_dim: int,
         base = MODEL_REGISTRY[model_name](proj_dim, hidden_dim, out_dim, num_layers, dropout, **kwargs)
         return ProjectedModel(base, in_dim, proj_dim)
     return MODEL_REGISTRY[model_name](in_dim, hidden_dim, out_dim, num_layers, dropout, **kwargs)
+
+
+# 逐模型学习率（OpenMAG 对每个模型单独调参；GIN 对默认 lr=0.01 敏感、易崩溃，降到 0.005 稳定）。
+# 与梯度裁剪一起，消除 GIN 在高维多模态输入上的训练崩溃。
+MODEL_LR = {
+    "gin": 0.005,
+}
+
+
+def model_lr(model_name: str, default: float = 0.01) -> float:
+    """返回某模型的训练学习率（GIN 0.005，其余 default）。"""
+    return MODEL_LR.get(model_name, default)

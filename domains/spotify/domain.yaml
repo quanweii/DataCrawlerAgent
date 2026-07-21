@@ -1,0 +1,40 @@
+# Spotify Track Co-Attribute Graph — YAML Domain Config
+#
+# Built zero-code via build-mag-dataset skill (2026-07-11): CSV → JSON → cs_lo → graph → benchmark.
+# Data source: Tidy Tuesday "Spotify Songs" (raw.githubusercontent.com/rfordatascience/tidytuesday),
+#   derived from Spotify, ~28k unique tracks; 10k stratified subsample, 6 genres.
+# This is the C3 "zero-code new domain" exhibit: no framework Python modified, only YAML + data.
+#
+# Relations (NOT shared_genre — playlist_genre IS the label, so a genre relation would be definitional/leaky):
+#   same_artist  - tracks by the same artist (high-freq groups >30% skipped)
+#   same_album   - tracks from the same album (cap 10)
+
+domain: spotify
+graph_mode: homogeneous
+
+data:
+  id_field: track_id
+  label_field: playlist_genre
+  min_class_size: 20
+  max_items: 10000
+  data_source: file
+  data_file: ./data/spotify_raw/spotify_tracks.json
+
+relations:
+  - name: same_artist
+    group_by: track_artist
+    cap: 30
+    freq_filter: 0.30
+  - name: same_album
+    group_by: track_album_id
+    cap: 10
+
+output_dirs:
+  raw: ./data/spotify_raw
+  items: ./data/spotify_cslo
+  graphs: ./data/spotify_graphs
+  datasets: ./data/spotify_datasets
+
+agents:
+  collector_agent_name: spotify_collector
+  builder_agent_name: spotify_graph_builder

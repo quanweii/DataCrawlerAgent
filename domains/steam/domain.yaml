@@ -1,0 +1,49 @@
+# Steam Game Co-Attribute Graph — YAML Domain Config
+#
+# Describes the Steam MAG domain completely. Can be used with:
+#   python main.py --domain-config domains/steam/domain.yaml
+#
+# Relations:
+#   shared_genre    - games sharing a genre tag (high-freq groups >30% skipped)
+#   same_developer  - games by the same developer
+#   same_publisher  - games by the same publisher
+#   shared_category - games sharing a category tag (high-freq groups >40% skipped, min 5)
+
+domain: steam
+graph_mode: homogeneous
+
+data:
+  id_field: appid
+  label_field: genres[0]
+  min_class_size: 20
+  max_items: 10000
+  data_source: file
+  data_file: ./data/steam_raw/steam_games_10k.json
+
+relations:
+  - name: shared_genre
+    group_by: genres
+    cap: 30
+    freq_filter: 0.30
+  - name: same_developer
+    group_by: developers
+    cap: 100
+  - name: same_publisher
+    group_by: publishers
+    cap: 100
+  - name: shared_category
+    group_by: categories
+    cap: 30
+    freq_filter: 0.40
+    floor: 5
+
+output_dirs:
+  raw: ./data/steam_raw
+  items: ./data/steam_games
+  graphs: ./data/steam_graphs
+  datasets: ./data/steam_datasets
+
+agents:
+  collector_agent_name: steam_game_collector
+  builder_agent_name: steam_game_graph_builder
+  tool_manager_class: tools.steam_tools.SteamToolManager

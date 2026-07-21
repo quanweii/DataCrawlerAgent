@@ -2,8 +2,12 @@
 文本编码器 - 使用 CLIP-ViT-Large-Patch14 编码论文文本
 统一输出768维，与图像/公式编码器维度一致
 支持长文档分段编码 + 池化
+
+2026-07-15: 增加 strip_patterns 参数，用于在编码前清洗文本中的
+label 承载字段（如 "Style: X" / "Genres: X"），消除特征级 label 泄露。
 """
 import os
+import re
 import torch
 import numpy as np
 from typing import List, Optional
@@ -20,10 +24,19 @@ class TextEncoder:
         device: str = "cuda",
         chunk_size: int = 200,
         batch_size: int = 32,
+        strip_patterns: Optional[List[str]] = None,
     ):
+        """
+        strip_patterns: 可选的正则列表。每条在 _read_md 之后以 re.MULTILINE|re.IGNORECASE
+        匹配整行，命中则删除该行。用于清洗 label-bearing 元数据字段。
+        例如 wikiart: [r'^Style\s*:.*$'] ; steam: [r'^Genres?\s*:.*$']
+        """
         self.device = device
         self.chunk_size = chunk_size
         self.batch_size = batch_size
+        self._strip_res = None
+        if strip_patterns:
+            self._strip_res = [re.compile(p, re.MULTILINE | re.IGNORECASE) for p in strip_patterns]
 
         from transformers import CLIPModel, CLIPTokenizer
         self.model = CLIPModel.from_pretrained(model_name).to(device)
@@ -31,7 +44,8 @@ class TextEncoder:
         self.model.eval()
         self.embedding_dim = self.model.config.projection_dim  # 768
         self.max_tokens = self.model.config.text_config.max_position_embeddings  # 77
-        logger.info(f"TextEncoder loaded: {model_name}, dim={self.embedding_dim}")
+        strip_note = f", strip_patterns={strip_patterns}" if strip_patterns else ""
+        logger.info(f"TextEncoder loaded: {model_name}, dim={self.embedding_dim}{strip_note}")
 
     @torch.no_grad()
     def encode_single(self, text: str) -> np.ndarray:
@@ -117,6 +131,10 @@ class TextEncoder:
     def _read_md(self, md_path: str) -> str:
         try:
             with open(md_path, "r", encoding="utf-8") as f:
-                return f.read()
+                text = f.read()
         except Exception:
             return ""
+        if self._strip_res:
+            for pat in self._strip_res:
+                text = pat.sub("", text)
+        return text

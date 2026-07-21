@@ -250,6 +250,26 @@ def main():
         action="store_true",
         help="禁用并行，使用顺序执行（调试用）"
     )
+    parser.add_argument(
+        "--domain",
+        type=str,
+        default="arxiv",
+        choices=["arxiv", "reddit", "amazon", "steam", "tmdb", "wikiart"],
+        help="数据领域: arxiv(学术论文), reddit(社交媒体), amazon(电商推荐), steam(游戏), tmdb(电影), wikiart(艺术)"
+    )
+    parser.add_argument(
+        "--graph-mode",
+        type=str,
+        default="heterogeneous",
+        choices=["homogeneous", "heterogeneous"],
+        help="建图模式: homogeneous(MAGB兼容同构图), heterogeneous(异构图)"
+    )
+    parser.add_argument(
+        "--domain-config",
+        type=str,
+        default=None,
+        help="YAML 域配置文件路径 (替代 --domain, 用于自定义领域)"
+    )
 
     args = parser.parse_args()
 
@@ -270,16 +290,32 @@ def main():
         logger.warning("未设置 API_KEY 环境变量，请在 .env 文件中配置")
 
     # 创建主协调器
-    if not args.sequential and args.batch:
+    domain = args.domain
+    graph_mode = args.graph_mode
+
+    if args.domain_config:
+        # YAML 驱动域: 从 YAML 文件加载完整域配置
+        if not os.path.exists(args.domain_config):
+            logger.error(f"域配置文件不存在: {args.domain_config}")
+            sys.exit(1)
+        from orchestrator import load_orchestrator_from_yaml
+        from domains.domain_schema import load_domain_yaml
+        yc = load_domain_yaml(args.domain_config)
+        domain = yc.domain
+        graph_mode = yc.graph_mode
+        orchestrator = load_orchestrator_from_yaml(args.domain_config)
+        logger.info(f"从 YAML 加载域: {domain} ({args.domain_config})")
+    elif domain != "arxiv" or args.sequential or not args.batch:
+        # Reddit/Amazon 领域或非批量模式：使用标准 Orchestrator
+        orchestrator = DataCrawlerOrchestrator(domain=domain)
+        logger.info(f"使用 {domain} 领域编排器 (graph_mode={graph_mode})")
+    else:
+        # ArXiv 批量模式：使用并行编排器
         orchestrator = ParallelDataCrawlerOrchestrator(
             num_gpus=args.num_gpus,
             num_cpu_workers=args.num_workers
         )
         logger.info(f"使用并行模式: {args.num_gpus} GPUs, {args.num_workers} CPU workers")
-    else:
-        orchestrator = DataCrawlerOrchestrator()
-        if args.sequential:
-            logger.info("使用顺序模式（调试）")
 
     if args.interactive:
         # 交互模式
@@ -311,12 +347,14 @@ def main():
                 "dataset_name": f"cs_ai_dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 "output_format": "json"
             }
+        task.setdefault("graph_mode", graph_mode)
         result = orchestrator.execute_batch_pipeline(task)
         print_result_summary(result)
 
     elif args.config:
         # 从配置文件运行
         task = load_task_config(args.config)
+        task.setdefault("graph_mode", graph_mode)
         result = orchestrator.execute_pipeline(task)
         print_result_summary(result)
 
