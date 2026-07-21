@@ -31,3 +31,30 @@
 
 ---
 *门按设计工作:在投入 2-3 周前用 1.5 天证伪清楚。结论与 IGC 教训一致——agent 在"有廉价代理"的任务上不必要。*
+
+---
+
+## 追加: P4 自治 skill 决定性测试 (2026-07-21, agent 当主线的最后证伪门)
+
+**问题**: 把 skill 改成自治版(LLM 发现 schema + 确定性 verifier 闭环去泄露,全程不问人),能否在 4 域 raw 数据上产出**合法 + 去泄露**的 schema?脚本 `benchmark/path_b/probe_p4_autonomous_skill.py`。
+
+**结果(修了 3 个测量 bug 后——n_unique→共享度、label 类数阈值、min_class_size 过滤语义、revise 限定真实字段):**
+
+| 域 | 硬门槛(build_valid AND decontam_correct) | label 复现 | 去泄露正确 | 关系召回 |
+|---|---|---|---|---|
+| spotify | **3/3** | 3/3 | 3/3 | 0.5(只 track_artist,漏 track_album_id)|
+| wikiart | **3/3** | 3/3 | 3/3 | 1.0(artist; 正确丢 shared_style)|
+| steam | **3/3** | 3/3 | 3/3 | 1.0(categories/developers/publishers; 丢 shared_genre)|
+| tmdb | **3/3** | 3/3 | 3/3 | 0.5(actors/directors; 丢 shared_genre)|
+
+**12/12 自治产出合法+去泄露 schema,label 全对,去泄露全对。Claim B 复活。**
+
+### 诚实归因(关键)
+- **label 是 round-0 single-shot LLM 选对的(12/12),loop 从未改过 label(0/12)** → label 发现=LLM 单次,loop 不贡献 label。
+- **loop 的真实价值 = 去泄露 + 剪退化关系**(确定性 verifier,12/12 稳健)——且比人写金标准更一致(3/4 金标准含定义性泄露,自治版一律按 C2 剔除)。
+- **可靠核心是测量(C2),LLM 发现是脆弱部分**:P1(不同 prompt)steam 选 price 2/3;P4(本 prompt)genres 12/12 → **label 发现 prompt-fragile**,稳健性未证。
+- **关系召回部分**(0.5–1.0):agent 产出的关系集是金标准的**有效子集**,比人写的稀疏(漏 spotify same_album、tmdb 部分)。
+
+### 对论文的意义
+- **agent 当主线现在有可演示能力**:自治产出合法去泄露 schema 12/12。诚实框架 = "LLM 发现 + 测量 verifier(verifier 即 C2 leak-profiling)编排成自治真实数据 MAG 构造"——agent 与 C2 耦合(verifier 嵌 C2 测量),可靠性来自测量,LLM 贡献发现+编排。
+- **投稿前要补**:① label 发现稳健性(多 prompt 变体 + 1-2 个新 raw 数据集,证非 prompt 运气);② 关系召回(加"多提议候选关系"步骤);③ 端到端(确认 schema 能建出真图 + 算出 LP-profile,不只 schema 步)。
