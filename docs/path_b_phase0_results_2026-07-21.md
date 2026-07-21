@@ -58,3 +58,30 @@
 ### 对论文的意义
 - **agent 当主线现在有可演示能力**:自治产出合法去泄露 schema 12/12。诚实框架 = "LLM 发现 + 测量 verifier(verifier 即 C2 leak-profiling)编排成自治真实数据 MAG 构造"——agent 与 C2 耦合(verifier 嵌 C2 测量),可靠性来自测量,LLM 贡献发现+编排。
 - **投稿前要补**:① label 发现稳健性(多 prompt 变体 + 1-2 个新 raw 数据集,证非 prompt 运气);② 关系召回(加"多提议候选关系"步骤);③ 端到端(确认 schema 能建出真图 + 算出 LP-profile,不只 schema 步)。
+
+---
+
+## 追加: P5 label 稳健性 + 新域泛化 (2026-07-21, agent 主线最后证伪 ①)
+
+**Part A —— 多 prompt 变体下 label 发现稳健性(single-shot, 4 变体×4 域×2 seed):**
+
+| 变体 | spotify | wikiart | steam | tmdb | ALL |
+|---|---|---|---|---|---|
+| V1_terse(name/dtype/n_unique/sample) | 2/2 | 2/2 | 2/2 | 2/2 | **8/8** |
+| V2_examples(V1+6 样例) | 2/2 | 2/2 | 2/2 | 2/2 | **8/8** |
+| V3_structural(连续/唯一/类别标注) | 2/2 | 2/2 | **0/2** | 2/2 | 6/8 |
+| V4_minimal(name/dtype 只) | 2/2 | 2/2 | **0/2** | 2/2 | 6/8 |
+
+- single-shot: 3/4 域( spotify/wikiart/tmdb)全变体稳健; **steam 脆**——V3/V4 选了退化的 `type` 字段(steam 全是 "game",n_unique=1)。V1/V2 因显示 n_unique 避开了它。
+- **关键: verifier 闭环救回坏 label**——V4 steam round0 选 `type`(退化)→ loop 测出 n_classes=1→ 判 invalid→ revise 到 `genres`(正确)**2/2**。**闭环把脆弱的 single-shot 变成稳健的自治**。
+
+**Part B —— amazon 新真实域端到端(本地、脏、非 4 金标准; 3 seed):**
+- 自治闭环 **3/3 硬门槛过**: round0 即发现 label=`main_cat`(7 类≥20, 人评也认同), 关系=`same_brand`(28612 边), **正确避开定义性 `same_main_cat`**, 建出真图(5438 节点/28612 边/7 类/homophily 0.979)。
+- homophily 0.979 = brand 与 category 强相关(真实属性,非性定义泄露; 会被 C2 leak-profiling 标为高结构泄露=发现,非错误)。
+
+### P5 总结: agent 主线**稳健 + 可泛化**
+- label 发现: single-shot 脆(steam), 但 **verifier 闭环兜底**(退化/连续 label 必被修), 3/4 域全变体 + steam 经 loop 全对。
+- **新域泛化**: amazon 端到端 3/3, 发现合理 label+关系+避定义性+建真图。
+- **3 个投稿前 TODO 状态**: ① label 稳健性 ✅**过**; ③ 端到端建图 ✅**过**(amazon); ② 关系召回 🟡 仍偏稀疏(amazon 只 same_brand, 人可能加 same_price_band 等)。
+
+**→ Claim B(agent 当主线)证据充分**: P4(12/12 金标准)+ P5(抗 prompt + 新域泛化)。红线不变(LLM 决策>规则 不声称)。剩余软肋: 关系召回偏稀疏、"合理但非最优"的替代 label 不会被 loop 纠(只纠退化/连续)。
