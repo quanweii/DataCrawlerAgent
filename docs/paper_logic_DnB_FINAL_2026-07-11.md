@@ -26,6 +26,38 @@
 
 ---
 
+## 🔧 2026-07-21 Path-B 更新：agent 升回 C1 主线（权威，覆盖下方 §2/§3 的 agent 定位）
+
+> Phase-0 三探针（P1–P3）证伪了"agent 决策/匹配 > 规则"（greedy=oracle、embedding=LLM），但 P4–P5 证明 **agent 作为"自治真实数据 MAG 构造框架"成立**——agent 价值不在"决策比规则强"，而在"端到端自治获取真实源 + LLM 发现 schema + 测量 verifier 去泄露"。证据见 [`docs/path_b_phase0_results_2026-07-21.md`](path_b_phase0_results_2026-07-21.md)。下方 §2 表的 C1（四数据集）降为 C3；§3 的 agent 定位被本节覆盖。
+
+### 新 Thesis（agent 当头条）
+
+> **一个自治多智能体框架，把真实世界多模态源（论文/游戏/电影/艺术/音乐/商品 API）编排成泄漏可控的多模态属性图（MAG）benchmark——与 LLM 直接生成合成数据的 agent-benchmark 路线（BenchAgents/AutoBencher）相对。框架的 verifier 嵌入测量驱动的 leak-profiling 协议（C2），使新域 MAG 从「专家数月手建、且常带隐性泄露」变成「自治发现 schema + 自动去泄露 + 自带 leak-profile」。**
+
+### 新贡献结构（C1 主线 = agent 框架）
+
+| 贡献 | 内容 | 关键证据 |
+|---|---|---|
+| **C1（主线）自治多智能体真实数据 MAG 构造框架** | 范式 = **LLM-orchestrate-real-fetch**（vs BenchAgents 的 LLM-generate）；架构 `planner(LLM 发现 schema) ↔ verifier(确定性, 嵌 C2 测量) → executor(配置驱动建图) → formatter → encoder → evaluator`；agent 价值 = ① LLM schema 发现 ② verifier 去泄露+纠错 ③ 端到端编排+真实源获取 | **P4: 4 金标准域自治产出合法去泄露 schema 12/12**（label 全对、去泄露全对，比人写金标准更一致地剔除定义性关系）；**P5-A: label 抗 prompt**（single-shot 脆→verifier 闭环纠回）；**P5-B: 新脏域 amazon 端到端 3/3**（发现 main_cat + same_brand + 避定义性 + 建真图 5438 节点/28612 边/7 类） |
+| **C2 测量驱动 leak-profiling 去泄露协议（护城河，同时是 C1 verifier 的核心）** | 三层：① 结构（structure-leakage ceiling/label-prop 上限 + 跨切分剪枝）② 特征（text label 字段 strip）③ 编码器（CLIP LAION 污染 ΔF1 wikiart 0.21/tmdb 0.15/steam 0.11）+ LP 三档负采样 + 逐关系 homophily 标定义性边 | 剪枝后 4 域 ceiling 全≤多数类（wikiart 0.921→0.024）；C2 的确定性测量 = C1 verifier 的去泄露引擎 |
+| **C3 leak-profiled MAG 数据集（框架产物 + 泛化证据）** | arxiv/steam/tmdb/wikiart（同质性 0.24→0.93 + formula 模态）+ spotify（零代码首触）+ amazon（held-out 新域）；每个附 leak-profile 一等元数据 | 4 域 agent 产物；spotify 0 行 Python；amazon 自治端到端建出 |
+| **C4 benchmark 科学发现** | steering 受控结构实验（controlled trend, 非 causal law）+ GNN-MLP gap×同质性 + 模态×结构耦合 + 跨域迁移负结果 | GCN-MLP gap vs 同质性 naive r=0.875（cluster-robust 后 effective n≈3 域，降级 controlled trend；共线性反驳；LODO r=0.714 p=0.031） |
+
+### Agent 诚实定位（覆盖 §3）
+
+| 任务 | LLM agent 是否 load-bearing | 证据 |
+|---|---|---|
+| **schema 发现（label/关系）+ 端到端自治** | ✅ **是（主线）** | P4 12/12；P5-A verifier 闭环纠退化 label；P5-B amazon 新域 3/3 |
+| **去泄露 + 纠错** | ✅ **是（verifier 环）**，但 verifier 是**确定性测量（=C2）** | 12/12 稳健；比人写金标准更一致剔除定义性关系 |
+| 图构建/去泄露**微观决策 vs 规则** | ❌ 不是（测量才是） | greedy=oracle（IGC, tmdb 0.300=0.300） |
+| 引用匹配（fuzzy OCR） | ❌ 不独有 | **P2: embedding fuzzy 0.778 = LLM 0.778**（廉价代理等价）|
+
+**红线（不可违反）**：① 不声称 LLM 决策 > 规则（greedy=oracle）；② 不声称引用匹配 LLM 独有（P2 embedding 等价）；③ "self-verifying" 改称 **audit-capable pipeline**。
+**软肋（写进 limitation）**：① 关系召回偏稀疏（有效子集，非最优）；② "合理但非最优"的替代 label 不会被 loop 纠（只纠退化/连续的硬错误）。
+**诚实核心**：agent 的可靠性来自 **verifier 嵌入 C2 测量**；LLM 贡献发现+编排，verifier 贡献去泄露+纠错兜底。回答 reviewer"拆掉 LLM 会怎样"：label 发现退化（要人写 YAML），去泄露仍由测量保证——端到端自治（含 label 发现）正是 agent 区别于确定性脚本的价值。
+
+---
+
 ## 0. 最终决策（2026-07-11 用户确认，不可回退）
 
 | 项 | 决策 |

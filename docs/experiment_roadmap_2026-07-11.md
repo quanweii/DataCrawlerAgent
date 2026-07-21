@@ -200,3 +200,42 @@ agent 的 load-bearing 支柱**只有三个**，每个都有诚实约束：
 ---
 
 *生成于 2026-07-11，Workflow `wf_ba3391c0-966`（4 审计+合成+批判）。逻辑线见 `paper_logic_DnB_FINAL_2026-07-11.md`。*
+
+---
+
+## §A6. Path-B agent 自治实验（2026-07-21，C1 主线证据）
+
+> 配套 [`docs/path_b_phase0_results_2026-07-21.md`](path_b_phase0_results_2026-07-21.md)（详细）+ 脚本 `benchmark/path_b/probe_{p1..p5}_*.py`。
+> 目的：证伪/证实"agent 作为自治真实数据 MAG 构造框架"能否当 C1 主线。
+> 模型 qwen-plus + DashScope text-embedding-v3(1024d)。分支 `feature/path-b-agent-enhancement`。
+
+这组实验分两段：**P1–P3 是证伪门**（决定 agent 价值在哪、不在哪），**P4–P5 是 C1 主线正面证据**。
+
+### P1–P3：证伪门（塑造 agent 的诚实 scope）
+
+| 实验 | 脚本 | 核心结果 | 对论文 |
+|---|---|---|---|
+| **P1 schema 发现（弱正）** | `probe_p1_schema.py` | 藏 YAML，LLM 单次推断 4 域×3 seed。spotify 精度 0.50 vs 启发式 0.29，避开定义性 shared_genre；但 wikiart/tmdb 过度去泄露、**steam 2/3 seed 把 price 选成 label** | single-shot 发现**脆**→驱动 P4 加闭环 |
+| **P2 引用对齐（❌死）** | `probe_p2_citation.py` | n=60 同候选短名单：**fuzzy 桶 emb 0.778 = LLM 0.778**（rule 0.111）；全量 emb 0.967>LLM 0.950 | **embedding 全复制语义匹配→agent 不必要**。撤"引用匹配 LLM 独有"主张 |
+| **P3 语义审计（✅正但单次太噪）** | `probe_p3_audit.py` | 注 20 条语义脏数据进 200 wikiart：LLM 抓 mislabel/field_swap **1.00**（embedding 结构做不到），但 **clean FP 0.26**、跨批 dup 漏 0.20 | 唯一"无廉价代理"语义区；单次太噪，作 limitation/未来工作，不抬 C1 |
+
+**门结论**：3 柱里 2 柱（P2 确定、P1 大部分）有廉价代理 → agent 价值不在"决策/匹配"。但这**驱动了 P4 的正确设计**：把 agent 价值放到"端到端自治 schema 发现 + verifier 去泄露"。
+
+### P4–P5：C1 主线正面证据
+
+| 实验 | 脚本 | 核心结果 | 支撑 |
+|---|---|---|---|
+| **P4 自治 skill 决定性测试** | `probe_p4_autonomous_skill.py` | LLM 发现 schema + 确定性 verifier 闭环（全程不问人），4 金标准域×3 seed：**硬门槛（build_valid AND decontam_correct）12/12**；label 复现 12/12；去泄露正确 12/12（一律按 C2 剔定义性关系，比 3/4 含泄露的人写金标准更一致）。归因：label 是 single-shot 选对（loop 不碰 label），loop 价值=去泄露+剪退化（确定性，稳健） | **C1 自治 schema 产出**（头条证据）|
+| **P5-A label 抗 prompt 稳健性** | `probe_p5_robustness.py` (Part A) | 4 prompt 变体×4 域×2 seed single-shot：3/4 域全变体稳；steam 脆（V3/V4 选退化 `type`）。**verifier 闭环救回**：V4 steam round0 `type`→loop 测 n_classes=1→revise `genres` 2/2 | **闭环把脆弱 single-shot 变稳健自治** |
+| **P5-B 新域端到端泛化** | `probe_p5_robustness.py` (Part B) | amazon（本地、脏、非 4 金标准）3 seed：**3/3 硬门槛过**——发现 label=`main_cat`(7 类≥20)+关系 `same_brand`(28612 边)+**避定义性 `same_main_cat`**+建真图(5438 节点/7 类/homophily 0.979) | **C1 新真实域泛化**（端到端）|
+
+### 实验线↔逻辑线对应（读两线时的索引）
+
+- **C1（agent 框架主线）** ← P4（12/12 自治产出）+ P5-A（抗 prompt）+ P5-B（新域泛化）
+- **C2（测量去泄露）** ← verifier 的去泄露引擎 = P4/P5 的确定性 verifier + 原有 structure-leakage ceiling/CLIP 污染/text strip
+- **agent 诚实红线** ← P2（引用不独有）+ IGC greedy=oracle + P1 single-shot 脆
+- **C1 软肋 limitation** ← P1/P4 关系召回偏稀疏 + P5-A 替代 label 不被纠
+
+### 3 个投稿前 TODO 状态
+① label 稳健性 ✅过（P5-A）；② 关系召回 🟡仍稀疏（待加"多提议候选"步骤）；③ 端到端建图 ✅过（P5-B amazon）。
+
