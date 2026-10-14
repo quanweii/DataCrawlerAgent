@@ -20,6 +20,12 @@ data:
   data_source: file
   data_file: ./data/steam_raw/steam_games_10k.json
 
+protocol:
+  protocols: [transductive, split_disjoint, temporal, group_inductive]
+  time_field: release_date
+  group_field: developers
+  group_semantics: primary developer
+
 relations:
   - name: shared_genre
     group_by: genres

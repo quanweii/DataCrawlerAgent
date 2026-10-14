@@ -49,6 +49,8 @@ _pre.add_argument("--out-suffix", default="",
                   help="输出文件名后缀(如 _perseed)，避免覆盖头条 summary")
 _pre.add_argument("--proj-dim", type=int, default=768,
                   help="learnable Linear 投影维度(OpenMAG 公平模态对比);0=不投影")
+_pre.add_argument("--protocols", default="all",
+                  help="all 或逗号分隔: transductive,split_disjoint,temporal,group_inductive")
 _args, _ = _pre.parse_known_args()
 if _args.gpu is not None:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(_args.gpu)
@@ -70,6 +72,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from benchmark.data.domain_loader import SingleDomainDataset
 from benchmark.data.splits import (stratified_split, prune_cross_split_edges,
                                    label_propagation_ceiling)
+from benchmark.data.protocols import (PROTOCOLS, generate_protocol_views,
+                                      protocol_excluded_relations,
+                                      save_protocol_suite)
 from benchmark.models.gnn import get_model, model_lr
 from benchmark.tasks.node_classification import train_and_eval, run_node_classification
 
@@ -173,6 +178,93 @@ def run_legacy_random(domain, modality, models, device, out_dir):
     return out
 
 
+def run_protocol_matrix(domain, modalities, models, protocols, device, out_dir):
+    """Run the same encoder/fusion/model grid under four explicit graph views.
+
+    Frozen per-node embeddings are encoded once and reused across views.  This
+    is intentional: a split changes information exposure, not node content.
+    Any future trainable preprocessing must be fitted on train_mask only.
+    """
+    protocol_out = out_dir / "protocol_matrix"
+    view_out = PROJECT_ROOT / "benchmark" / "results" / "protocol_views"
+    protocol_out.mkdir(parents=True, exist_ok=True)
+    combined = {
+        "domain": domain,
+        "protocols": protocols,
+        "modalities": modalities,
+        "models": models,
+        "split_seed": _args.split_seed,
+        "init_seeds": _args.init_seeds,
+        "representation_policy": (
+            "frozen per-node encoder outputs reused across protocol views; "
+            "label-derived fields removed before encoding; mean fusion has no fitted state"
+        ),
+        "results": {},
+    }
+    suite = None
+    for modality in modalities:
+        excluded = protocol_excluded_relations(domain)
+        ds = SingleDomainDataset(domain, modality=modality,
+                                 exclude_relations=excluded)
+        if suite is None:
+            suite = generate_protocol_views(
+                domain, ds.graph["node_ids"], ds.data.y, ds.data.edge_index,
+                seed=_args.split_seed, excluded_relations=excluded)
+            save_protocol_suite(domain, suite, view_out)
+            combined["protocol_manifest"] = suite["manifest"]
+        for protocol in protocols:
+            view = suite["views"][protocol]
+            tr, va, te = view["masks"]
+            edge_index = view["edge_index"]
+            data = Data(x=ds.data.x, edge_index=edge_index, y=ds.data.y)
+            data.num_nodes = ds.data.num_nodes
+            lp = label_propagation_ceiling(ds.data.y, edge_index, tr, te)
+            cells = {}
+            logger.info(f"\n[{domain}/{modality}/{protocol}] nodes="
+                        f"{int(tr.sum())}/{int(va.sum())}/{int(te.sum())}, "
+                        f"directed_edges={edge_index.size(1)}")
+            for model in models:
+                accs, f1s, vals, best_epochs = [], [], [], []
+                for seed in range(_args.init_seeds):
+                    torch.manual_seed(seed)
+                    m = get_model(
+                        model, data.x.size(1), _args.hidden,
+                        int(data.y.max().item()) + 1,
+                        num_layers=_args.layers, dropout=_args.dropout,
+                        proj_dim=_args.proj_dim if _args.proj_dim else None)
+                    result = train_and_eval(
+                        m, data, tr, va, te, num_epochs=_args.epochs,
+                        lr=model_lr(model), device=device)
+                    accs.append(float(result["test_acc"]))
+                    f1s.append(float(result["test_f1"]))
+                    vals.append(float(result["val_acc"]))
+                    best_epochs.append(int(result["best_epoch"]))
+                cells[model] = {
+                    "acc": float(np.mean(accs)), "acc_std": float(np.std(accs)),
+                    "f1": float(np.mean(f1s)), "f1_std": float(np.std(f1s)),
+                    "accs": accs, "f1s": f1s,
+                    "val_acc": float(np.mean(vals)), "val_acc_std": float(np.std(vals)),
+                    "val_accs": vals, "best_epochs": best_epochs,
+                }
+                logger.info(f"  {model}: acc={np.mean(accs):.4f}±{np.std(accs):.4f}, "
+                            f"f1={np.mean(f1s):.4f}±{np.std(f1s):.4f}")
+            key = f"{protocol}/{modality}"
+            combined["results"][key] = {
+                "protocol": protocol, "modality": modality,
+                "split_sizes": [int(tr.sum()), int(va.sum()), int(te.sum())],
+                "directed_edges": int(edge_index.size(1)),
+                "topology_only_predictability": lp,
+                "interpretation": "diagnostic_only_not_a_leakage_verdict",
+                "models": cells,
+            }
+            cell_path = protocol_out / f"nc_{domain}_{protocol}_{modality.replace('+', '_')}.json"
+            cell_path.write_text(json.dumps(combined["results"][key], indent=2), encoding="utf-8")
+    matrix_path = protocol_out / f"nc_{domain}_protocol_matrix.json"
+    matrix_path.write_text(json.dumps(combined, indent=2), encoding="utf-8")
+    logger.info(f"protocol matrix saved to {matrix_path}")
+    return combined
+
+
 def _print_table(domain, summary, models, modalities):
     proto = summary.get("protocol", "?")
     table = summary.get("table", summary)
@@ -209,20 +301,12 @@ def main():
                 merged["table"].update(last["table"])
         _print_table(domain, merged, models, modalities)
     else:
-        merged = None
-        for modality in modalities:
-            last = run_leak_free(domain, modality, models, device, out_dir)
-            if merged is None:
-                merged = last
-            else:
-                merged["table"].update(last["table"])
-                merged["edges_original"] = last["edges_original"]
-                merged["edges_pruned"] = last["edges_pruned"]
-        # Save merged summary
-        sp = out_dir / f"nc_{domain}_summary{_args.out_suffix}.json"
-        with open(sp, "w") as f:
-            json.dump(merged, f, indent=2)
-        _print_table(domain, merged, models, modalities)
+        protocols = list(PROTOCOLS) if _args.protocols == "all" else [
+            p.strip() for p in _args.protocols.split(",") if p.strip()]
+        unknown = sorted(set(protocols) - set(PROTOCOLS))
+        if unknown:
+            raise ValueError(f"unknown protocols: {unknown}; choose from {PROTOCOLS}")
+        run_protocol_matrix(domain, modalities, models, protocols, device, out_dir)
 
 
 if __name__ == "__main__":

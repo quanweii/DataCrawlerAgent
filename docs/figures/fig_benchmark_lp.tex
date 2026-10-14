@@ -1,0 +1,55 @@
+\begin{table}[ht]
+\centering\small\setlength{\tabcolsep}{4.5pt}\renewcommand{\arraystretch}{1.08}
+\caption{Link prediction (LP). \textbf{(A)} Structure-leakage ceiling (label-propagation upper bound, AUC) before\,$\to$\,after cross-split edge pruning; after pruning all domains $\leq$ majority. \textbf{(B)} LP AUC (10 seeds) by modality and negative-sampling regime; arxiv uses text+image+\emph{formula} (no gcnii run).}
+\label{tab:lp}
+\textbf{(A)} LP ceiling (structure-leakage)\\[2pt]
+\begin{tabular}{lccc}
+\toprule
+Domain & Original & Pruned & Majority \\
+\midrule
+arxiv     & 0.673 & 0.261 & 0.289 \\
+steam     & 0.582 & 0.504 & 0.504 \\
+tmdb      & 0.422 & 0.154 & 0.205 \\
+wikiart   & 0.918 & 0.024 & 0.025 \\
+\bottomrule\end{tabular}\\[8pt]
+\textbf{(B)} LP AUC by modality $\times$ negative sampling (cols: MLP/GCN/GAT/SAGE/GIN/GCNII)\\[2pt]
+\begin{tabular}{lllcccccc}
+\toprule
+Domain & modality & neg & MLP & GCN & GAT & SAGE & GIN & GCNII \\
+\midrule
+arxiv    & text+image+formula & random         & 0.909 & 0.932 & 0.928 & 0.893 & 0.938 & --- \\
+         &                  & hard           & 0.779 & 0.829 & 0.822 & 0.810 & 0.874 & --- \\
+         &                  & hard\_degree   & 0.841 & 0.882 & 0.878 & 0.836 & 0.919 & --- \\
+\midrule
+steam    & image            & random         & 0.867 & 0.901 & 0.860 & 0.903 & 0.866 & 0.864 \\
+         &                  & hard           & 0.834 & 0.877 & 0.828 & 0.881 & 0.825 & 0.823 \\
+         &                  & hard\_degree   & 0.784 & 0.817 & 0.792 & 0.839 & 0.730 & 0.704 \\
+         & text             & random         & 0.881 & 0.890 & 0.854 & 0.893 & 0.862 & 0.863 \\
+         &                  & hard           & 0.851 & 0.863 & 0.822 & 0.867 & 0.824 & 0.823 \\
+         &                  & hard\_degree   & 0.796 & 0.795 & 0.777 & 0.821 & 0.729 & 0.701 \\
+         & text+image       & random         & 0.880 & 0.898 & 0.855 & 0.902 & 0.860 & 0.870 \\
+         &                  & hard           & 0.847 & 0.874 & 0.821 & 0.879 & 0.817 & 0.832 \\
+         &                  & hard\_degree   & 0.799 & 0.809 & 0.780 & 0.836 & 0.723 & 0.719 \\
+\midrule
+tmdb     & image            & random         & 0.802 & 0.889 & 0.859 & 0.876 & 0.810 & 0.841 \\
+         &                  & hard           & 0.739 & 0.849 & 0.805 & 0.819 & 0.808 & 0.825 \\
+         &                  & hard\_degree   & 0.677 & 0.773 & 0.732 & 0.751 & 0.718 & 0.727 \\
+         & text             & random         & 0.839 & 0.893 & 0.864 & 0.890 & 0.822 & 0.853 \\
+         &                  & hard           & 0.798 & 0.856 & 0.814 & 0.837 & 0.818 & 0.830 \\
+         &                  & hard\_degree   & 0.712 & 0.778 & 0.739 & 0.769 & 0.726 & 0.732 \\
+         & text+image       & random         & 0.842 & 0.897 & 0.870 & 0.893 & 0.816 & 0.853 \\
+         &                  & hard           & 0.784 & 0.857 & 0.814 & 0.837 & 0.813 & 0.835 \\
+         &                  & hard\_degree   & 0.703 & 0.782 & 0.743 & 0.770 & 0.721 & 0.740 \\
+\midrule
+wikiart  & image            & random         & 0.933 & 0.989 & 0.988 & 0.987 & 0.877 & 0.951 \\
+         &                  & hard           & 0.664 & 0.872 & 0.821 & 0.818 & 0.799 & 0.810 \\
+         &                  & hard\_degree   & 0.652 & 0.832 & 0.811 & 0.804 & 0.715 & 0.745 \\
+         & text             & random         & 0.787 & 0.968 & 0.973 & 0.973 & 0.973 & 0.909 \\
+         &                  & hard           & 0.629 & 0.864 & 0.842 & 0.834 & 0.920 & 0.814 \\
+         &                  & hard\_degree   & 0.627 & 0.838 & 0.825 & 0.830 & 0.857 & 0.765 \\
+         & text+image       & random         & 0.925 & 0.987 & 0.987 & 0.987 & 0.939 & 0.938 \\
+         &                  & hard           & 0.659 & 0.873 & 0.820 & 0.819 & 0.872 & 0.811 \\
+         &                  & hard\_degree   & 0.647 & 0.835 & 0.809 & 0.803 & 0.792 & 0.746 \\
+\bottomrule
+\end{tabular}
+\end{table}

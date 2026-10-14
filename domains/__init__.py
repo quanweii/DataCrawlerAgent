@@ -8,6 +8,7 @@ from .domain_schema import (
     load_domain_yaml,
     validate_domain_config,
     yaml_to_domain_config,
+    yaml_to_task_config,
 )
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "load_domain_yaml",
     "validate_domain_config",
     "yaml_to_domain_config",
+    "yaml_to_task_config",
 ]

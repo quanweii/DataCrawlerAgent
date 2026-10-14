@@ -2,7 +2,7 @@
 TmdbMovieGraphBuilderAgent — TMDb 电影同构图构建 Agent。
 
 域专属薄子类: 所有 ReAct 骨架在 DomainGraphBuilderAgent 中, 这里仅配置 domain+build_fn+config。
-(无 homophily 警告: TMDb 同质性 ~0.24, 异质 → 链路预测无同质泄露问题)
+(不以 homophily 阈值裁决泄露；target provenance 由 Verifier 单独审计。)
 """
 from .domain_graph_builder import DomainGraphBuilderAgent
 from crawlers import build_tmdb_graph
@@ -26,6 +26,6 @@ class TmdbMovieGraphBuilderAgent(DomainGraphBuilderAgent):
                 "default_data_dir": "./data/tmdb_movies",
                 "graphs_subdir": "graphs",
                 "degree_range": (5, 80),
-                "homophily_warn": None,  # TMDb 异质, 无同质泄露风险
+                "homophily_warn": None,
             },
         )

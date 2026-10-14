@@ -76,10 +76,13 @@ def _abs(p: str) -> Path:
 
 # ===================== 图加载 =====================
 
-def load_domain_graph(domain: str, relation: str = None) -> dict:
+def load_domain_graph(domain: str, relation: str = None,
+                      exclude_relations=None) -> dict:
     """读取 v3.json，返回单域图结构。
 
     relation: 若指定，则只保留 attributes.relation == relation 的边（**结构调控/steering 用**）。
+    exclude_relations: provenance 已确认由 target 字段派生、不得进入 benchmark view 的关系。
+                       raw MAG 文件保持不变；过滤只发生在派生视图。
               节点集合、标签、特征加载方式**完全不变**——只换边，从而隔离"画哪种边"的因果效应。
               同质性(homophily)按筛后边重算。
 
@@ -126,8 +129,12 @@ def load_domain_graph(domain: str, relation: str = None) -> dict:
     seen = set()
     id2lab = {n["id"]: n["attributes"]["label"] for n in nodes}
     same_cnt, tot_cnt = 0, 0
+    excluded = set(exclude_relations or [])
     for e in edges:
-        if relation is not None and e.get("attributes", {}).get("relation", "?") != relation:
+        edge_relation = e.get("attributes", {}).get("relation", "?")
+        if edge_relation in excluded:
+            continue
+        if relation is not None and edge_relation != relation:
             continue
         s, t = e["source"], e["target"]
         if s == t or s not in id2idx or t not in id2idx:
@@ -162,6 +169,7 @@ def load_domain_graph(domain: str, relation: str = None) -> dict:
         "relations": relations,
         "homophily": homophily,
         "relation": relation,
+        "excluded_relations": sorted(excluded),
         "covered": covered_nodes,
     }
 
@@ -232,11 +240,14 @@ class SingleDomainDataset:
       - .get_split_masks() : (train, val, test) bool masks, 分层切分（保护小类）
     """
 
-    def __init__(self, domain: str, modality: str = "text+image", relation: str = None):
+    def __init__(self, domain: str, modality: str = "text+image", relation: str = None,
+                 exclude_relations=None):
         self.domain = domain
         self.modality = modality
         self.relation = relation
-        self.graph = load_domain_graph(domain, relation=relation)
+        self.exclude_relations = list(exclude_relations or [])
+        self.graph = load_domain_graph(domain, relation=relation,
+                                       exclude_relations=self.exclude_relations)
         x = build_features(domain, self.graph, modality)
         data = Data(
             x=x,

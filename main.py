@@ -327,6 +327,21 @@ def main():
         result = orchestrator.execute_pipeline(task)
         print_result_summary(result)
 
+    elif args.domain_config:
+        # A YAML file is an executable domain declaration, not merely an
+        # orchestrator selector. Optional --config values override its defaults.
+        from domains.domain_schema import yaml_to_task_config
+        task = yaml_to_task_config(yc)
+        if args.config:
+            override = load_task_config(args.config)
+            for key, value in override.items():
+                if key in {"output_dirs", "integrity", "protocol"} and isinstance(value, dict):
+                    task.setdefault(key, {}).update(value)
+                else:
+                    task[key] = value
+        result = orchestrator.execute_pipeline(task)
+        print_result_summary(result)
+
     elif args.batch:
         # 批量下载模式
         if args.config:

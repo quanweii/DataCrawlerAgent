@@ -33,6 +33,7 @@ from .wikiart_artwork_graph_builder import WikiartArtworkGraphBuilderAgent
 
 # 对抗性校验 Agent (多智能体闭环)
 from .graph_verifier import GraphVerifierAgent
+from .schema_discovery import SchemaDiscoveryAgent
 
 # 通用参数化 Agent (YAML 驱动域)
 from .domain_collector import DomainCollectorAgent
@@ -42,6 +43,7 @@ __all__ = [
     "ReActAgent",
     "DomainGraphBuilderAgent",
     "GraphVerifierAgent",     # 对抗性校验 — 多智能体闭环关节
+    "SchemaDiscoveryAgent",
     "MessageBus",
     "Message",
     # ArXiv

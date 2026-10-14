@@ -2,7 +2,8 @@
 WikiartArtworkGraphBuilderAgent — WikiArt 画作同构图构建 Agent。
 
 域专属薄子类: 所有 ReAct 骨架在 DomainGraphBuilderAgent 中, 这里仅配置 domain+build_fn+config。
-WikiArt 特有问题: shared_style 边定义性同质 (homo ~0.90) → LP 必须 hard neg sampling。
+shared_style 来源于 target style 字段；raw MAG 可记录该关系，但 benchmark
+derived views 必须由 Verifier 按 provenance 排除。
 """
 from .domain_graph_builder import DomainGraphBuilderAgent
 from crawlers import build_wikiart_graph
@@ -27,6 +28,6 @@ class WikiartArtworkGraphBuilderAgent(DomainGraphBuilderAgent):
                 "graphs_subdir": "graphs",
                 "degree_range": (5, 80),
                 "homophily_warn": 0.95,
-                "homophily_msg": "shared_style 边定义性同质 — 链路预测必须用硬负采样 (见 docs/wikiart_lp_protocol.md)",
+                "homophily_msg": "高同质仅作诊断；关系去留由字段 provenance 决定。",
             },
         )

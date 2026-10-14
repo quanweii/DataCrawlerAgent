@@ -135,7 +135,9 @@ class DatasetFormatterAgent(ReActAgent):
             return self._collect_data_reddit(task)
         elif domain == "amazon":
             return self._collect_data_amazon(task)
-        elif domain in ("steam", "tmdb", "wikiart"):
+        elif domain in self._BUNDLE_DOMAIN_CONFIG or (
+                task.get("graph_mode") == "homogeneous"
+                and domain not in ("arxiv", "reddit", "amazon")):
             return self._collect_data_bundle(domain, task)
         else:
             if task.get("arxiv_unify"):
@@ -315,14 +317,14 @@ class DatasetFormatterAgent(ReActAgent):
 
     def _collect_data_bundle(self, domain: str, task: Dict) -> Dict:
         """从 {domain}_graph 命名空间读取 GraphBuilder 产出的完整 bundle"""
-        cfg = self._BUNDLE_DOMAIN_CONFIG[domain]
+        cfg = self._BUNDLE_DOMAIN_CONFIG.get(domain, {"graph_ns": f"{domain}_graph"})
         nodes, edges, stats = [], [], {}
         if self.blackboard:
             nodes = self.blackboard.read(cfg["graph_ns"], "nodes", [])
             edges = self.blackboard.read(cfg["graph_ns"], "edges", [])
             stats = self.blackboard.read(cfg["graph_ns"], "stats", {})
         self._formatter_data = {
-            "domain": domain, "nodes": nodes, "edges": edges, "stats": stats,
+            "domain": domain, "nodes": nodes, "edges": edges, "stats": stats, "bundle": True,
         }
         return {
             "status": "success",
@@ -346,7 +348,13 @@ class DatasetFormatterAgent(ReActAgent):
     def _build_metadata_bundle(self, domain: str, dataset_name: str,
                                nodes: List[Dict], edges: List[Dict]) -> Dict:
         """v3 风格元数据 (homogeneous, text+image 双模态, label_field)"""
-        cfg = self._BUNDLE_DOMAIN_CONFIG[domain]
+        cfg = self._BUNDLE_DOMAIN_CONFIG.get(domain)
+        if cfg is None:
+            cfg = {
+                "node_type": nodes[0].get("type", "item") if nodes else "item",
+                "node_attributes": sorted({k for n in nodes for k in n.get("attributes", {})}),
+                "edge_relations": sorted({e.get("attributes", {}).get("relation", "?") for e in edges}),
+            }
         stats = self._formatter_data.get("stats", {}) if hasattr(self, '_formatter_data') and self._formatter_data else {}
         n_nodes = len(nodes)
         total_img = sum(n.get("attributes", {}).get("image_count", 0) for n in nodes)
@@ -394,7 +402,7 @@ class DatasetFormatterAgent(ReActAgent):
             nodes = self._build_nodes_reddit(data)
         elif domain == "amazon":
             nodes = self._build_nodes_amazon(data)
-        elif domain in ("steam", "tmdb", "wikiart"):
+        elif data.get("bundle") or domain in self._BUNDLE_DOMAIN_CONFIG:
             nodes = self._build_nodes_bundle(data)
         else:
             nodes = self._build_nodes(
@@ -423,7 +431,7 @@ class DatasetFormatterAgent(ReActAgent):
             edges = self._build_edges_reddit(data)
         elif domain == "amazon":
             edges = self._build_edges_amazon(data)
-        elif domain in ("steam", "tmdb", "wikiart"):
+        elif data.get("bundle") or domain in self._BUNDLE_DOMAIN_CONFIG:
             edges = self._build_edges_bundle(data)
         else:
             edges = self._build_edges(
@@ -834,7 +842,7 @@ class DatasetFormatterAgent(ReActAgent):
             return self._build_metadata_reddit(dataset_name, nodes, edges)
         elif domain == "amazon":
             return self._build_metadata_amazon(dataset_name, nodes, edges)
-        elif domain in ("steam", "tmdb", "wikiart"):
+        elif (getattr(self, "_formatter_data", None) or {}).get("bundle") or domain in self._BUNDLE_DOMAIN_CONFIG:
             return self._build_metadata_bundle(domain, dataset_name, nodes, edges)
         else:
             return self._build_metadata_arxiv(dataset_name, nodes, edges)

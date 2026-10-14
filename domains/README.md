@@ -13,19 +13,23 @@ graph_mode: homogeneous
 
 data:
   id_field: track_id
-  label_field: genres[0]
+  label_field: playlist_genre
   min_class_size: 20
   max_items: 10000
   data_source: file
-  data_file: ./data/spotify_tracks.json
+  data_file: ./data/spotify_raw/spotify_tracks.json
+
+protocol:
+  protocols: [transductive, split_disjoint, group_inductive]
+  group_field: track_artist
+  group_semantics: primary artist
 
 relations:
-  - name: shared_genre
-    group_by: genres
+  - name: same_album
+    group_by: track_album_id
     cap: 30
-    freq_filter: 0.30
   - name: same_artist
-    group_by: artists
+    group_by: track_artist
     cap: 100
 
 output_dirs:
@@ -70,6 +74,17 @@ python main.py --domain-config domains/spotify/domain.yaml
 | `data.data_source` | string | No | `file` | `file` or `api` |
 | `data.data_file` | string | No | "" | Path to JSON data file |
 | `data.id_sanitize` | string | No | None | Regex for ID sanitization (wikiart pattern) |
+
+**protocol fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `protocols` | list | Yes | Applicable views chosen from transductive, split_disjoint, temporal, group_inductive |
+| `time_field` | string | If temporal | Real timestamp field; never replace it with random order |
+| `group_field` | string | If group_inductive | Real primary entity/group field kept wholly within one split |
+| `group_semantics` | string | No | Human-readable meaning recorded in the manifest |
+
+The raw MAG may retain a relation whose `group_by` is the target field. The schema auditor records that lineage and the protocol generator excludes that relation from benchmark-derived views. High homophily alone does not cause exclusion.
 
 **relations[] fields:**
 
@@ -171,10 +186,10 @@ domains/spotify/domain.yaml   (ONE file — user writes this)
   main.py --domain-config domains/spotify/domain.yaml
          |
          v
-  collector → graph_builder → formatter → verifier
+  collector → schema_discovery → graph_builder → formatter → verifier
          |
          v
-  data/spotify_datasets/spotify_multimodal_graph.json
+  data/spotify_datasets/spotify_multimodal_graph_agent.json
 ```
 
 ### Comparison: Before vs After

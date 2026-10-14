@@ -48,6 +48,7 @@ DOMAIN_CONFIGS = {
             "data_cleaner": "用规则管道清洗Markdown：去重、修复断行、规范化公式和引用格式",
             "reference_graph_builder": "从论文中提取References，在arxiv元数据中匹配并构建引用边",
             "dataset_formatter": "将节点和边封装为多模态属性图数据集JSON",
+            "graph_verifier": "执行来源、重复实体、关系语义与protocol不变量审计",
         },
         default_plan_factory="_default_plan_arxiv",
         critical_agents={"arxiv_batch_downloader", "paper_collector"},
@@ -57,6 +58,7 @@ DOMAIN_CONFIGS = {
             "data_cleaner": "_build_task_data_cleaner",
             "reference_graph_builder": "_build_task_ref_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
+            "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "arxiv_batch_downloader": "downloader",
@@ -64,6 +66,7 @@ DOMAIN_CONFIGS = {
             "data_cleaner": "cleaner",
             "reference_graph_builder": "graph",
             "dataset_formatter": "formatter",
+            "graph_verifier": "verifier",
         },
     ),
     "reddit": DomainConfig(
@@ -122,20 +125,23 @@ DOMAIN_CONFIGS = {
         domain="steam",
         agents_desc={
             "steam_game_collector": "加载/爬取Steam游戏元数据(genres/developers/publishers/categories)，确保cs_lo提取目录就绪",
+            "schema_discovery": "字段画像、schema确认和确定性验证；发布关系来源与target provenance",
             "steam_game_graph_builder": "构建Steam游戏同构图：小类过滤+密度优化co_attribute边(shared_genre/same_developer/same_publisher/shared_category)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
-            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)、节点覆盖——发现缺陷发reprocess_request给上游",
+            "graph_verifier": "Protocol-aware integrity audit：核对target provenance、重复/实体重叠、关系语义、topology probe并生成四种protocol views",
         },
         default_plan_factory="_default_plan_steam",
-        critical_agents={"steam_game_collector"},
+        critical_agents={"steam_game_collector", "schema_discovery"},
         task_builders={
             "steam_game_collector": "_build_task_steam_collector",
+            "schema_discovery": "_build_task_schema_discovery",
             "steam_game_graph_builder": "_build_task_steam_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
             "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "steam_game_collector": "steam_collector",
+            "schema_discovery": "schema",
             "steam_game_graph_builder": "steam_graph",
             "dataset_formatter": "formatter",
             "graph_verifier": "verifier",
@@ -146,20 +152,23 @@ DOMAIN_CONFIGS = {
         domain="tmdb",
         agents_desc={
             "tmdb_movie_collector": "加载/爬取TMDb电影元数据(genres/directors/actors)，确保cs_lo提取目录就绪",
+            "schema_discovery": "字段画像、schema确认和确定性验证；发布关系来源与target provenance",
             "tmdb_movie_graph_builder": "构建TMDb电影同构图：小类过滤+密度优化co_attribute边(shared_genre/same_director/shared_actor)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
-            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)、节点覆盖——发现缺陷发reprocess_request给上游",
+            "graph_verifier": "Protocol-aware integrity audit：区分真实缺陷与正常结构信号，并生成四种protocol views",
         },
         default_plan_factory="_default_plan_tmdb",
-        critical_agents={"tmdb_movie_collector"},
+        critical_agents={"tmdb_movie_collector", "schema_discovery"},
         task_builders={
             "tmdb_movie_collector": "_build_task_tmdb_collector",
+            "schema_discovery": "_build_task_schema_discovery",
             "tmdb_movie_graph_builder": "_build_task_tmdb_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
             "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "tmdb_movie_collector": "tmdb_collector",
+            "schema_discovery": "schema",
             "tmdb_movie_graph_builder": "tmdb_graph",
             "dataset_formatter": "formatter",
             "graph_verifier": "verifier",
@@ -170,20 +179,23 @@ DOMAIN_CONFIGS = {
         domain="wikiart",
         agents_desc={
             "wikiart_artwork_collector": "加载/爬取WikiArt画作元数据(style/artist/title)，确保cs_lo提取目录就绪",
+            "schema_discovery": "字段画像、schema确认和确定性验证；发布关系来源与target provenance",
             "wikiart_artwork_graph_builder": "构建WikiArt画作同构图：密度优化co_attribute边(same_artist/shared_style)，产出带label/label_index的节点和边",
             "dataset_formatter": "将同构节点和边封装为多模态属性图数据集JSON(text+image双模态)",
-            "graph_verifier": "对抗性校验图质量：检测标签泄露(LP-ceiling)、定义性同质(per-relation homophily)——WikiArt的shared_style边homophily≈1.0是经典泄漏，必须标记并触发reprocess",
+            "graph_verifier": "Protocol-aware integrity audit：shared_style因来自target字段而移除；高同质本身只作诊断；生成四种protocol views",
         },
         default_plan_factory="_default_plan_wikiart",
-        critical_agents={"wikiart_artwork_collector"},
+        critical_agents={"wikiart_artwork_collector", "schema_discovery"},
         task_builders={
             "wikiart_artwork_collector": "_build_task_wikiart_collector",
+            "schema_discovery": "_build_task_schema_discovery",
             "wikiart_artwork_graph_builder": "_build_task_wikiart_graph",
             "dataset_formatter": "_build_task_dataset_formatter",
             "graph_verifier": "_build_task_verifier",
         },
         namespace_map={
             "wikiart_artwork_collector": "wikiart_collector",
+            "schema_discovery": "schema",
             "wikiart_artwork_graph_builder": "wikiart_graph",
             "dataset_formatter": "formatter",
             "graph_verifier": "verifier",
@@ -288,12 +300,73 @@ class OrchestratorAgent:
                     f"[OrchestratorAgent] LLM规划完成: "
                     f"{plan_json.get('analysis', '')}"
                 )
-                return self._parse_plan(plan_json)
+                return self._ensure_required_stages(
+                    self._parse_plan(plan_json), task_config)
         except Exception as e:
             logger.warning(f"[OrchestratorAgent] LLM规划失败: {e}")
 
         # 回退到默认计划
         return self._default_plan(task_config)
+
+    def _ensure_required_stages(self, plan: List[PlanStep], task_config: Dict) -> List[PlanStep]:
+        """Make integrity gates mandatory even when an LLM plan omits them.
+
+        LLM planning may select optional acquisition/cleaning work, but it may
+        not remove schema confirmation or the final integrity audit.
+        """
+        domain = task_config.get("domain", "arxiv")
+        cfg = DOMAIN_CONFIGS.get(domain)
+        if not cfg:
+            return plan
+        available = set(self.agents)
+        present = {step.agent_name for step in plan}
+
+        if cfg.graph_mode == "homogeneous" and "schema_discovery" in available:
+            names = list(cfg.agents_desc)
+            collector = next((name for name in names if "collector" in name), None)
+            builder = next((name for name in names if "graph" in name and "builder" in name), None)
+            if collector and collector in available and collector not in present:
+                plan.insert(0, PlanStep(collector, f"加载{domain}真实来源", max_retries=1))
+                present.add(collector)
+            if "schema_discovery" not in present:
+                insert_at = next((i + 1 for i, step in enumerate(plan)
+                                  if step.agent_name == collector), 0)
+                plan.insert(insert_at, PlanStep(
+                    "schema_discovery", "确认并验证图schema",
+                    depends_on=[collector] if collector else [], max_retries=1))
+                present.add("schema_discovery")
+            if builder:
+                if builder in available and builder not in present:
+                    plan.append(PlanStep(
+                        builder, f"按confirmed schema构建{domain}图",
+                        depends_on=["schema_discovery"], max_retries=1))
+                    present.add(builder)
+                for step in plan:
+                    if step.agent_name == builder and "schema_discovery" not in step.depends_on:
+                        step.depends_on.append("schema_discovery")
+
+            if "dataset_formatter" in available and "dataset_formatter" not in present:
+                plan.append(PlanStep(
+                    "dataset_formatter", "封装MAG数据集",
+                    depends_on=[builder] if builder else [], max_retries=1))
+                present.add("dataset_formatter")
+            elif builder:
+                for step in plan:
+                    if (step.agent_name == "dataset_formatter" and
+                            builder not in step.depends_on):
+                        step.depends_on.append(builder)
+
+        if "graph_verifier" in available and "graph_verifier" not in present:
+            upstream = "dataset_formatter" if "dataset_formatter" in present else None
+            plan.append(PlanStep(
+                "graph_verifier", "执行最终完整性与protocol审计",
+                depends_on=[upstream] if upstream else [], max_retries=1))
+        elif "dataset_formatter" in present:
+            for step in plan:
+                if (step.agent_name == "graph_verifier" and
+                        "dataset_formatter" not in step.depends_on):
+                    step.depends_on.append("dataset_formatter")
+        return plan
 
     @staticmethod
     def _robust_json_parse(json_str: str) -> Optional[Dict]:
@@ -373,9 +446,9 @@ class OrchestratorAgent:
             factory_name = domain_cfg.default_plan_factory
             factory = getattr(self, factory_name, None)
             if factory:
-                return factory(task_config)
+                return self._ensure_required_stages(factory(task_config), task_config)
         # 未知域 / 无 DomainConfig: 回退到 arxiv 计划
-        return self._default_plan_arxiv(task_config)
+        return self._ensure_required_stages(self._default_plan_arxiv(task_config), task_config)
 
     def _default_plan_arxiv(self, task_config: Dict) -> List[PlanStep]:
         """ArXiv 默认执行计划"""
@@ -484,7 +557,7 @@ class OrchestratorAgent:
         """共享 co_attribute 域默认计划 (steam/tmdb/wikiart + YAML 动态域)。
 
         从 DomainConfig.agents_desc 动态发现 agent 名称, 而非硬编码。
-        计划: collector -> graph_builder -> formatter -> verifier
+        计划: collector -> schema discovery -> graph_builder -> formatter -> verifier
         """
         domain = task_config.get("domain", "")
         domain_cfg = DOMAIN_CONFIGS.get(domain)
@@ -498,8 +571,12 @@ class OrchestratorAgent:
         steps = []
         if collector:
             steps.append(PlanStep(collector, f"加载{domain}元数据", max_retries=1))
+        if "schema_discovery" in self.agents:
+            steps.append(PlanStep("schema_discovery", "确认并验证图schema",
+                                  depends_on=[collector] if collector else [], max_retries=1))
         if builder:
-            depends = [collector] if collector else []
+            depends = (["schema_discovery"] if "schema_discovery" in self.agents
+                       else ([collector] if collector else []))
             steps.append(PlanStep(builder, f"构建{domain}同构图",
                                   depends_on=depends, max_retries=1))
         depends_on = [builder] if builder else ([collector] if collector else [])
@@ -644,6 +721,8 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
 
             completed = []
             failed = []
+            self._reprocess_count = {}
+            pipeline_result["unresolved_reprocessing"] = []
 
             # 2. 动态调度循环
             while True:
@@ -679,6 +758,13 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
                     upstream_data=self._get_upstream_data(completed)
                 )
 
+                # Schema eligibility is a construction gate, not an optional
+                # partial result: builders must not fall back after rejection.
+                if (step.agent_name == "schema_discovery"
+                        and not (result.get("published")
+                                 and result.get("schema_audit", {}).get("valid"))):
+                    result = {**result, "status": "error",
+                              "message": "Schema gate did not publish an accepted declaration"}
                 pipeline_result["stages"][step.agent_name] = result
 
                 # 4. 评估结果
@@ -694,64 +780,60 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
                     # 接住 MessageBus 上的 reprocess_request, 让已完成 agent 重新执行。
                     # 这是 "multi-agent" 承重的关节: Verifier→Builder 的 reprocess
                     # 回路使图构建从单次流水线变成对抗性质量闭环。
-                    self._reprocess_count = getattr(self, '_reprocess_count', {})
                     MAX_REPROCESS_ROUNDS = 2
-                    for src_agent in list(self.message_bus._queues.keys()):
-                        msgs = self.message_bus.receive(src_agent)
+                    for recipient in list(self.message_bus._queues.keys()):
+                        msgs = self.message_bus.receive(recipient)
                         for msg in msgs:
                             if msg.msg_type != "reprocess_request" or msg.priority < 1:
                                 continue
                             target = msg.recipient
-                            if target not in completed and target not in [
-                                s.agent_name for s in plan if s.status == "pending"
-                            ]:
+                            target_step = next((s for s in plan
+                                                if s.agent_name == target
+                                                and s.status in ("completed", "pending")), None)
+                            if target_step is None:
                                 continue
                             cnt = self._reprocess_count.get(target, 0)
                             if cnt >= MAX_REPROCESS_ROUNDS:
+                                pipeline_result["unresolved_reprocessing"].append({
+                                    "sender": msg.sender, "target": target,
+                                    "reason": msg.content.get("reason", ""),
+                                    "rounds": cnt,
+                                })
                                 logger.warning(
                                     f"[OrchestratorAgent] {target} 已达 reprocess 上限 "
-                                    f"({cnt}/{MAX_REPROCESS_ROUNDS}), 跳过"
+                                    f"({cnt}/{MAX_REPROCESS_ROUNDS}), 保留未解决请求"
                                 )
                                 continue
                             self._reprocess_count[target] = cnt + 1
-                            reprocess_step = PlanStep(
-                                agent_name=target,
-                                purpose=f"[Reprocess #{cnt+1}] {msg.content.get('reason', str(msg.content)[:80])}",
-                                depends_on=[src_agent],
-                                max_retries=1,
-                                task_overrides={"reprocess_context": msg.content},
-                            )
-                            plan.append(reprocess_step)
-                            # 级联: 标记 target 的所有下游 completed→pending
-                            def _downstream(agent_name, all_steps, visited=None):
-                                if visited is None:
-                                    visited = set()
-                                if agent_name in visited:
-                                    return set()
-                                visited.add(agent_name)
-                                ds = set()
-                                for s in all_steps:
-                                    if agent_name in s.depends_on:
-                                        ds.add(s.agent_name)
-                                        ds |= _downstream(s.agent_name, all_steps, visited)
-                                return ds
-                            cascade = _downstream(target, plan)
-                            for s in plan:
-                                if s.agent_name in cascade and s.status == "completed":
-                                    s.status = "pending"
-                                    # 从 completed 列表移除 (下游需要重新在 target 之后运行)
-                                    if s.agent_name in completed:
-                                        completed.remove(s.agent_name)
-                                    logger.info(
-                                        f"[OrchestratorAgent] ⟲ Cascade: {s.agent_name} "
-                                        f"→ pending (upstream {target} reprocessed)"
-                                    )
+
+                            # Reuse the original step and its upstream dependencies.
+                            # Depending on the reporting verifier would create a cycle;
+                            # appending another builder can leave downstream files stale.
+                            affected = {target}
+                            while True:
+                                descendants = {s.agent_name for s in plan
+                                               if any(d in affected for d in s.depends_on)}
+                                expanded = affected | descendants
+                                if expanded == affected:
+                                    break
+                                affected = expanded
+                            target_step.task_overrides = {
+                                **target_step.task_overrides,
+                                "reprocess_context": msg.content,
+                            }
+                            target_step.max_retries = 1
+                            for scheduled in plan:
+                                if scheduled.agent_name not in affected:
+                                    continue
+                                if scheduled is target_step or scheduled.status == "completed":
+                                    scheduled.status = "pending"
+                            completed[:] = [name for name in completed if name not in affected]
+                            for name in affected:
+                                pipeline_result["stages"].pop(name, None)
                             logger.info(
-                                f"[OrchestratorAgent] ⟲ Feedback loop: "
-                                f"{src_agent} → reprocess {target}"
-                                f"(round {cnt+1}/{MAX_REPROCESS_ROUNDS})"
-                                f" + cascade {sorted(cascade)}: "
-                                f"{msg.content.get('reason', '')[:100]}"
+                                f"[OrchestratorAgent] {msg.sender} → reprocess {target} "
+                                f"(round {cnt+1}/{MAX_REPROCESS_ROUNDS}); "
+                                f"invalidate {sorted(affected)}"
                             )
                     # ---- 反馈回路结束 ----
                 else:
@@ -780,6 +862,21 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
                             )
                             break
 
+            # A stopped scheduler is not necessarily a complete construction.
+            pipeline_result["stage_states"] = {
+                scheduled.agent_name: scheduled.status for scheduled in plan
+            }
+            unfinished = [scheduled.agent_name for scheduled in plan
+                          if scheduled.status in ("pending", "running")]
+            if unfinished:
+                pipeline_result["errors"].append(
+                    "No dependency-ready stage; unresolved stages: " + ", ".join(unfinished))
+            if not self._should_continue(failed, completed) or unfinished:
+                pipeline_result["status"] = "failed"
+            elif (failed or pipeline_result["unresolved_reprocessing"]
+                  or any(r.get("status") == "partial"
+                         for r in pipeline_result["stages"].values())):
+                pipeline_result["status"] = "partial"
             # 5. 构建最终输出
             self._build_final_output(pipeline_result, task_config)
 
@@ -811,7 +908,9 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
 
         # 按领域 + agent 分发
         task = {}
-        if domain == "arxiv":
+        if agent_name == "schema_discovery":
+            task = self._build_task_schema_discovery(base)
+        elif domain == "arxiv":
             task = self._build_task_arxiv(agent_name, base)
         elif domain == "reddit":
             task = self._build_task_reddit(agent_name, base)
@@ -871,6 +970,8 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             return self._build_task_ref_graph(base)
         elif agent_name == "dataset_formatter":
             return self._build_task_dataset_formatter(base)
+        elif agent_name == "graph_verifier":
+            return self._build_task_verifier(base)
         return base
 
     def _build_task_arxiv_downloader(self, base: Dict) -> Dict:
@@ -951,8 +1052,38 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             "graph_data_pt": base.get("graph_data_pt"),
         }
 
+    def _build_task_schema_discovery(self, base: Dict) -> Dict:
+        """Build the schema gate task from runtime config or domain YAML."""
+        domain = base.get("domain", "")
+        enriched = dict(base)
+        if not enriched.get("schema_hint"):
+            yaml_path = enriched.get("domain_config") or os.path.join(
+                "domains", domain, "domain.yaml")
+            if os.path.exists(yaml_path):
+                try:
+                    from domains import load_domain_yaml, yaml_to_task_config
+                    yaml_task = yaml_to_task_config(load_domain_yaml(yaml_path))
+                    yaml_task.update({k: v for k, v in enriched.items()
+                                      if v not in (None, "", [], {})})
+                    enriched = yaml_task
+                except Exception as exc:
+                    logger.warning(f"[SchemaDiscovery] 无法补充 YAML schema: {exc}")
+        cfg = DOMAIN_CONFIGS.get(domain)
+        names = list(cfg.agents_desc) if cfg else []
+        collector = next((name for name in names if "collector" in name), "")
+        collector_ns = cfg.namespace_map.get(collector, collector) if cfg else collector
+        return {
+            "domain": domain,
+            "collector_ns": collector_ns,
+            "data_file": enriched.get("data_file", ""),
+            "schema_mode": enriched.get("schema_mode", "confirm"),
+            "schema_hint": enriched.get("schema_hint"),
+            "min_class_size": enriched.get("min_class_size", 20),
+            "model": enriched.get("model"),
+        }
+
     def _build_task_verifier(self, base: Dict) -> Dict:
-        """Verifier 任务: 从 blackboard 读图, 对抗性校验, 发现缺陷→发 reprocess。"""
+        """Integrity auditor task with explicit target/relation provenance."""
         domain = base.get("domain", "")
         builder_map = {
             "steam": "steam_game_graph_builder",
@@ -960,10 +1091,27 @@ Blackboard状态: {json.dumps({k: {kk: str(vv)[:100] for kk, vv in v.items()} fo
             "wikiart": "wikiart_artwork_graph_builder",
             "arxiv": "reference_graph_builder",
         }
+        default_lineage = {
+            "steam": {"shared_genre": {"source_fields": ["genres"], "target_derived": True}},
+            "tmdb": {"shared_genre": {"source_fields": ["genres"], "target_derived": True}},
+            "wikiart": {"shared_style": {"source_fields": ["style"], "target_derived": True}},
+            "arxiv": {},
+        }
+        integrity = dict(base.get("integrity", {}) or {})
+        confirmed_lineage = self.blackboard.read("schema", "relation_lineage", {})
+        integrity["relation_lineage"] = (
+            confirmed_lineage or integrity.get("relation_lineage")
+            or default_lineage.get(domain, {}))
         return {
             "domain": domain,
             "graph_builder_agent": builder_map.get(domain, f"{domain}_graph_builder"),
             "output_dirs": base.get("output_dirs", {}),
+            "integrity": integrity,
+            "protocol": base.get("protocol", {}) or {},
+            "data_file": base.get("data_file", ""),
+            "id_field": base.get("id_field", ""),
+            "id_sanitize": base.get("id_sanitize"),
+            "split_seed": base.get("split_seed", 1),
         }
 
     # ==================== Reddit 任务构建 ====================

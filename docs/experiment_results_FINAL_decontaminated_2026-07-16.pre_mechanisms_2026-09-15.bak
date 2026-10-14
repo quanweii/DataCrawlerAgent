@@ -1,0 +1,313 @@
+# MAG-Forge 实验线（FINAL CLEAN，2026-09-11）
+
+> 本文件是实验数字与状态的唯一权威来源；所有核心结果均使用 sanitized graph 与明确的 protocol view。
+
+## 1. 实验环境与统一规则
+
+- 代码：`/home/dev_qw/DataCrawlerAgent`
+- 环境：`/home/dev_qw/miniconda3/envs/agent_env`
+- GPU：NVIDIA RTX 4090
+- NC split seed：1
+- 初始化 seeds：0–4，共 5 次
+- NC Epoch 上限：300；训练和 validation early stopping 沿用 `train_and_eval`
+- LP/聚类共享 graph-autoencoder：Epoch 上限 200，hidden=128，validation AP 选 checkpoint；MLP/GCN/GAT/GraphSAGE/GIN/GCNII × 5 seeds
+- Modality matching：Epoch 上限 50，hidden=256，validation AP 选 checkpoint；5 seeds
+- 模型：MLP、GCN、GAT、GraphSAGE、GIN、GCNII
+- 指标：accuracy 与 macro-F1，报告 mean±std
+- 表征：冻结 encoder；逐模态 L2 normalize；element-wise mean fusion；再次归一化
+
+普通 transductive 跨 split 边是合法协议条件，不自动叫 leakage。Topology-only probe 只作诊断。
+
+## 2. 四个成熟数据集
+
+| Dataset | Nodes | Labels | Raw relation type | Time provenance | Group provenance | Main modalities |
+|---|---:|---:|---|---|---|---|
+| arxiv | 45,672 | 4 | citation | arXiv ID year-month | extracted first author | text/image/formula |
+| steam | 2,760 | 8 | co-attribute | release_date | primary developer | text/image |
+| tmdb | 13,037 | 18 | co-attribute | release_date | primary director | text/image |
+| wikiart | 21,968 | 64 | co-attribute | year | artist | text/image |
+
+### 2.1 Provenance-confirmed exclusions
+
+| Dataset | Excluded before all four views | Reason |
+|---|---|---|
+| arxiv | none | citation 不是由 target category 字段直接生成 |
+| steam | `shared_genre` | relation source 与 target genre 同源 |
+| tmdb | `shared_genre` | relation source 与 target genre 同源 |
+| wikiart | `shared_style` | relation source 与 target style 同源 |
+
+Raw MAG 文件不修改；所有 protocol views 从 sanitized base graph 派生。
+
+## 3. 四种协议
+
+| Protocol | Node masks | Edge view | Interpretation |
+|---|---|---|---|
+| transductive | stratified 60/20/20 | full sanitized topology | 标准转导条件 |
+| split-disjoint | same masks as transductive | within-split edges | 结构暴露敏感性 |
+| temporal | chronological 60/20/20; time bucket intact | within-split edges | 面向未来数据 |
+| group-inductive | primary group assigned as a whole | within-split edges | 面向未见实体组 |
+
+所有 manifests 满足 group overlap=0，split-disjoint/temporal/group-inductive cross-split edge=0。Steam temporal 排除 4 个缺时间节点，TMDB 排除 1 个，WikiArt 排除 3,078 个；arxiv 时间覆盖 100%。
+
+## 4. 四协议融合模态 NC 主表
+
+| Dataset | Protocol | Best model | Accuracy | Macro-F1 | MLP accuracy | Best GNN−MLP | Directed edges | Train/Val/Test |
+|---|---|---|---:|---:|---:|---:|---:|---|
+| arxiv | transductive | GIN | **0.9165** | 0.9152 | 0.8914 | +0.0251 | 114,090 | 27,402/9,133/9,137 |
+| arxiv | split-disjoint | GCNII | 0.8999 | 0.8990 | 0.8914 | +0.0085 | 50,312 | 27,402/9,133/9,137 |
+| arxiv | temporal | GCNII | 0.8664 | 0.8599 | 0.8556 | +0.0108 | 70,706 | 27,402/8,752/9,518 |
+| arxiv | group-inductive | GIN | 0.9028 | 0.9021 | 0.8884 | +0.0144 | 52,010 | 27,403/9,135/9,134 |
+| steam | transductive | GCNII | **0.6846** | 0.4925 | 0.6621 | +0.0225 | 96,492 | 1,652/548/560 |
+| steam | split-disjoint | MLP | 0.6621 | 0.4737 | 0.6621 | −0.0007 | 42,774 | 1,652/548/560 |
+| steam | temporal | GraphSAGE | 0.6179 | 0.4329 | 0.6122 | +0.0057 | 51,860 | 1,637/561/558 |
+| steam | group-inductive | GraphSAGE | 0.6569 | 0.4449 | 0.6232 | +0.0337 | 47,482 | 1,655/553/552 |
+| tmdb | transductive | GraphSAGE | **0.5915** | 0.3939 | 0.5892 | +0.0023 | 325,818 | 7,815/2,600/2,622 |
+| tmdb | split-disjoint | MLP | 0.5892 | 0.3619 | 0.5892 | −0.0066 | 144,706 | 7,815/2,600/2,622 |
+| tmdb | temporal | GraphSAGE | 0.5470 | 0.3147 | 0.5461 | +0.0009 | 194,700 | 7,799/2,610/2,627 |
+| tmdb | group-inductive | GraphSAGE | 0.5775 | 0.3768 | 0.5728 | +0.0048 | 173,914 | 7,820/2,608/2,609 |
+| wikiart | transductive | GraphSAGE | **0.8895** | 0.8733 | 0.6477 | +0.2418 | 887,108 | 13,159/4,374/4,435 |
+| wikiart | split-disjoint | GraphSAGE | 0.7920 | 0.7419 | 0.6477 | +0.1443 | 389,172 | 13,159/4,374/4,435 |
+| wikiart | temporal | GCNII | 0.0101 | 0.0090 | 0.0066 | +0.0035 | 657,620 | 11,237/3,805/3,848 |
+| wikiart | group-inductive | GCN | 0.5665 | 0.4354 | 0.4395 | +0.1270 | 887,108 | 13,122/4,421/4,425 |
+
+## 5. Protocol sensitivity
+
+固定每域 transductive winner，按相同初始化 seed 配对计算：
+
+| Dataset | Compared view | Accuracy drop | Paired bootstrap 95% CI | Model-rank correlation |
+|---|---|---:|---|---:|
+| arxiv | split-disjoint | +0.0169 | [0.0146, 0.0192] | 0.829 |
+| arxiv | temporal | +0.0535 | [0.0490, 0.0581] | 0.657 |
+| arxiv | group-inductive | +0.0137 | [0.0119, 0.0159] | 0.829 |
+| steam | split-disjoint | +0.0329 | [0.0232, 0.0436] | 0.771 |
+| steam | temporal | +0.1119 | [0.1008, 0.1247] | 0.829 |
+| steam | group-inductive | +0.0412 | [0.0189, 0.0645] | 0.943 |
+| tmdb | split-disjoint | +0.0089 | [0.0044, 0.0134] | 0.829 |
+| tmdb | temporal | +0.0445 | [0.0409, 0.0489] | 0.943 |
+| tmdb | group-inductive | +0.0140 | [0.0109, 0.0168] | 0.943 |
+| wikiart | split-disjoint | +0.0975 | [0.0942, 0.1007] | 0.429 |
+| wikiart | temporal | +0.8829 | [0.8810, 0.8848] | −0.086 |
+| wikiart | group-inductive | +0.3235 | [0.3155, 0.3332] | 0.429 |
+
+### 5.1 Temporal label support 与 prior shift
+
+| Dataset | Train-visible / global classes | Unseen classes present in test | Coverable test mass | Largest train-visible test class | Seen-class prior TVD | JS (nats) |
+|---|---:|---:|---:|---:|---:|---:|
+| arxiv | 4/4 | 0 | 1.0000 | 0.3823 | 0.2096 | 0.0280 |
+| steam | 8/8 | 0 | 1.0000 | 0.4695 | 0.0873 | 0.0058 |
+| tmdb | 18/18 | 0 | 1.0000 | 0.1804 | 0.2334 | 0.0326 |
+| wikiart | 45/64 | 18 | **0.3885** | 0.0990 | **0.9650** | **0.6455** |
+
+WikiArt temporal 的训练集缺少全局 64 类中的 19 类；test 中实际出现 18 个训练未见类。训练可见标签只覆盖 1,495/3,848=38.85% 的 test，因此 train-support oracle ceiling 是 0.3885，而实际 accuracy 0.0101 仅为该上限约 2.6%。所以 label emergence 只解释天花板；极高的可见类 prior TVD/JS 与 severe prior shift 一致，剩余差距还可能包含 covariate shift 和模型失配。该行属于 open-set temporal stress test，不能与前三域 closed-label drop 直接比较，也不构成 leakage 证据。
+
+## 6. 四协议模态消融
+
+每个 modality 内按 accuracy 选择最好模型；负 gap 表示完整融合不如最好单模态。
+
+| Dataset | Protocol | Best single (model) | Single acc | Full fusion (model) | Full acc | Full−single |
+|---|---|---|---:|---|---:|---:|
+| arxiv | transductive | text (GIN) | 0.9214±0.0010 | text+image+formula (GIN) | 0.9165±0.0024 | −0.0049 |
+| arxiv | split-disjoint | text (GIN) | 0.9057±0.0014 | text+image+formula (GCNII) | 0.8999±0.0012 | −0.0058 |
+| arxiv | temporal | text (GCN) | 0.8929±0.0018 | text+image+formula (GCNII) | 0.8664±0.0021 | −0.0264 |
+| arxiv | group-inductive | text (GCNII) | 0.9013±0.0019 | text+image+formula (GIN) | 0.9028±0.0011 | +0.0014 |
+| steam | transductive | text (GraphSAGE) | 0.6636±0.0075 | text+image (GCNII) | 0.6846±0.0147 | +0.0211 |
+| steam | split-disjoint | image (GraphSAGE) | 0.6432±0.0059 | text+image (MLP) | 0.6621±0.0103 | +0.0189 |
+| steam | temporal | text (GraphSAGE) | 0.6072±0.0090 | text+image (GraphSAGE) | 0.6179±0.0052 | +0.0108 |
+| steam | group-inductive | text (GraphSAGE) | 0.6312±0.0039 | text+image (GraphSAGE) | 0.6569±0.0171 | +0.0257 |
+| tmdb | transductive | image (GCNII) | 0.5725±0.0023 | text+image (GraphSAGE) | 0.5915±0.0021 | +0.0191 |
+| tmdb | split-disjoint | image (MLP) | 0.5617±0.0016 | text+image (MLP) | 0.5892±0.0030 | +0.0275 |
+| tmdb | temporal | image (GraphSAGE) | 0.5242±0.0044 | text+image (GraphSAGE) | 0.5470±0.0040 | +0.0228 |
+| tmdb | group-inductive | image (GCNII) | 0.5552±0.0023 | text+image (GraphSAGE) | 0.5775±0.0035 | +0.0224 |
+| wikiart | transductive | image (GraphSAGE) | 0.8883±0.0029 | text+image (GraphSAGE) | 0.8895±0.0018 | +0.0013 |
+| wikiart | split-disjoint | image (GraphSAGE) | 0.7876±0.0023 | text+image (GraphSAGE) | 0.7920±0.0027 | +0.0044 |
+| wikiart | temporal | image (GAT) | 0.0084±0.0023 | text+image (GCNII) | 0.0101±0.0041 | +0.0018 |
+| wikiart | group-inductive | image (GCN) | 0.5999±0.0080 | text+image (GCN) | 0.5665±0.0109 | −0.0334 |
+
+结论：Steam 与 TMDB 的融合收益在四个 protocol 下都为正，平均分别为 +1.91pp、+2.30pp；Arxiv 单独 text 在三种 view 更好；WikiArt 由 image 主导，group-inductive 下融合反而下降 3.34pp。融合价值是 domain- and protocol-dependent，不能写成“多模态总会更好”。
+
+### 6.1 六任务四协议的统一评估合同
+
+图中六项任务现均使用同一批 sanitized protocol views，但按任务语义区分信息暴露：
+
+- **Node classification**：train labels 监督训练，validation 选 checkpoint，test 只评估。
+- **Link prediction**：transductive 将无向边固定拆为 60/20/20；其余协议分别以 train/val/test 节点内部边作为正例。消息图仅含 train positives；validation/test positives 从不进入消息传递。固定均匀负例与正例 1:1，并排除该 view 的全部真边。
+- **Node clustering**：与 LP 共享不使用标签训练的 graph-autoencoder；推理时可见该协议允许的 split 内拓扑。KMeans 只在 train-node embeddings 上拟合，在 test nodes 上计算 NMI/ARI；标签仅决定 `k` 和评分，不训练表示、不选择模型。表中模型统一由 validation AP 选择，避免按 test NMI 挑模型。
+- **Modality retrieval**：冻结模态编码，在 test cohort 内做同实体精确检索，报告两个方向平均 R@1/MRR。
+- **Modality alignment**：在 test cohort 描述性计算 linear CKA 与 paired-vs-shifted cosine gap，不拟合 test labels。
+- **Modality matching**：train/val/test 实体完全隔离；同标签 hard negatives 仅用于抑制类别捷径，标签不进入模型输入；validation AP 选 checkpoint，test 报 AUC/AP。
+
+Transductive 与 split-disjoint 的节点 masks 相同，所以不消费图边的 retrieval/alignment 结果必须相同；审计已验证这一不变量。它们的相同不是重复实验错误，而是明确说明 node-local frozen representation 不受 edge-only intervention 影响。
+
+### 6.2 Link prediction 与 node clustering 完整主表
+
+每行模型按 mean validation AP 预先选择；AUC/AP/NMI/ARI 均为 5 seeds mean±std。所有 6 模型逐 seed 结果保存在 raw JSON，未用 test 指标挑选下表模型。
+
+| Dataset | Protocol | Selected model | LP AUC | LP AP | Clustering NMI | Clustering ARI |
+|---|---|---|---:|---:|---:|---:|
+| arxiv | transductive | GIN | 0.9286±0.0012 | 0.9370±0.0013 | 0.1371±0.0517 | 0.0261±0.0360 |
+| arxiv | split-disjoint | MLP | 0.8904±0.0006 | 0.8677±0.0007 | 0.4973±0.0238 | 0.4176±0.0480 |
+| arxiv | temporal | MLP | 0.8594±0.0013 | 0.8407±0.0021 | 0.4333±0.0177 | 0.3426±0.0230 |
+| arxiv | group-inductive | MLP | 0.8885±0.0004 | 0.8674±0.0006 | 0.4876±0.0043 | 0.3918±0.0051 |
+| steam | transductive | GraphSAGE | 0.9081±0.0044 | 0.9073±0.0039 | 0.1405±0.0028 | 0.0566±0.0026 |
+| steam | split-disjoint | MLP | 0.7735±0.0031 | 0.7685±0.0015 | 0.1435±0.0041 | 0.0657±0.0049 |
+| steam | temporal | GAT | 0.6963±0.0062 | 0.7094±0.0086 | 0.1344±0.0062 | 0.0336±0.0179 |
+| steam | group-inductive | MLP | 0.8208±0.0010 | 0.8277±0.0009 | 0.1563±0.0041 | 0.0800±0.0072 |
+| tmdb | transductive | GraphSAGE | 0.9174±0.0025 | 0.9071±0.0026 | 0.1191±0.0025 | 0.0414±0.0020 |
+| tmdb | split-disjoint | MLP | 0.8510±0.0010 | 0.8283±0.0013 | 0.0937±0.0054 | 0.0244±0.0031 |
+| tmdb | temporal | GAT | 0.7503±0.0061 | 0.7232±0.0047 | 0.1042±0.0136 | 0.0275±0.0107 |
+| tmdb | group-inductive | GCN | 0.8034±0.0059 | 0.7910±0.0066 | 0.1166±0.0167 | 0.0363±0.0091 |
+| wikiart | transductive | GAT | 0.9921±0.0004 | 0.9905±0.0004 | 0.6239±0.0033 | 0.2912±0.0043 |
+| wikiart | split-disjoint | GAT | 0.9091±0.0011 | 0.9068±0.0009 | 0.5942±0.0033 | 0.2629±0.0092 |
+| wikiart | temporal | GCN | 0.6750±0.0196 | 0.6763±0.0170 | 0.3369±0.0219 | 0.1245±0.0278 |
+| wikiart | group-inductive | GAT | 0.8571±0.0014 | 0.8553±0.0020 | 0.7204±0.0122 | 0.4129±0.0182 |
+
+LP 在所有域中从 transductive 到更严格的 inductive cohort 均有明显变化；这说明任务难度受部署协议控制，不代表 transductive 本身“泄漏”。聚类的变化不与 NC 单调一致，尤其 arxiv transductive 的 validation-AP-selected GIN 聚类较弱，说明“适合重建边”不等于“最适合类别聚类”，不能用一个任务替代另一个任务的效用结论。
+
+### 6.3 Modality retrieval、alignment 与 matching 完整主表
+
+Retrieval 是双向平均；matching 是 5 seeds mean±std。Arxiv 分别评估 text–image、text–formula、image–formula；其余域评估 text–image。模态缺失/零向量节点先排除，实际 train/val/test paired counts 已逐 cell 保存在 raw JSON。
+
+| Dataset | Protocol | Pair | Retrieval R@1 | MRR | CKA | Cos gap | Match AUC | Match AP |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| arxiv | transductive | text–image | 0.1074 | 0.1498 | 0.5540 | 0.0318 | 0.8943±0.0052 | 0.8809±0.0067 |
+| arxiv | transductive | text–formula | 0.0106 | 0.0151 | 0.2933 | 0.0076 | 0.8368±0.0102 | 0.8100±0.0110 |
+| arxiv | transductive | image–formula | 0.0006 | 0.0027 | 0.2841 | 0.0029 | 0.7558±0.0025 | 0.7266±0.0033 |
+| arxiv | split-disjoint | text–image | 0.1074 | 0.1498 | 0.5540 | 0.0318 | 0.8943±0.0052 | 0.8809±0.0067 |
+| arxiv | split-disjoint | text–formula | 0.0106 | 0.0151 | 0.2933 | 0.0076 | 0.8368±0.0102 | 0.8100±0.0110 |
+| arxiv | split-disjoint | image–formula | 0.0006 | 0.0027 | 0.2841 | 0.0029 | 0.7558±0.0025 | 0.7266±0.0033 |
+| arxiv | temporal | text–image | 0.1279 | 0.1740 | 0.5935 | 0.0372 | 0.8809±0.0055 | 0.8638±0.0066 |
+| arxiv | temporal | text–formula | 0.0263 | 0.0347 | 0.3348 | 0.0087 | 0.8329±0.0115 | 0.7987±0.0134 |
+| arxiv | temporal | image–formula | 0.0009 | 0.0029 | 0.3028 | 0.0033 | 0.7586±0.0050 | 0.7216±0.0066 |
+| arxiv | group-inductive | text–image | 0.1057 | 0.1470 | 0.5519 | 0.0320 | 0.8928±0.0048 | 0.8794±0.0056 |
+| arxiv | group-inductive | text–formula | 0.0093 | 0.0138 | 0.3015 | 0.0074 | 0.8360±0.0052 | 0.8134±0.0051 |
+| arxiv | group-inductive | image–formula | 0.0006 | 0.0028 | 0.2912 | 0.0028 | 0.7674±0.0058 | 0.7366±0.0054 |
+| steam | transductive | text–image | 0.6223 | 0.7084 | 0.4071 | 0.1507 | 0.9348±0.0030 | 0.9171±0.0059 |
+| steam | split-disjoint | text–image | 0.6223 | 0.7084 | 0.4071 | 0.1507 | 0.9348±0.0030 | 0.9171±0.0059 |
+| steam | temporal | text–image | 0.4543 | 0.5720 | 0.4934 | 0.1268 | 0.8736±0.0353 | 0.8504±0.0421 |
+| steam | group-inductive | text–image | 0.5815 | 0.6869 | 0.4410 | 0.1483 | 0.9305±0.0042 | 0.9137±0.0064 |
+| tmdb | transductive | text–image | 0.8496 | 0.8949 | 0.4491 | 0.1810 | 0.9633±0.0021 | 0.9563±0.0030 |
+| tmdb | split-disjoint | text–image | 0.8496 | 0.8949 | 0.4491 | 0.1810 | 0.9633±0.0021 | 0.9563±0.0030 |
+| tmdb | temporal | text–image | 0.7850 | 0.8426 | 0.3697 | 0.1627 | 0.8962±0.0042 | 0.8807±0.0039 |
+| tmdb | group-inductive | text–image | 0.8466 | 0.8968 | 0.4695 | 0.1830 | 0.9627±0.0013 | 0.9550±0.0019 |
+| wikiart | transductive | text–image | 0.1329 | 0.1967 | 0.2106 | 0.0732 | 0.8150±0.0016 | 0.8033±0.0027 |
+| wikiart | split-disjoint | text–image | 0.1329 | 0.1967 | 0.2106 | 0.0732 | 0.8150±0.0016 | 0.8033±0.0027 |
+| wikiart | temporal | text–image | 0.0849 | 0.1240 | 0.1281 | 0.0445 | 0.6679±0.0037 | 0.6629±0.0048 |
+| wikiart | group-inductive | text–image | 0.1137 | 0.1761 | 0.2543 | 0.0709 | 0.7367±0.0014 | 0.7037±0.0038 |
+
+结果显示：Steam/TMDB 的 text–image 对齐和可匹配性较强；WikiArt 的 temporal cohort 在 retrieval、CKA、cosine gap 和 matching 上同时下降；Arxiv text–image 明显强于包含 formula 的组合，尤其 image–formula 检索接近零。这里应写成 encoder/pair compatibility 与 cohort shift，而不是把 matching 高分直接解释成通用语义对齐。
+
+### 6.4 六任务结果规模与 correctness audit
+
+- NC：64 dataset×protocol×modality cells、384 model cells、1,920 seeded runs。
+- LP + clustering：16 dataset×protocol cells、每 cell 6 models×5 seeds；共 480 次 label-free graph-autoencoder 训练，同时产生 480 组 LP 与 480 组 clustering 评估。
+- Retrieval + alignment：24 protocol×modality-pair cells、48 个检索方向；全部为冻结表示上的确定性评估。
+- Matching：24 protocol×modality-pair cells、120 seeded runs。
+- 新六任务审计：**2,665/2,665 PASS**。检查包含输入哈希、协议 cell 完整性、seed 身份、checkpoint 范围、正负例平衡、正边 split 互斥、held-out positives 不进入消息图、实体 overlap=0、retrieval 单调性/范围、CKA 范围、所有 mean/std 从逐 seed 重算，以及最终文档 40 行结果与 JSON 精确一致。
+
+性能数字不“证明”框架正确；框架正确性仍由 provenance、raw/derived 分离和 protocol invariants 支持。六任务只证明这些经过审计的产物能在多类任务中被一致消费，并揭示不同任务和协议的适用性边界。
+
+## 7. Topology-only null diagnostics
+
+实验包括 100 次训练标签置换和 10 次 degree-preserving double-edge-swap；所有 40 个重连图均通过度数序列逐点校验。输入图先移除 target-derived relations。
+
+| Dataset | Observed | Label-permutation null | Degree-preserving null | Obs−perm | Obs−rewire | Test coverage |
+|---|---:|---:|---:|---:|---:|---:|
+| arxiv | 0.6208 | 0.2967 | 0.5349 | +0.3241 | +0.0859 | 0.4605 |
+| steam | 0.5839 | 0.4813 | 0.5482 | +0.1026 | +0.0357 | 0.9071 |
+| tmdb | 0.3696 | 0.1637 | 0.3174 | +0.2058 | +0.0521 | 0.9336 |
+| wikiart | 0.8618 | 0.0234 | 0.8221 | +0.8384 | +0.0397 | 0.9605 |
+
+Observed 明显高于 label-permutation null，说明真实拓扑携带标签相关信号；但相对 degree-preserving null 的增量仅为 3.57–8.59pp，说明其中很大部分可由度数结构与邻域覆盖解释。该实验不作 leakage 裁决，也不能替代 provenance 审计。
+
+## 8. Framework 与 schema 证据
+
+### 8.1 自动化成本 E2
+
+六域 × 三 seeds 的已存结果显示 schema discovery/audit 使用约 1–2 次 LLM calls、约 1.1k–3.0k tokens、约 1.4–4.3 秒。25–90 分钟人工时间是专家估计，不是受试者实验。
+
+当前生产代码已将 `SchemaDiscoveryAgent` 放入 Collector 与 Builder 之间；LLM plan 即使遗漏该阶段或最终 Verifier，编排器也会补齐强制质量门。成熟域走 YAML-confirm 模式，真正新域可走 LLM-discover 模式，但二者都必须通过同一确定性 validator。
+
+### 8.2 Held-out schema discovery E4/Exp6
+
+Amazon、Reddit 与四个 arxiv 子域均通过基本 build validity 与 target-relation decontamination，但质量审计发现 arxiv_cs/math 选择 `license`，arxiv_condmat/astroph 产生 843/275 类。结论是 validity 不等于 benchmark quality，必须保留报告卡门；不能写成“6/6 高质量泛化”。
+
+### 8.3 Loop robustness E6
+
+旧 32-run 实验可支持“确定性 target-relation 排除稳定、LLM label discovery 仍脆弱”。不得继续写“LP 高分修复率 100%”或“self-verifying”；统一称 audit-capable pipeline。
+
+### 8.4 MAG landscape
+
+| Work | Published scope | 与本文的边界 |
+|---|---|---|
+| MAGB (KDD 2025) | 多领域 text/image MAG，GNN-as-Predictor 与 VLM-as-Predictor | 本文不竞争单纯模型数量；重点是从真实源自动构建、provenance audit 和四协议发布 |
+| MM-GRAPH (CVPR 2025) | 7 个 text/image graph 数据集和多种图学习框架 | 本文补的是 schema-to-benchmark 自动化与 protocol-conditioned integrity，而非再造一个静态数据集包 |
+| OpenMAG (arXiv 2026) | 19 数据集、6 域、16 encoders、24 models、8 tasks | 本文的差异是数据生成与审计流水线、raw/derived view 分离和 integrity card |
+
+一手来源：[MAGB](https://arxiv.org/abs/2410.09132)、[MM-GRAPH](https://arxiv.org/abs/2406.16321)、[OpenMAG](https://arxiv.org/abs/2602.05576)。此表用于定位贡献，不据此声称现有 benchmark 全部存在泄漏。
+
+### 8.5 生产复用与最终证据审计
+
+- `run_reusability_audit.py` 在 Steam、TMDB、WikiArt 与 held-out Spotify 上统一检查 YAML task、deterministic schema audit、五 agent 强制计划、节点 ID、关系声明和边端点，四域均 PASS。
+- Spotify 源没有可信 timestamp，因此只声明三种适用协议；没有用随机顺序冒充 temporal。
+- `validate_final_evidence.py` 对所有逐 seed 数值、temporal label support 和聚合结果做 1,739 项重算检查，1,739/1,739 PASS；规模为 64 个 dataset×protocol×modality cells、384 个 model cells、1,920 个 seeded runs。
+- 自动测试当前为 8/8 PASS，覆盖时间桶、group 隔离、cross-edge pruning、通用 YAML metadata、schema lineage、强制质量门和 raw/derived graph 分离。
+
+## 9. Integrity cards
+
+当前 report card 已去除旧 NC、旧 modality-missing 和旧 LP 的混合字段，只从当前四协议矩阵、protocol manifests、data-quality audit 与 topology nulls 生成。四域 provenance、duplicate/entity、self-loop/exact relation duplicate、edge endpoint 与 protocol invariants 全部通过。Applicability 结论：
+
+- arxiv：高特征可预测性，模型区分度有限；图增益小。
+- steam：图价值随 protocol 变化，split-disjoint 下 MLP 最好。
+- tmdb：异质结构，GNN 相对 MLP 增益很小。
+- wikiart：图价值显著，但对结构暴露、未见艺术家和时间 label emergence 非常敏感。
+
+旧 report card 中的 LP 数值保留为 topology diagnostic，不再参与 correctness pass/fail。
+
+## 10. 其他已有实验的使用规则
+
+- TMDB genre-word attribution：剥离 genre 词后 retrieval R@1 仅下降约 0.004，可用于排除“显式 genre 词导致检索高分”的解释。
+- 原 LP、聚类和跨模态脚本/表仍是旧口径，不得引用；当前可引用版本只来自 `benchmark/results/four_protocol_tasks/`。Few-shot、跨域、noise、neighbor、steering、IGC 仍未按 sanitized four-protocol 口径重跑，不进入论文核心数字。
+- OpenMAG/PyG 的旧 LP 高分结果只能重命名为 external topology predictability/exposure，不得写成已发表数据集“存在结构泄露”的证明。
+- E7 合成同质性 sweep 只能说明受控条件下 GNN−MLP gap 会随 topology 改变；不支持真实域上的普适因果律或固定 crossover。
+- CLIP-vs-ImageNet 对照只说明 encoder sensitivity；当前没有 sample-level overlap 证据，不报告“污染量”。
+
+## 11. 尚未完成且不能伪造的实验
+
+| Experiment | Status | Blocker/next action |
+|---|---|---|
+| 四协议模态消融 | complete | 64 cells × 6 models × 5 seeds |
+| Topology permutation + degree-preserving null | complete | 100 permutation + 10 rewires/domain；度数序列校验通过 |
+| 最终证据一致性审计 | complete | 1,739/1,739 checks；所有逐 seed 均值、temporal support 和聚合 headline 重算一致 |
+| 生产 YAML 复用合同 | complete | Steam/TMDB/WikiArt/held-out Spotify 均 PASS；Spotify temporal 因无可信时间而 unavailable |
+| 六任务四协议 benchmark | complete | NC 1,920 seeds；LP/聚类 480 joint seeds；matching 120 seeds；retrieval/alignment 24 cells |
+| 六任务独立 correctness audit | complete | 2,665/2,665 checks PASS；输入哈希、逐 seed 重算和最终文档一致 |
+| Sample-level pretraining overlap | blocked | 需要可查询的预训练样本索引/指纹库 |
+| Exp3 真人效率 baseline | blocked | 需要真实受试者与计时协议 |
+| Exp4b 外部用户复用 | blocked | 需要真实外部用户 |
+| MAG landscape | complete | 已按 MAGB、MM-GRAPH、OpenMAG 一手论文定位差异 |
+
+## 12. 可复现产物
+
+- `benchmark/data/protocols.py`
+- `benchmark/generate_protocol_views.py`
+- `benchmark/run_newdomain_nc.py`
+- `benchmark/run_four_protocol_graph_tasks.py`
+- `benchmark/run_four_protocol_modality_tasks.py`
+- `benchmark/aggregate_validate_four_protocol_tasks.py`
+- `benchmark/aggregate_protocol_results.py`
+- `benchmark/run_topology_nulls.py`
+- `benchmark/aggregate_protocol_modalities.py`
+- `benchmark/results/protocol_views/`
+- `benchmark/results/newdomain_nc/protocol_matrix/`
+- `benchmark/results/four_protocol_tasks/{graph,modality}/`
+- `benchmark/results/four_protocol_tasks/six_task_summary.{json,md}`
+- `benchmark/results/topology_nulls.{json,md}`
+- `benchmark/results/report_cards.{json,md}`
+- `benchmark/validate_final_evidence.py`
+- `benchmark/sync_protocol_manifests.py`
+- `benchmark/results/final_evidence_audit.{json,md}`
+- `benchmark/run_reusability_audit.py`
+- `benchmark/results/reusability_audit.{json,md}`
+- `tests/test_protocols.py`
+- `tests/test_framework_integrity.py`
+- `tests/test_four_protocol_tasks.py`

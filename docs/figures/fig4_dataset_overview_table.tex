@@ -1,0 +1,34 @@
+% Figure 4 (C3) — Leak-profiled MAG dataset overview.
+% 数据来源(权威):
+%   节点/边/类数/同质性/模态 : docs/canonical_statistics_2026-07-11.md (single source of truth)
+%   LP-ceil (orig->pruned)    : docs/leak_profile_table.md  (benchmark/results/leak_profile_table.json)
+%   spotify 边数 17440 / amazon 5438节点-28612边-7类 : P5-B 端到端 (docs/path_b_phase0_results_2026-07-21.md)
+% 编译: pdflatex (需 booktabs). 用 \input{fig4_dataset_overview_table} 或直接粘贴到 table 浮动体.
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.18}
+\caption{The four benchmark multimodal attribute graph (MAG) datasets span a natural
+homophily spectrum (0.24--0.93) and each carries a complete leak-profile (LP-ceil =
+structure-leakage ceiling, before\,$\to$\,after cross-split edge pruning). The framework
+additionally builds \texttt{spotify} and \texttt{amazon} (reported in the text).}
+\label{tab:dataset_overview}
+\begin{tabular}{l c r r c c c}
+\toprule
+\textbf{Domain} & \textbf{Modality} & \textbf{Nodes} & \textbf{Edges} & \textbf{\#Cls} & \textbf{Homoph.} & \textbf{LP-ceil\,$^{\dagger}$} \\
+\midrule
+tmdb     & text, image                 & 13{,}037 & 193{,}475 & 18 & 0.237 & 0.413\,$\to$\,0.154 \\
+steam    & text, image                 &  2{,}760 &  54{,}642 &  8 & 0.530 & 0.557\,$\to$\,0.504 \\
+wikiart  & text, image                 & 21{,}968 & 520{,}330 & 64 & 0.894 & 0.921\,$\to$\,0.024 \\
+arxiv    & text, image, \textbf{formula}$^{\ddagger}$ & 45{,}672 & 57{,}045$^{*}$ &  4 & 0.933 & 0.673\,$\to$\,0.261 \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\footnotesize
+\begin{flushleft}
+$^{*}$\,arxiv benchmark loads \texttt{graph\_data.pt} (57{,}590 edges); 57{,}045 is the release artifact.
+$^{\dagger}$\,Structure-leakage ceiling (label-propagation upper bound, NC), before\,$\to$\,after cross-split edge pruning; ``---'' = generalization domains carry a lighter profile.
+$^{\ddagger}$\,arxiv is the only domain with the \emph{formula} modality (absent from OpenMAG/MAGB). Homophily values are natural-source properties, not tuned; controlled homophily variation is isolated only in the steering experiment (Fig.~5).
+\end{flushleft}
+\end{table}

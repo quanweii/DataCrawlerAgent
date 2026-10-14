@@ -20,6 +20,14 @@ data:
   data_source: file
   data_file: ./data/spotify_raw/spotify_tracks.json
 
+# This source has no trustworthy timestamp, so temporal is intentionally not
+# fabricated. The generic protocol generator materializes every applicable
+# view and records the unavailable temporal provenance explicitly.
+protocol:
+  protocols: [transductive, split_disjoint, group_inductive]
+  group_field: track_artist
+  group_semantics: primary artist
+
 relations:
   - name: same_artist
     group_by: track_artist

@@ -1,8 +1,8 @@
 # WikiArt Artwork Co-Attribute Graph — YAML Domain Config
 #
 # WikiArt painting IDs require sanitization (re.sub(r'[^\w\-.]', '_', pid))
-# to match cs_lo directory names. The shared_style edge has homophily ~0.90,
-# which is a known structural leakage vector requiring hard negative sampling.
+# to match cs_lo directory names. shared_style is recorded in the raw MAG but
+# excluded from benchmark views because its source field is the target field.
 
 domain: wikiart
 graph_mode: homogeneous
@@ -15,6 +15,12 @@ data:
   data_source: file
   data_file: ./data/wikiart_raw/wikiart_v2_enriched.json
   id_sanitize: '[^\w\-.]'
+
+protocol:
+  protocols: [transductive, split_disjoint, temporal, group_inductive]
+  time_field: year
+  group_field: artist
+  group_semantics: artist
 
 relations:
   - name: same_artist

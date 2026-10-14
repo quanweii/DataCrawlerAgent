@@ -1,0 +1,706 @@
+# 全域实验结果 — 去泄露后最终数字总表（FINAL, 2026-07-16）
+
+> ⚠️ **本文档是去泄露后所有实验结果的唯一权威数字来源（single source of truth）。**
+>
+> 本文所有数字均使用 **leak-free 协议**（见 §0）跑出，于 **2026-07-15 19:30–20:52 全域重跑**、
+> **2026-07-16 复核验证**。写论文、做表、对外汇报一律以本文档数字为准。
+>
+> 🔴 **作废清单（旧数字不得再引用）**：
+> - `docs/AMMAG_全域基准实验报告_2026-06-20.md` 的结果表 — **去泄露前**，wikiart text 虚高（0.95→0.30）；
+> - `docs/AMMAG_Benchmark_完整实验报告.md`、`docs/Supplementary_Experiment_Report.md` — 同上，去泄露前；
+> - `docs/benchmark_meanfusion_fix_2026-07-15.md` — 中间态数字，已被 mean 融合 + 去泄露联合修复取代；
+> - `docs/paper_logic_DnB_FINAL_2026-07-11.md` 中**早于 2026-07-15** 的绝对数字（旧 r=0.463/n=16、旧 MLP 0.95、text≈multi 等）。
+>
+> 与本文冲突的任何早期数字，**一律以本文为准**。泄露诊断与修复经过见
+> [`benchmark_text_decontamination_2026-07-15.md`](benchmark_text_decontamination_2026-07-15.md)。
+
+---
+
+## 0. 统一实验协议（所有表共享的前置条件）
+
+| 项 | 设定 |
+|---|---|
+| Text 去泄露 | `Style:`/`Genres:` 等 label 字段在 CLIP 编码前 strip；wikiart 进一步删模板句/艺术家行，text 从纯标题编码（label-in-text=0%） |
+| 切分 | 分层 60/20/20，`split_seed=1`，小类 floor=5 |
+| 边泄露防护 | `prune_cross_split_edges` 跨切分边剪枝（NC/LP/clustering/fewshot/... 全启用） |
+| 多模态融合 | OpenMAG 式 mean 融合：逐模态 L2-norm → element-wise mean → L2-norm（恒 768-d） |
+| 训练稳定性 | 梯度裁剪（grad-clip）+ **10 seed**（NC/LP/聚类/few-shot/modmiss/robustness 等主表）；steering/causal/fusion/edgerel 用 5 seed |
+| LP 负采样 | 三档：`random` / `hard` / `hard_degree` |
+| 编码器 | CLIP-Large（text+image 统一 768-d）；arxiv formula 用 MathBERT |
+| 硬件 | NVIDIA RTX 4090 (24GB) |
+
+---
+
+## 1. 五域元数据
+
+| 域 | 节点数 | 类数 | 同质性 | 边（original→pruned, NC） | text 状态 |
+|---|---|---|---|---|---|
+| **arxiv** | 45,672 | 4 | 0.933 | 114,090 → 50,312 | 干净（摘要无 category） |
+| **steam** | 2,760 | 8 | 0.524 | 109,284 → 48,322 | 去泄露（删 Genres 行） |
+| **tmdb** | 13,037 | 18 | 0.239 | 386,950 → 169,958 | 去泄露（删 Genres 行） |
+| **wikiart** | 21,968 | 64 | 0.895 | 1,040,660 → 456,584 | 去泄露 R2（纯标题） |
+| **spotify** | 10,000 | 6 | 0.741 | 34,880 → 15,268 | 干净（playlist 名不入 track md） |
+
+> 同质性谱横跨自然源 tmdb 0.24 → steam 0.52 → spotify 0.74 → wikiart 0.90 → arxiv 0.93。
+
+---
+
+## 2. NC 节点分类（text+image 主表，10 seed）
+
+来源：`benchmark/results/newdomain_nc/nc_{domain}_summary.json` + `modality_ablation_decontaminated_2026-07-15.json`
+
+| Model | arxiv | steam | tmdb | wikiart | spotify |
+|-------|-------|-------|------|---------|---------|
+| MLP | 89.34 | 65.88 | 59.06 | 64.86 | 63.49 |
+| GCN | 89.91 | 61.02 | 48.02 | 80.54 | 62.83 |
+| GAT | 89.68 | 59.48 | 48.14 | 70.29 | 62.59 |
+| GraphSAGE | 89.73 | 65.43 | 57.54 | **82.44** | 63.32 |
+| GIN | 89.81 | 55.84 | 37.95 | 69.72 | 60.83 |
+| GCNII | **90.00** | 64.54 | 58.22 | 74.29 | 62.37 |
+
+### GNN − MLP gap（净结构价值）
+
+| Model | steam | tmdb | wikiart |
+|-------|-------|------|---------|
+| GCN | −4.86 | −11.04 | **+15.68** |
+| GAT | −6.39 | −10.92 | +5.43 |
+| GraphSAGE | −0.45 | −1.52 | **+17.58** |
+| GIN | −10.04 | −21.11 | +4.86 |
+| GCNII | −1.34 | −0.84 | +9.43 |
+
+> 去泄露后 GNN 只在高同质 wikiart 显著优于 MLP；低同质 tmdb/steam 下邻居是噪声源。这是 leak-free 协议生效的直接证据。
+
+---
+
+## 3. NC 模态消融（acc，10 seed）
+
+来源：`newdomain_nc/modality_ablation_decontaminated_2026-07-15.json`
+
+### STEAM
+| model | text | image | text+image | multi−text |
+|-------|------|-------|------------|------------|
+| mlp | 0.635 | 0.621 | 0.659 | +0.024 |
+| gcn | 0.604 | 0.607 | 0.610 | +0.007 |
+| gat | 0.580 | 0.583 | 0.595 | +0.015 |
+| graphsage | 0.633 | 0.634 | 0.654 | +0.021 |
+| gin | 0.538 | 0.539 | 0.558 | +0.020 |
+| gcnii | 0.619 | 0.638 | 0.645 | +0.027 |
+
+### TMDB
+| model | text | image | text+image | multi−text |
+|-------|------|-------|------------|------------|
+| mlp | 0.551 | 0.561 | 0.591 | +0.040 |
+| gcn | 0.463 | 0.472 | 0.480 | +0.018 |
+| gat | 0.453 | 0.469 | 0.481 | +0.029 |
+| graphsage | 0.546 | 0.548 | 0.575 | +0.030 |
+| gin | 0.376 | 0.384 | 0.380 | +0.004 |
+| gcnii | 0.542 | 0.554 | 0.582 | +0.040 |
+
+### WIKIART（image 碾压 text）
+| model | text | image | text+image | multi−text |
+|-------|------|-------|------------|------------|
+| mlp | 0.299 | 0.657 | 0.649 | **+0.349** |
+| gcn | 0.560 | 0.806 | 0.805 | **+0.245** |
+| gat | 0.353 | 0.767 | 0.703 | **+0.350** |
+| graphsage | 0.580 | 0.827 | 0.824 | **+0.245** |
+| gin | 0.487 | 0.705 | 0.697 | +0.211 |
+| gcnii | 0.398 | 0.767 | 0.743 | **+0.345** |
+
+> **去泄露后 multi−text Δ 全为正**（wikiart +0.35 / steam +0.02 / tmdb +0.04）。wikiart 上 image 是主导模态（纯标题 text MLP 仅 0.299）。**⚠️ 但 image 高分部分含 frozen CLIP LAION 预训练污染**——ImageNet-only 对照 ΔF1 wikiart 0.21 > tmdb 0.15 > steam 0.11（详见 §4.5 P1-14 / `clip_contamination_finding_2026-07-16.md`）。**不卖"image 全域转正"干净叙事**：C2 升级为 encoder-contamination profiling，E5 refine 污染为任务依赖（集中 style/genre 分类）。旧"text≈multi / image 无贡献"结论作废。
+
+---
+
+## 4. LP 链路预测（AUC，10 seed，三档负采样）
+
+来源：`benchmark/results/newdomain_lp/lp_{domain}_summary.json`
+
+### 4a. LP Ceiling（边泄露检测）
+| 域 | Ceiling Original | Ceiling Pruned | Majority |
+|---|---|---|---|
+| arxiv | 0.673 | 0.261 | 0.289 |
+| steam | 0.582 | 0.504 | 0.504 |
+| tmdb | 0.422 | 0.154 | 0.205 |
+| wikiart | 0.918 | **0.024** | 0.025 |
+| spotify | 0.517 | 0.167 | 0.167 |
+
+> 剪枝后全域 ceiling ≤ majority。wikiart 0.918→0.024（−0.894）降幅最大，跨切分边彻底剪断。
+
+### 4b. LP 模态消融全表（AUC，列序 mlp/gcn/gat/graphsage/gin/gcnii）
+
+**STEAM**
+| modality | neg | mlp | gcn | gat | graphsage | gin | gcnii |
+|---|---|---|---|---|---|---|---|
+| image | random | 0.867 | 0.901 | 0.860 | 0.903 | 0.866 | 0.864 |
+| image | hard | 0.834 | 0.877 | 0.828 | 0.881 | 0.825 | 0.823 |
+| image | hard_degree | 0.784 | 0.817 | 0.792 | 0.839 | 0.730 | 0.704 |
+| text | random | 0.881 | 0.890 | 0.854 | 0.893 | 0.862 | 0.863 |
+| text | hard | 0.851 | 0.863 | 0.822 | 0.867 | 0.824 | 0.823 |
+| text | hard_degree | 0.796 | 0.795 | 0.777 | 0.821 | 0.729 | 0.701 |
+| text+image | random | 0.880 | 0.898 | 0.855 | 0.902 | 0.860 | 0.870 |
+| text+image | hard | 0.847 | 0.874 | 0.821 | 0.879 | 0.817 | 0.832 |
+| text+image | hard_degree | 0.799 | 0.809 | 0.780 | 0.836 | 0.723 | 0.719 |
+
+**TMDB**
+| modality | neg | mlp | gcn | gat | graphsage | gin | gcnii |
+|---|---|---|---|---|---|---|---|
+| image | random | 0.802 | 0.889 | 0.859 | 0.876 | 0.810 | 0.841 |
+| image | hard | 0.739 | 0.849 | 0.805 | 0.819 | 0.808 | 0.825 |
+| image | hard_degree | 0.677 | 0.773 | 0.732 | 0.751 | 0.718 | 0.727 |
+| text | random | 0.839 | 0.893 | 0.864 | 0.890 | 0.822 | 0.853 |
+| text | hard | 0.798 | 0.856 | 0.814 | 0.837 | 0.818 | 0.830 |
+| text | hard_degree | 0.712 | 0.778 | 0.739 | 0.769 | 0.726 | 0.732 |
+| text+image | random | 0.842 | 0.897 | 0.870 | 0.893 | 0.816 | 0.853 |
+| text+image | hard | 0.784 | 0.857 | 0.814 | 0.837 | 0.813 | 0.835 |
+| text+image | hard_degree | 0.703 | 0.782 | 0.743 | 0.770 | 0.721 | 0.740 |
+
+**WIKIART**（注意 MLP-text 崩塌 + image/text+image 极高）
+| modality | neg | mlp | gcn | gat | graphsage | gin | gcnii |
+|---|---|---|---|---|---|---|---|
+| image | random | 0.933 | 0.989 | 0.988 | 0.987 | 0.877 | 0.951 |
+| image | hard | 0.664 | 0.872 | 0.821 | 0.818 | 0.799 | 0.810 |
+| image | hard_degree | 0.652 | 0.832 | 0.811 | 0.804 | 0.715 | 0.745 |
+| text | random | 0.787 | 0.968 | 0.973 | 0.973 | 0.973 | 0.909 |
+| text | hard | 0.629 | 0.864 | 0.842 | 0.834 | 0.920 | 0.814 |
+| text | hard_degree | 0.627 | 0.838 | 0.825 | 0.830 | 0.857 | 0.765 |
+| text+image | random | 0.925 | 0.987 | 0.987 | 0.987 | 0.939 | 0.938 |
+| text+image | hard | 0.659 | 0.873 | 0.820 | 0.819 | 0.872 | 0.811 |
+| text+image | hard_degree | 0.647 | 0.835 | 0.809 | 0.803 | 0.792 | 0.746 |
+
+**ARXIV**（`lp_arxiv_summary.json` 仅存全模态；单模态见 `lp_ablation_final/`，§15）
+| neg | mlp | gcn | gat | graphsage | gin | gcnii |
+|---|---|---|---|---|---|---|
+| random (t+i+f) | 0.909 | 0.932 | 0.928 | 0.893 | 0.938 | — |
+| hard (t+i+f) | 0.779 | 0.829 | 0.822 | 0.810 | 0.874 | — |
+| hard_degree (t+i+f) | 0.841 | 0.882 | 0.878 | 0.836 | 0.919 | — |
+
+**SPOTIFY**（text-only 域）
+| neg | mlp | gcn | gat | graphsage | gin | gcnii |
+|---|---|---|---|---|---|---|
+| random | 0.973 | 0.983 | 0.988 | 0.983 | 0.973 | — |
+| hard | 0.942 | 0.964 | 0.974 | 0.974 | 0.963 | — |
+| hard_degree | 0.968 | 0.981 | 0.985 | 0.980 | 0.963 | — |
+
+### 4c. LP 模态消融关键分析
+- **去泄露对 LP 影响远小于 NC**：wikiart NC text MLP 0.95→0.30（崩），但 LP text random AUC（GNN 系）仍 0.97——LP 信号来自"同类节点连边"，图结构本身是强信号，text 内容质量几乎不影响。
+- **wikiart MLP-text 是唯一崩塌 LP cell**（random 0.787）：纯标题无法支撑无边预测；加图结构后立即回升 0.97。
+- **LP 中 image ≮ text**（与 NC 相反）：wikiart image GNN 0.989 vs text GNN 0.973，均极高；steam/tmdb 双模态持平，融合增益仅 ~0.005。LP 里图结构信号掩盖模态差异，NC 里模态质量决定上限。
+- **三档负采样全域单调下降**：random > hard > hard_degree，去饱和协议有效。
+- **GCNII 在 LP hard_degree 偏弱**（steam 0.704, wikiart 0.746），与 NC（wikiart 0.743）表现相反。
+
+---
+
+## 5. Steering 因果实验（C4 皇冠）
+
+来源：`benchmark/results/steering/steering_causal_analysis_2026-07-12.json`
+
+### 5a. 核心因果律（GCN-only, n=12 点, 3 域 × 关系子集）
+| 指标 | r | p | bootstrap 95% CI |
+|---|---|---|---|
+| GCN-MLP gap vs 同质性 | **0.846** | **5.2e-04** | [0.600, 0.960] |
+| GCN_F1 vs 同质性 | 0.913 | 3.5e-05 | [0.774, 0.975] |
+| GCN_F1 vs MLP_control | 0.945 | 3.7e-06 | [0.688, 0.990] |
+
+线性拟合：`gap = 0.364 × homophily − 0.332`，r²=0.716，**crossover homo ≈ 0.91**
+Leave-one-domain-out 稳健：剔除 steam r=0.944 / tmdb r=0.810 / wikiart r=0.703。
+MLP bit-identical 自检通过（同 GNN 在不同关系子图上的差异只归因于边结构）。
+
+### 5b. Steering NC F1（按关系子集）
+| 域 | MLP（恒定自检） | all 关系最佳 GNN |
+|---|---|---|
+| steam | 0.405–0.537 | GraphSAGE 0.502–0.576 |
+| tmdb | 0.363–0.504 | GraphSAGE 0.378–0.486 |
+| wikiart | 0.233–0.909 | GAT 0.94–0.99 |
+
+---
+
+## 6. 聚类 NMI/ARI（text+image, 10 seed）
+
+来源：`benchmark/results/newdomain_clustering/cluster_{domain}_summary.json`
+
+| Model | arxiv NMI | steam NMI | tmdb NMI | wikiart NMI |
+|-------|-----------|-----------|----------|-------------|
+| raw_features | 0.436 | 0.206 | 0.273 | 0.390 |
+| mlp | 0.712 | 0.349 | 0.427 | 0.549 |
+| gcn | 0.732 | 0.188 | 0.234 | 0.704 |
+| gat | 0.727 | 0.205 | 0.271 | 0.816 |
+| graphsage | 0.719 | 0.302 | 0.430 | 0.820 |
+| gin | 0.486 | 0.113 | 0.151 | 0.361 |
+| gcnii | **0.771** | **0.372** | 0.412 | **0.847** |
+
+> wikiart raw NMI 0.673（旧 leaky）→ **0.390**（去泄露，−42%）。低同质 steam/tmdb 下 GCN<raw（结构破坏聚类）。
+
+---
+
+## 7. Few-Shot（text+image, 10 runs）
+
+来源：`benchmark/results/newdomain_fewshot/fewshot_{domain}_summary.json`
+
+| 域 | Best Model | k=3 Acc | k=10 Acc |
+|----|-----------|---------|----------|
+| steam | GCNII | 0.435 | 0.505 |
+| tmdb | MLP | 0.317 | 0.409 |
+| wikiart | GAT | **0.729** | **0.821** |
+
+> wikiart GAT k=3=0.729 vs MLP k=3=0.288（+0.441）：高同质下 3 个标注节点经邻居传播覆盖全图。tmdb MLP>GNN，低同质邻居稀释信号。与 steering 一致。
+
+---
+
+## 8. 跨域迁移（C4 负迁移发现）
+
+来源：`benchmark/results/newdomain_crossdomain/transfer_matrix.json` + `dual_protocol_report_2026-07-12.json`
+
+### 8a. 双协议（4 域 off-diagonal, text+image）
+| Protocol | 负增益对 | 占比 | Mean Gain |
+|----------|---------|------|-----------|
+| linear_probe | 12/12 | 100% | −0.255 |
+| full_finetune | 8/12 | 66.7% | −0.0005 |
+
+### 8b. GCN text 迁移矩阵（transfer_gain）
+| src→tgt | steam | tmdb | wikiart |
+|----------|-------|------|---------|
+| steam | — | −0.107 | **−0.587** |
+| tmdb | −0.057 | — | **−0.552** |
+| wikiart | −0.066 | −0.069 | — |
+
+> 线性探测全域负增益（特征不迁移）；全微调中性（模型重学）。论文报双协议，诚实披露。
+
+---
+
+## 9. 跨模态对齐（CKA + Retrieval）⚠️ TMDB 残留信号
+
+来源：`benchmark/results/newdomain_modality/modality_{domain}_summary.json`
+
+| Metric | steam | tmdb | wikiart |
+|--------|-------|------|---------|
+| CKA | 0.0063 | 0.0040 | 0.0021 |
+| text→image R@1 | 0.472 | **0.761** | 0.074 |
+| text→image R@5 | 0.703 | 0.913 | 0.154 |
+
+> wikiart R@1=0.074≈random（0.056）→ 去泄露成功。**TMDB R@1=0.761 与 CKA≈0**：✅ **Exp5a（2026-07-31）归因完成，活口关闭**——基线 R@1=0.7613 复现；剥 18 个 genre 词（29.65% overview 受影响）后 R@1=0.7572（Δ−0.004）、CKA 不变 → genre 词非因，0.761 是 CLIP 真实跨模态检索（overview↔poster）非性泄露。CKA≈0 与 R@1 高不矛盾（CKA=线性子空间重叠、R@1=近邻排序）。详见 `benchmark/results/exp5a_tmdb_genre_attribution.json`。
+
+---
+
+## 10. 模态缺失鲁棒性（GCN/GAT/GraphSAGE × 5 条件, 10 seed）
+
+来源：`benchmark/results/newdomain_modality_missing/modmiss_{domain}_summary.json`
+
+| 条件 | wikiart GCN | wikiart GraphSAGE | tmdb GraphSAGE |
+|------|------------|-------------------|----------------|
+| full | 0.808 | **0.825** | 0.577 |
+| drop_text (=img-only) | 0.808 (−0.00) | 0.828 (+0.00) | 0.547 (−0.030) |
+| drop_image (=txt-only) | **0.561 (−0.248)** | 0.579 (−0.246) | 0.544 (−0.033) |
+| dropout_text_50 | 0.812 | 0.832 | 0.573 |
+| dropout_image_50 | 0.794 | 0.814 | 0.574 |
+
+> **wikiart drop_image 跌 −0.248**（去泄露前 drop_image≈无影响）→ image 现为必需模态，核心叙事翻转。wikiart drop_text 无影响（纯标题无用）。
+
+---
+
+## 11. 鲁棒性（GCN, 特征 vs 边噪声, 10 seed）
+
+来源：`benchmark/results/newdomain_robustness/robust_{domain}_{feature,edge,summary}.json`
+
+| 域 | feat ρ=0.2 | edge ρ=0.2 | feat ρ=0.8 | edge ρ=0.8 |
+|----|----------|---------|----------|---------|
+| steam | −0.9pp | −6.4pp | −4.1pp | −11.4pp |
+| tmdb | −0.8pp | −3.1pp | −8.1pp | −13.7pp |
+| wikiart | −1.3pp | −13.8pp | −12.0pp | **−36.7pp** |
+
+> 边噪声 ≫ 特征噪声全域成立；wikiart 对边噪声极度敏感（高同质结构是 GNN 生命线）。
+
+---
+
+## 12. Label 噪声（10 seed）
+
+来源：`benchmark/results/newdomain_labelnoise/labelnoise_{domain}_summary.json`
+
+| 域 | Model | ρ=0.0 | ρ=0.2 | ρ=0.4 | ρ=0.6 |
+|----|-------|-------|-------|-------|-------|
+| tmdb | GraphSAGE | 0.577 | 0.567 | 0.551 | 0.529 |
+| tmdb | GCN | 0.477 | 0.475 | 0.470 | 0.463 |
+| wikiart | GraphSAGE | 0.825 | 0.814 | 0.795 | 0.754 |
+| wikiart | GCN | 0.810 | 0.792 | 0.772 | 0.738 |
+
+> tmdb GCN 几乎不敏感（本就靠不住）；wikiart 高同质 GNN 强但也更脆弱。
+
+---
+
+## 13. 邻居注入（k-NN feature augmentation, 10 seed）
+
+来源：`benchmark/results/newdomain_neighbors/neighbors_{domain}.json`
+
+| 域 | k=0 | k=2 | k=8 | Δ(k8−k0) |
+|----|------|-----|-----|-----------|
+| steam | 0.651 | 0.658 | 0.661 | +0.009 |
+| tmdb | 0.593 | 0.592 | 0.590 | −0.003 |
+| wikiart | 0.652 | 0.669 | **0.812** | **+0.160** |
+
+> wikiart +0.160（高同质下特征近邻≈标签一致）；tmdb 无效（低同质特征近邻≠同类）。与 steering 一致。
+
+---
+
+## 14. 边关系预测 / 融合 / 逐类 / 效率
+
+| 实验 | 来源 | 关键结果 |
+|---|---|---|
+| **边关系预测** | `edge_relation_prediction/edgerel_{domain}.json` | steam acc 0.843 (F1 0.794, 4 类); tmdb 0.736 (F1 0.685, 3 类); wikiart **0.970** (F1 0.970, 2 类) |
+| **融合消融** (GCN, 5 seed) | `fusion_ablation/fusion_{domain}_*.json` | Attention 全域最优（+0.1~2.7pp over mean）；wikiart 注意力权重 image 0.83/text 0.17；arxiv text 0.53/image 0.26/formula 0.21 |
+| **逐类 F1** (GCN vs MLP) | `per_class_eval/perclass_{domain}_*.json` | wikiart GCN macro-F1 0.799 vs MLP 0.525; tmdb GCN 0.210 vs MLP 0.363（低同质 GCN 反而差，小类 F1=0） |
+| **效率** (RTX 4090) | `newdomain_efficiency/efficiency_{domain}_summary.json` | wikiart: GCN 9.5ms/ep, GAT 38.8ms/ep, GraphSAGE 9.3ms/ep; arxiv(45k 节点): GCN 5.4ms/ep |
+
+### 融合消融全表（GCN, 5 seed）
+| Domain | concat | attention | mean | sum | best |
+|--------|--------|-----------|------|-----|------|
+| arxiv (t+i+f) | 0.916 | **0.919** | 0.910 | 0.910 | attention |
+| steam (t+i) | 0.616 | 0.620 | 0.613 | 0.613 | attention |
+| tmdb (t+i) | 0.488 | 0.492 | 0.490 | 0.490 | attention |
+| wikiart (t+i) | 0.872 | **0.898** | 0.871 | 0.871 | attention |
+
+---
+
+## 15. IGC 图构建 agent 消融（C2/C3 诚实定位）
+
+来源：`benchmark/results/igc/igc_{domain}.json` + `wikiart_verifier_reverify_trace.json`
+
+| Spec | 域 | Greedy(无LLM) | Closed_loop(LLM) | Oracle | 结论 |
+|------|----|--------------|------------------|--------|------|
+| S1b (blind) | wikiart | 0.880 | 0.880 | 0.880 | **greedy=oracle**，agent 无增益 |
+| S1b (blind) | tmdb | 0.300 | **0.401** | 0.300 | closed_loop 反而更差（审计非优化器） |
+| S2 (max_homo) | steam | — | lp 0.502/homo 0.425 | homo 0.818 | 回路未收敛 |
+
+Verifier trace（wikiart）：LP pathway **0.918 → 0.880 → 0.024**（drop shared_style 76776 边 + cross-split prune 497936 边）→ PASS。
+
+> 去泄露靠**测量**（LP-ceiling/homophily），不靠 LLM。论文写 "audit-capable pipeline"，非 "self-verifying"。
+
+---
+
+## 16. Arxiv 专项（formula/编码器/PEFT/学习曲线）
+
+来源：`lp_ablation_final/`, `learning_curve/`, `lp_sweep/`, `sensitivity/`, `openmag/`
+
+| 实验 | 关键结果 |
+|------|---------|
+| Formula NC 消融 | text+image+formula=89.81 vs text+image=89.73 → **Δ=+0.0006** (no-op，卖完整性) |
+| Formula LP 消融 | GCN text 0.691(MRR) → t+i+f **0.716**（+0.025，LP 里 formula 有用） |
+| LP Sweep (GATv2/GCNII/GT/RevGAT) | GT+text MRR=**0.691**（best）；GCNII+t+i+f 0.617 |
+| 学习曲线 | 1%→80% train，全模型 87.5→91.7；低标注 GCN 略优 MLP |
+| 超参数敏感度 | GraphSAGE 最佳 91.61（lr 0.005/hdim 256/4 layer），整体扁平 ±1pp |
+| PEFT | None 91.29 > Adapter 89.94 > LoRA(r8) 88.12（全参微调仍最优） |
+| 编码器比较 | CLIP-Large(unified) 跨模态 MRR 0.107 ≫ SBERT+CLIP 0.001, SPECTER+CLIP 0.002 |
+| 自监督 | self-sup 89.01 vs supervised 91.01（合理 gap） |
+
+---
+
+## 17. 最终叙事（论文怎么用这些数字）
+
+> 🔧 **2026-07-30 同步**：本节原 pt 2/3/7 反映 2026-07-16 的旧 agent 定位与"image 全域转正/因果律"叙事，与 §18（E1–E7）+ 逻辑线 FINAL 的单一 thesis 冲突，已统一更新如下。§1–§16 数据表**未动**。
+
+1. **去泄露让 text 诚实**：wikiart MLP text 0.95→0.30，image 成必需模态（drop_image −0.248）。
+2. **image 增益存在但含预训练污染（非干净"全域转正"）**：NC multi−text Δ wikiart +0.35 / steam +0.02 / tmdb +0.04，但 wikiart/tmdb/steam 的 image 高分**部分来自 frozen CLIP LAION 预训练污染**（ImageNet-only 对照 ΔF1 wikiart 0.21 > tmdb 0.15 > steam 0.11，§3 表注 + E5 refine）。论文**不**卖"image 全域转正"，改 limitation + C2 encoder-contamination profiling。
+3. **GNN−MLP gap 随同质性升降（controlled trend，非因果律）**：wikiart +17.6, tmdb −11.0, steam −4.9；**r=0.846 [0.600, 0.960], p=5.2e-04, n=12**。cluster-robust 后 effective n≈3（within r=0.480, block-perm p=0.143）→ 降级 **controlled cross-domain trend**；共线性反驳（gap vs mean_degree r=0.322 n.s.）；LODO drop wikiart r=0.714 p=0.031。**已删精确公式 `gap=0.364·homo−0.332` 与 crossover 点估计**（n=12 过拟合）；E7 合成 9 档 r=0.940 复现方向（但 crossover 合成 0.37 ≪ 真实，依赖 feature SNR，非普适常数）。
+4. **NC vs LP 模态行为不同**：NC 里模态质量决定上限（wikiart image 碾压 text）；LP 里图结构信号掩盖模态差异。
+5. **CKA/R@1 悖论（live leak 活口，待归因实验）**：TMDB CKA≈0 但 R@1=0.761——语义关联 ≠ 定义级硬泄露，但 76% 检索命中在"已去泄露"数据上偏高。**写论文前必须给归因实验**：按 genre 词频剥离 tmdb overview 后重测 R@1，看是否回落至≈random(0.056)。这是 leak-free 叙事最大活口。
+6. **跨域迁移线性探测 100% 负**——诚实披露，full_finetune 中性。
+7. **Agent 框架在「自动化端到端 + 正确性保证」load-bearing**（E2 ~3s/域 vs 25–90 min 18/18 含 held-out + E4 6/6 held-out + E1 外生 7 公开 benchmark 全检出泄露 + E6 decontam 32/32），**不**在「构造决策」（greedy=oracle, IGC tmdb 0.300=0.300）。可靠核心是 C2 确定性测量（= benchmark 正确性属性），LLM 贡献自动化（自治 schema 发现 + 编排 + 真实源获取）。**🆕 新 thesis（2026-07-31）**：hero = 开源自治框架（补 MAG 数据集稀缺），去泄露降为 benchmark 正确性属性；**P0 投稿阻塞 = Exp1 修 4 域全 benchmark 正确 + Exp2 报告卡质量门 + Exp5a TMDB R@1 归因**。完整证据见 §18（E1–E7）。
+
+---
+
+*生成于 2026-07-16，基于 2026-07-15 20:52 全域重跑 + 2026-07-16 复核。本表为去泄露后唯一权威数字源；旧 `AMMAG_全域基准实验报告_2026-06-20.md` 等的数字一律作废。*
+
+---
+
+## 18. E1–E7 补充实验（2026-07-27，ICLR 攻击面回击）
+
+> 本节为 ICLR-main 投稿准备的外部/受控/成本补充证据，与 §1–§17 主表无冲突（主表=4 金标准域去泄露后内部数字；本节=跨数据集/合成/成本的外部验证）。
+> 全部数字来自 `benchmark/results/e*_*.json` + `public_leakage/leakage_profile_public_localnpz.json`；完整诊断与代码修复过程见 [`docs/E1_E7_experiment_results_2026-07-27.md`](E1_E7_experiment_results_2026-07-27.md)。
+> 测量口径一律复用论文权威实现（`benchmark/data/splits.py` 的 `label_propagation_ceiling`/`prune_cross_split_edges`/`stratified_split`，或同款 `get_model`/`train_and_eval`）。
+
+### 18.1 外部 benchmark 结构泄露画像（E1）—— agent-verifier load-bearing 的外部铁证
+
+把论文 C2 的 structure-leakage ceiling 测谎仪跑到 7 个**公开** benchmark（`run_public_leakage_localnpz.py`，数据经 `git clone --filter=blob:none --sparse` 绕过被墙镜像，从 shchur/gnn-benchmark npz 直读）。所有公开 benchmark 的 raw 图都带 +0.43~+0.68 结构泄露，剪枝后**全部**坍塌到 ≤ majority：
+
+| 公开数据集 | 边类型 | homo | majority | LP raw | LP pruned | gap(raw−maj) |
+|---|---|---|---|---|---|---|
+| coauthor_cs | 构造 co-authorship | 0.81 | 0.225 | 0.900 | 0.039 | **+0.675** |
+| amazon_photo | 构造 co-purchase | 0.83 | 0.253 | 0.913 | 0.049 | **+0.660** |
+| cora | 自然引用 | 0.81 | 0.301 | 0.847 | 0.111 | +0.546 |
+| amazon_computers | 构造 co-purchase | 0.78 | 0.374 | 0.886 | 0.032 | **+0.512** |
+| citeseer | 自然引用 | 0.74 | 0.211 | 0.698 | 0.076 | +0.487 |
+| coauthor_physics | 构造 co-authorship | 0.93 | 0.505 | 0.954 | 0.167 | +0.449 |
+| pubmed | 自然引用 | 0.80 | 0.399 | 0.828 | 0.208 | +0.429 |
+
+**意义**：构造边图（Amazon/Coauthor，"最像 MAG"）泄露模式与论文自家去泄露前数据一致；verifier 在领域已发表的金标准上稳定检出它们 ship 的结构泄露 = agent 去泄露价值的外部铁证。
+
+### 18.2 Agent-vs-人工 成本（E2）—— "省时"从断言变数字
+
+`run_e2_agent_cost.py`（插桩 `autonomous_discover`，6 域 × 3 seed，model=qwen-plus）：
+
+| domain | LLM calls | tokens | wall | build_valid | decontam |
+|---|---|---|---|---|---|
+| spotify/wikiart/steam/tmdb (gold) | ~2 | 1840–2576 | 2.8–3.3s | 3/3 | 3/3 |
+| **amazon / reddit (held-out)** | 1.3–2.0 | 1512–3037 | 2.1–2.9s | 3/3 | 3/3 |
+
+**对比**：agent ~3s + ~2200 tokens/域（schema 发现+去泄露）vs 专家估计 25–90 min/域（inspect raw→选 label→枚举关系→查定义性→迭代）。**18/18 build_valid+decontam**（含 2 held-out）。诚实 caveat：人工耗时为专家估计（非 user study）；agent 此处只测 schema 发现，不含 agent/人工共享的编码+跑批。
+
+### 18.3 generation-vs-extraction 泄露维度实证（E3）—— 与 BenchAgents/AutoBencher 正交
+
+BenchAgents/AutoBencher 是 **generation agent**（LLM 合成 NLP/QA 实例），与本框架 **extraction agent**（fetch 真实→建 MAG→去泄露）不同类、不同产物，直接 head-to-head 不成立。在**泄露轴**上实证对比（`run_e3b_*`）：模拟 generation agent 让 LLM 在"已知 label"下合成 text，用论文同款 label-leakage 诊断 + TF-IDF+LR 语义上限：
+
+| 数据 | hit_field | TF-IDF+LR acc | 说明 |
+|---|---|---|---|
+| 合成 tmdb (raw/**剥离后**) | 0% / 0% | **1.000 / 1.000** | strip 是 no-op，泄露不可剥 |
+| 真实 tmdb (盘上/**C2 剥离后**) | 100% / 0% | 0.762 / **0.238** | 字段泄露可剥，acc 崩到≈majority |
+| 合成 steam (raw/剥离) | 0% / 0% | **0.992 / 0.992** | 不可剥 |
+| 真实 steam (盘上/C2 后) | 100% / 0% | 0.592 / **0.488** | 可剥 |
+
+**意义**：真实数据泄露 = 字段级 → 可被 C2 剥离（acc 崩塌）；generation-agent 合成数据泄露 = 语义级 → **不可剥离**（strip no-op，acc 仍≈1.0）。这是两范式在泄露轴上的实证差异，支撑 C2 护城河。
+
+### 18.4 自治 schema 发现跨域泛化（E4）—— 泛化 n=1→n=6
+
+`run_e4_scale.py`：6 个 held-out 域（不在 P4 金标准调参集），各 seed 1 跑，**6/6 build_valid + decontam 全过**，平均 ~2 call / ~3s / ~2.7k tokens：
+
+| held-out 域 | n | 发现 label | build_valid | decontam |
+|---|---|---|---|---|
+| amazon | 5438 | main_cat | ✅ | ✅ |
+| reddit | 7257 | subreddit | ✅ | ✅ |
+| arxiv_cs / arxiv_math | 20000 | license⚠️ | ✅ | ✅ |
+| arxiv_condmat / arxiv_astroph | 20000 | categories | ✅ | ✅ |
+
+**意义**：agent 自治 schema 发现泛化到 6 个未见真实源（产品/社交/论文 3 异质类）。诚实软肋：arxiv_cs/math 选了 `license`（valid 但非最优 label，loop 只纠退化/连续硬错误不纠"合理非最优"）；关系偏稀疏（nrel=1）。
+
+### 18.5 CLIP 污染的任务依赖性（E5）—— refine C2 claim（非推翻）
+
+`run_e5_cross_clip.py`：在外部图像域跑 CLIP-L/14 vs 同家族 ImageNet-only ViT-B/16（控架构）：
+
+| 外部域 | CLIP F1 | ViT-B/16-IN F1 | **Δ(CLIP−ViT)** |
+|---|---|---|---|
+| DTD 纹理 (LAION-rare) | 0.780 | 0.783 | **−0.003** |
+| Pets 猫狗 (LAION-common) | 0.952 | 0.955 | **−0.003** |
+
+对照论文自家域 ΔF1：wikiart **+0.21** > tmdb +0.15 > steam +0.11。
+**意义（refine）**：CLIP 预训练污染**不是普遍效应**，而是**任务依赖**——集中在"视觉风格/流派分类"（正是 MAG 的 label 类型，踩中 CLIP 的 LAION 风格语义）；外部细粒度识别（纹理/品种）CLIP≈ImageNet-ViT。C2 claim 从"所有 CLIP benchmark 都脏"收紧为更可防守的"MAG 这类 style/genre benchmark 的 image 高分确含预训练污染成分，ImageNet-only 对照可量化"。
+
+### 18.6 verifier 闭环鲁棒性（E6）—— 量化"loop 兜底"
+
+`run_e6_loop_robust.py`：4 profile 变体 × 4 金标准域 × 2 seed = 32 run，从 trace 同时取 round0(single-shot) vs final(loop)：
+
+- **decontam（去泄露正确）: 32/32 = 100%** —— 任何变体/域/seed，终 schema 从不含定义性关系（最强卖点）。
+- single-shot label 合法 **28/32 (88%)** → loop build_valid+decontam **30/32 (94%)**，**4 个恢复事件**（全在 steam V3/V4 单-shot 选退化 `type` → 闭环救回）。
+- 诚实披露：V3 tmdb 出现 `round0=Y→final=N` ×2（闭环修关系时带歪 label，**−2 回归**）；loop 非严格单调，是审计机制非优化器（与 IGC 教训一致）。
+- 量化论文红线"可靠核心是 C2 测量，LLM 发现是脆弱部分"：**C2 去泄露 100% vs LLM label 发现 88–94%**。
+
+### 18.7 steering 机制合成复现（E7）—— 救 effective-n≈3
+
+`run_e7_synthetic_sweep.py`：合成 SBM 图，固定特征（→ MLP 跨条件**恒定 0.640**=对照），旋同质性 0.20→0.95（9 档）只换边：
+
+| homo | 0.20 | 0.30 | 0.40 | 0.50 | 0.60 | 0.70 | 0.80 | 0.90 | 0.95 |
+|---|---|---|---|---|---|---|---|---|---|
+| GCN | 0.493 | 0.579 | 0.718 | 0.832 | 0.933 | 0.980 | 0.997 | 1.000 | 1.000 |
+| gap(GCN−MLP) | −0.147 | −0.061 | +0.078 | +0.192 | +0.293 | +0.340 | +0.357 | +0.360 | +0.360 |
+
+**Pearson(gap, homophily) = 0.940 over 9 controlled levels**（MLP 恒定已自检）。
+**意义**：gap-vs-homophily 机制在 9 个独立受控合成设置上 r=0.940（比真实 0.846 更强）→ 真实 3 域是普适机制的采样，**非 3-域巧合**。诚实 nuance：合成 crossover≈0.37 ≪ 真实≈0.91，因 crossover 依赖特征 SNR（合成特征弱 MLP=0.64，GCN 更早反超）→ 论文应说"crossover 非普适常数，依赖 feature SNR"。
+
+### 18.8 这些实验证明了什么（逐条）
+
+1. **E1**：论文 C2 verifier 在 7 个公开 benchmark 上稳定检出它们 ship 的 +0.43~+0.68 结构泄露 → **去泄露价值不只自家数据，是领域金标准系统性漏掉的维度**（agent load-bearing 的外部铁证）。
+2. **E2**：agent ~3s/~2200 tok vs 专家 25–90 min/域，18/18 含 held-out → **"省时省力"有数字支撑**。
+3. **E3**：与 generation agent（BenchAgents/AutoBencher）架构正交；合成数据带**不可剥离**语义泄露而真实+C2 可剥 → **真实-fetch+去泄露路线在泄露轴上实证优于 LLM 合成**。
+4. **E4**：6/6 held-out（含 arxiv 子域）自治 build_valid+decontam → **agent 泛化到未见真实源，非只 4 金标准域**。
+5. **E5**：外部 DTD/Pets 上 CLIP≈ImageNet-ViT（Δ≈0）→ **CLIP 污染是任务依赖**，refine C2 为更精准可防守的 claim（集中 style/genre 分类）。
+6. **E6**：decontam 32/32=100% + loop 88%→94%（+4 恢复）→ **C2 去泄露无懈可击，闭环兜底真实但非严格单调**（诚实）。
+7. **E7**：合成 9 档 r=0.940 复现 gap-vs-homophily → **steering 机制普适，n≈3 不是巧合**。
+
+**净结论**：E2+E4 让框架在「自动化端到端 + 自治 schema 发现泛化」上 load-bearing；E1+E6 让「正确性保证（去泄露）」可外部验证；E3 在泄露轴与 generation 范式实证可分；E5 refine 污染 claim；E7 救 steering 统计软肋（降 appendix 机制演示）。**🆕 新 thesis（2026-07-31）**：这套证据把论文抬到 ICLR-main 可辩区间——**hero = 开源自治框架（补 MAG 数据集稀缺），去泄露是 benchmark 正确性属性、非头条**。落地前提是 P0 三项——**✅ 已全部完成（见 §19）**：Exp2 报告卡门（正确性 4/4）+ Exp5a TMDB 归因（活口关闭）+ Exp1 修 4 域（诚实结论：relabel 修不动 3/4 内禀特性；正确性 4/4 达成、质量靠报告卡+谱重框）；hero 押「自动化 + 正确性 + 可复用」（消融打不穿），不押「构造决策比规则强」（greedy=oracle 打穿）。
+
+> ⚠️ 残留（非阻塞，需开放网络机器）：① 真实 OpenMAG/MAGB 图（HF 托管，本环境被墙）未直接 profile——E1 用 7 公开 PyG benchmark + E5 用 Oxford DTD/Pets 替代；投稿前在开放机器跑 `python benchmark/run_public_leakage_profile.py --public` + `clip_contamination_probe.py` 补"同产物"铁证。② amazon 本地图像稀疏（114 图/4 类）→ E5 amazon 无信息，需先批量下载商品图。
+
+---
+
+## 19. P0 补充实验（2026-07-31，新 thesis「开源框架 hero + 5 链环」驱动）
+
+> 本节为投稿阻塞的 3 个实验，与 §1–§18 无冲突（§1–17=4 金标准域去泄露后内部数字；§18=跨数据集/合成/成本外部证据；本节=新 thesis 的质量门/正确性归因/修域）。脚本 + 产物见各小节，逻辑线 §2.5 / §4.5 引用本节。
+
+### 19.1 Exp2 — benchmark 报告卡质量门（certify 正确 + 高质量；链环③④的尺子）
+
+脚本 `benchmark/generate_report_card.py` → `benchmark/results/report_cards.{json,md}`。每域自动出卡：**正确性**（lp_ceiling≤majority / 0 边泄露 / 0 重复 / 0 自环）+ **质量**（饱和 / 图价值 GNN−MLP / LP 非退化 / 模态价值 / 类平衡）。
+
+| 域 | 同质性 | 正确性 | 饱和? | 图价值(GNN−MLP) | LP非退化 | 双模态必需 | 裁定 |
+|---|---|---|---|---|---|---|---|
+| arxiv | 0.933 | ✅ | **是**(best 0.90/spread 0.007) | +0.007 neutral | 是(0.919) | N/A | ⚠️ SATURATED + GRAPH_NEUTRAL |
+| steam | 0.524 | ✅ | 否 | −0.004 neutral | 是(0.834) | 否 | ⚠️ GRAPH_NEUTRAL + SINGLE_MODALITY |
+| tmdb | 0.239 | ✅ | 否 | −0.008 neutral | 是(0.782) | 否 | ⚠️ GRAPH_NEUTRAL + SINGLE_MODALITY |
+| wikiart | 0.895 | ✅ | 否 | +0.176 useful | 是(0.876) | 否 | ⚠️ SINGLE_MODALITY |
+
+**意义**：**正确性 4/4 全过**（用户"4 个都 benchmark 正确"底线达成）；质量项 0/4 精确量化了中心张力 → 驱动 Exp1 + 谱重框。这张卡本身是 C2 的产物（每域附卡 + leak-profile 一等元数据），把"高质量"从口号变可审计检查清单。
+
+### 19.2 Exp5a — TMDB R@1 genre-keyword 归因（正确性活口 ✅ 关闭）
+
+脚本 `benchmark/run_exp5a_tmdb_attribution.py` → `benchmark/results/exp5a_tmdb_genre_attribution.json`。
+活口（§9 / §17 pt5）：去泄露后 TMDB text→image R@1=0.761（CKA≈0，random≈1/18=0.056）被怀疑是 overview 正文 genre 词残留泄露。
+方法：重编码（控变量）基线（只剥 `Genres:` 行）vs 处理（再剥 18 genre 词，词边界 regex，影响 29.65% overview）→ 复算 retrieval/CKA（复用权威 `_retrieve`/`cka`，不碰图/GNN）。
+
+| | R@1 | R@5 | R@10 | CKA |
+|---|---|---|---|---|
+| 基线（line-strip） | **0.7613** | 0.9127 | 0.9389 | 0.0040 |
+| 处理（line + genre-word strip） | 0.7572 | 0.9119 | 0.9383 | 0.0040 |
+| Δ | **−0.0041** | −0.0008 | −0.0006 | 0 |
+
+- 基线 **0.7613 完美复现** §9 的 0.761（复现成功）；剥光 genre 词后 R@1 几乎不动。
+- **结论**：genre 词非因 → "text 残留 genre 语义"假设证伪。0.761 是 CLIP 对 overview↔poster 的**真实跨模态检索**，非性泄露；CKA≈0 与 R@1 高不矛盾（CKA=线性子空间重叠、R@1=近邻排序，CLIP 文/图投影子空间本不线性同构）。**活口关闭，TMDB 可称 leak-free。**
+
+### 19.3 Exp1 — 修 4 金标准域（relabel 实验；诚实结论：relabel 修不动 3/4）
+
+脚本 `benchmark/run_exp1_arxiv_desat.py` + 详 [`docs/exp1_fix4domains_result_2026-07-31.md`](exp1_fix4domains_result_2026-07-31.md)。
+方法：同节点同边、只换 label（post-process agent JSON），重跑 leak-free NC（5 seed）。
+
+**arxiv 细化（4 子域 → 26 类 `(子域, subcat)`；源 `graph_data.pt` 的 labels+subcat_labels，不碰 5GB metadata；26 类全 ≥200 节点、覆盖 100%）**：
+
+| | best NC | spread | signal margin(−majority) | GNN−MLP | LP-ceiling(剪枝) | 正确性 |
+|---|---|---|---|---|---|---|
+| 原 4 类 | 0.900 | 0.007 | 0.611 | +0.007 | 0.261 ≤ 0.288 | ✅ |
+| 细 26 类 | 0.463 | 0.008 | 0.317 | +0.001 | 0.051 ≤ 0.147 | ✅ |
+
+→ 去天花板饱和 ✅（0.90→0.46，signal margin 0.32，lp_ceiling 仍 PASS）但 **spread 仍 0.008** ❌ = **feature-saturated**（摘要文本强决定子类、引用结构冗余）——细化 label 只降天花板、不创区分度。
+
+**tmdb / steam（否决，无平衡非-genre label 可换）**：候选 label 全幂律长尾——tmdb production_companies[0] 5050 种 / directors[0] 5796 种；steam developers[0] 1658 种（最大 70=2.5%，top-19 仅覆盖 14%）、price 是跨币种本地化串（`"1 473,--€"`）不可解析。tmdb 天生异质（homo 0.239，actor/director 边对非-genre label 不传信号）；steam co-attribute 边只对定义性 label 同质。
+
+**净结论**：relabel 修不动 3/4 域图价值 = **内禀结构特性、非构造 bug**。正确性 4/4 全过（底线）；质量项靠报告卡诚实标注 + 同质性谱重框（feature-saturated arxiv ↔ heterophilous tmdb ↔ graph-useful wikiart），**不硬凑"4 域都图有用"**（红线④）。wikiart 不动（4 域最好：图有用 +0.176、非饱和 spread 0.176、leak-free，仅 image 单模态主导）。
+
+### 19.4 P0 总结论（写论文怎么用）
+
+1. **正确性 4/4 坐实** = thesis 正确性支柱（报告卡 + lp_ceiling + Exp5a 三重验证）。
+2. **"4 域都图有用/可区分/双模态"不可达**（arxiv feature-saturated / tmdb 异质 / steam co-attribute 限，皆内禀）→ thesis 不声称（红线④），改用**报告卡 + 同质性谱重框**当 portfolio 卖点。
+3. **arxiv NC 不当"可区分"头条**；arxiv 价值 = 规模 45k + formula 独有模态 + LP 非退化(AUC 0.92) + 检索。
+4. **进入撰写**；P1（Exp3 真 human baseline / Exp5b OpenMAG·MAGB 真图对比[需开放网络] / Exp6 schema 发现质量）撰写前后做。
+
+> 产物索引：`benchmark/generate_report_card.py`、`run_exp5a_tmdb_attribution.py`、`run_exp1_arxiv_desat.py`；结果 `report_cards.{json,md}` / `exp5a_tmdb_genre_attribution.json` / `nc_arxiv_summary_fine26.json` / 变体图 `data/arxiv_datasets/arxiv_multimodal_graph_agent_fine26.json`。
+
+---
+
+## 20. P1 补充实验（2026-07-31）
+
+### 20.1 Exp6 — agent schema 发现质量评估（✅ 完成，post-hoc）
+
+详 [`docs/exp6_schema_discovery_quality_2026-07-31.md`](exp6_schema_discovery_quality_2026-07-31.md)。post-hoc 审计 E4 已存盘的 6 held-out 域 discovered schema（无需新跑 LLM）。
+
+**发现质量审计**：
+
+| held-out 域 | discovered label | n_classes | validity | **quality** | 原因 |
+|---|---|---|---|---|---|
+| amazon | main_cat | 20 | ✅ | ✅ 合理 | 平衡有意义 |
+| reddit | subreddit | 10 | ✅ | ✅ 合理 | 平衡有意义 |
+| arxiv_cs | license | 9 | ✅ | ⚠️ 语义退化 | top-1 59.7%/top-2 86.6%；license 与内容无关→NC signal_margin≈0 |
+| arxiv_math | license | 7 | ✅ | ⚠️ 语义退化 | 同上 |
+| arxiv_condmat | categories | **843** | ✅ | ❌ 过细 | 远超 ≤100 阈值，avg 24/类 |
+| arxiv_astroph | categories | **275** | ✅ | ❌ 过细 | 同上 |
+
+- **validity 门 6/6 vs quality 门 ~2/6** → gap 4/6（2 过细 + 2 语义退化）= **C2 报告卡质量门必要性的硬证据**（843 类竟被 validity 放行成 build_valid=true）。
+- **e6 复盘**：去泄露 32/32=**100%**；label 发现 single-shot 28/32 (87.5%) → loop 30/32 (93.8%, +4 恢复)。**可靠核心 = C2 去泄露（确定性）；脆弱环节 = LLM label 发现（88–94%）**。
+- 写论文：validity ≠ quality → 报告卡质量门加入自治管线；arxiv→license/categories→843 是诚实反例（写 limitation）。
+
+### 20.2 Exp5b / Exp3 / Exp4b —— 环境就绪；仅 Exp3/4b 需真人
+
+**本机实测（2026-07-31 纠正前述误判）**：`.env` 存在且配齐（API_KEY/MODEL_BASE_URL/MODEL_NAME=qwen-plus/HF_ENDPOINT 全 set）；**LLM 端点可达**（dashscope.aliyuncs.com → 200）；**HF 经镜像可达**（hf-mirror.com / modelscope.cn → 200）；仅直连 huggingface.co/github.com 超时（镜像全覆盖）。故 **Exp5b 本机可跑**（经镜像下 MAGB/OpenMAG）；**fresh agent 调用也可跑**。**唯一真实约束**：Exp3/Exp4b 是 user study，需 3 名真人受试者（与网络/机器无关）。协议见 [`docs/p1_protocol_exp3_4b_5b_2026-07-31.md`](p1_protocol_exp3_4b_5b_2026-07-31.md)。
+- **Exp5b（OpenMAG 真图 leak-profile）✅ 完成（2026-07-31）**：经 hf-mirror 下 `enjun-collab/MMAG` 的分解张量（books-nc/ele-fashion，绕开 DGL 格式依赖）→ 跑论文 C2（structure-leakage ceiling 原始→剪枝 vs majority）→ 对照自家 4 域。**结果：OpenMAG books-nc leakage +0.50（LP-raw 0.795 vs majority 0.298）/ ele-fashion +0.47（0.745 vs 0.278）**——**领域已发的真实 MAG 同样 ship 结构泄露**（与自家去泄露前 wikiart +0.90 / E1 Amazon +0.66 同模式），堵死"leak-free 靠 C2 自证循环"指控（C2 探测器在同产物上稳定检出系统性结构泄露）。两种切分（我方分层 / 他们 ship）一致。脚本 `benchmark/run_exp5b_openmag_magb.py`，结果 `exp5b_external_mag_leakprofile.{json,md}`。诚实 caveat：仅 2 域（仓库只对 books-nc/ele-fashion 提供分解张量；其余需 dgl+torch-2.8 兼容机才能读 DGL *Graph.pt）——但 2 个真实 MAG 均 +0.47~0.50 已足够支撑 claim。
+- **Exp3（真 human baseline）**：3 名懂 GNN 研究生 × 2 held-out 域，计时手建 schema+去泄露 vs agent（耗时/LOC/报告卡质量）。替换 E2"专家估计"。**需招人**。
+- **Exp4b（外部用户复用）**：Exp3 受试者用框架建一新域，计时+LOC+报告卡 = "开源快速复用"金标准。**需招人**。
+
+---
+
+## 21. Four-Protocol Benchmark Matrix（2026-09-09 新增实验主线）
+
+> 本节覆盖旧的“leak-free pruned 是唯一头条协议”设定。普通跨 split 图边在 transductive NC 中是合法信息暴露，不能仅凭 LP 高分叫结构泄露。新实验把同一个 raw MAG 固定为四个派生 view，比较不同部署假设下的性能与模型排序。
+
+### 21.1 固定协议
+
+| protocol | split 规则 | edge view | 解释 |
+|---|---|---|---|
+| transductive | stratified random 60/20/20，seed=1 | full topology | 标准转导；val/test 标签隐藏 |
+| split-disjoint | 与 transductive 同节点 masks | within-split edge union | 结构暴露敏感性，不称“去泄露证明” |
+| temporal | 真实时间排序 60/20/20；相同时间桶不拆 | within-split edge union | 未来时间泛化 |
+| group-inductive | primary group 整组分配 60/20/20 | within-split edge union | 未见实体组泛化 |
+
+四域 provenance：
+
+- arxiv：time=`arXiv ID year-month`；group=`extracted paper first author`。
+- steam：time=`release_date`；group=`primary developer`。
+- tmdb：time=`release_date`；group=`primary director`。
+- wikiart：time=`year`；group=`artist`。
+
+每个 view 必须保存：masks、edge_index、split sizes、edge retention、cross-split edge count、时间/group coverage、group overlap。raw MAG 不覆盖、不复制修改。
+
+### 21.2 编码与融合控制变量
+
+四个 protocol 共用同一份**冻结且去除 label-derived 字段后的节点 embedding**。text/image/formula 逐模态 L2 normalize 后做 element-wise mean fusion，再归一化。这样四个实验只改变 split/view，不把 encoder 随机性混入 protocol 对比。
+
+若加入任何会从数据学习参数的预处理（PCA、normalizer、learned fusion、adapter），必须对每个 protocol 单独仅用 train nodes 拟合；当前 frozen encoder + mean fusion 没有 fitted state，所以允许复用缓存。
+
+### 21.3 正式矩阵
+
+数据集：`arxiv / steam / tmdb / wikiart`。模型：`MLP / GCN / GAT / GraphSAGE / GIN / GCNII`。主模态：arxiv=`text+image+formula`，其余=`text+image`。固定 split seed=1，正式结果使用 **5 个初始化 seeds**，每次最多 300 epochs、validation early stopping 继承现有 `train_and_eval`。报告 mean±std accuracy 和 macro-F1。
+
+需要生成的主表字段：
+
+| dataset | protocol | best model | accuracy | macro-F1 | MLP acc | best GNN−MLP | directed edges | train/val/test |
+|---|---|---|---:|---:|---:|---:|---:|---|
+| arxiv | transductive | GIN | **0.9165** | 0.9152 | 0.8914 | +0.0251 | 114090 | 27402/9133/9137 |
+| arxiv | split-disjoint | GCNII | 0.8999 | 0.8990 | 0.8914 | +0.0085 | 50312 | 27402/9133/9137 |
+| arxiv | temporal | GCNII | 0.8664 | 0.8599 | 0.8556 | +0.0108 | 70706 | 27402/8752/9518 |
+| arxiv | group-inductive | GIN | 0.9028 | 0.9021 | 0.8884 | +0.0144 | 52010 | 27403/9135/9134 |
+| steam | transductive | GraphSAGE | **0.6825** | 0.5093 | 0.6621 | +0.0204 | 96492 | 1652/548/560 |
+| steam | split-disjoint | MLP | 0.6621 | 0.4737 | 0.6621 | +0.0000 | 42774 | 1652/548/560 |
+| steam | temporal | GraphSAGE | 0.6165 | 0.4301 | 0.6122 | +0.0043 | 51860 | 1637/561/558 |
+| steam | group-inductive | GraphSAGE | 0.6569 | 0.4449 | 0.6232 | +0.0337 | 47482 | 1655/553/552 |
+| tmdb | transductive | GraphSAGE | **0.5908** | 0.3945 | 0.5892 | +0.0016 | 325818 | 7815/2600/2622 |
+| tmdb | split-disjoint | MLP | 0.5892 | 0.3619 | 0.5892 | +0.0000 | 144706 | 7815/2600/2622 |
+| tmdb | temporal | GraphSAGE | 0.5474 | 0.3158 | 0.5461 | +0.0013 | 194700 | 7799/2610/2627 |
+| tmdb | group-inductive | GraphSAGE | 0.5796 | 0.3766 | 0.5728 | +0.0068 | 173914 | 7820/2608/2609 |
+| wikiart | transductive | GraphSAGE | **0.8897** | 0.8733 | 0.6477 | +0.2420 | 887108 | 13159/4374/4435 |
+| wikiart | split-disjoint | GraphSAGE | 0.7926 | 0.7411 | 0.6477 | +0.1449 | 389172 | 13159/4374/4435 |
+| wikiart | temporal | GCNII | 0.0075 | 0.0086 | 0.0066 | +0.0009 | 657620 | 11237/3805/3848 |
+| wikiart | group-inductive | GraphSAGE | 0.5661 | 0.4346 | 0.4395 | +0.1266 | 887108 | 13122/4421/4425 |
+
+**最重要发现**：
+
+1. 结构暴露敏感性并不等于统一“泄露”：固定 transductive 最优模型后，split-disjoint accuracy 下降 arxiv **1.69pp**、steam **2.11pp**、tmdb **1.01pp**、wikiart **9.71pp**。这说明四域对跨 split topology 的依赖程度不同。
+2. 时间漂移普遍比 split-disjoint 更难：arxiv −5.35pp、steam −6.60pp、tmdb −4.35pp。WikiArt −88.35pp 不能直接与前三域等价解释，因为其 temporal train 仅含 45/64 类，另有 3,078 个无年份节点被诚实排除；这暴露的是**新风格类别随时间出现的 open-set 问题**，不是模型普通退化或 leakage 证据。
+3. group-inductive 对 wikiart 最苛刻（GraphSAGE 0.8897→0.5661，−32.36pp），表明跨未见艺术家泛化远难于随机节点泛化；固定 transductive winner 时 arxiv/steam/tmdb 的下降分别约 1.37/2.56/1.12pp。
+4. 图价值明显依赖 protocol：wikiart 的 best GNN−MLP 从 transductive +0.2420 降到 split-disjoint +0.1449、group-inductive +0.1266；steam/tmdb 在 split-disjoint 中由 MLP 胜出或持平。故论文不能只给一个“GNN 有用/无用”的域级标签。
+5. 所有进入本表的图先排除了 provenance-confirmed target-derived relations：steam/tmdb `shared_genre`、wikiart `shared_style`；raw MAG 文件未修改。未排除时产生的预跑数字已作废，未写入本表。
+
+结果文件：
+
+- `benchmark/results/protocol_views/*_protocol_manifest.json`
+- `benchmark/results/protocol_views/*_protocol_views.pt`
+- `benchmark/results/newdomain_nc/protocol_matrix/nc_*_protocol_matrix.json`
+- `benchmark/results/newdomain_nc/protocol_matrix/protocol_matrix_all.{json,md}`
+
+### 21.4 必须回答的统计问题
+
+1. 每域 `transductive − split-disjoint` 的 accuracy/F1 差与置信区间：结构暴露敏感性。
+2. 每域 `transductive − temporal`：时间漂移代价。
+3. 每域 `transductive − group-inductive`：实体组外泛化代价。
+4. protocol × model 的两因素分析或配对 seed bootstrap：模型排序是否因 protocol 改变。
+5. 每个 protocol 内 `best GNN − MLP`：图价值是否稳定。
+6. 补跑 single modality 时，检验 multimodal gain 是否跨 protocol 稳定。
+
+### 21.5 与整篇论文对齐后的实验状态
+
+| 实验 | 状态 | 是否可由当前机器完成 | 说明 |
+|---|---|---|---|
+| 四域 × 四 protocol view 生成与完整性检查 | **✅ 完成** | 是 | 16 views；group overlap=0；inductive cross-edge=0 |
+| 四域 × 四 protocol × 6 模型 × 5 seeds NC | **✅ 完成** | 是 | 480 次训练；主表见 §21.3 |
+| 四 protocol 的 modality ablation | 待主矩阵稳定后跑 | 是 | 至少 text/image/full；arxiv 加 formula |
+| 四 protocol 的 LP/clustering/few-shot 全量扩展 | 可选 appendix | 是 | 不应在 NC 主矩阵前扩张 |
+| encoder sample-level pretraining overlap search | 未完成 | 部分 | 需要可验证的预训练样本索引；只有 CLIP-vs-IN gap 不足以判污染 |
+| degree-preserving topology null / permutation test | permutation 可跑；rewiring 未实现 | 是 | topology probe 的严谨性补强 |
+| Exp3 真 human baseline / Exp4b 外部用户复用 | 未完成 | **否，需真人受试者** | 不能由 GPU 代跑或伪造 |
+| Exp0 MAG landscape | 未完成 | 是（文献工作） | 投稿前补表与引用 |
+
+### 21.6 论文可用结论边界
+
+- 可以说：框架为每个数据集自动物化四种可审计 protocol views，并量化性能对部署假设的敏感性。
+- 可以说：target-derived relation/feature 是 provenance-confirmed defect；temporal/group split 测的是分布外泛化。
+- 不可以说：所有 transductive 跨 split 边都是 leakage；LP 高即泄露；split-disjoint 是唯一“正确”协议。
+- 不可以在结果出来前声称哪个域对 temporal/group 最稳健，也不能用旧 split-disjoint 数字填充新四协议表。

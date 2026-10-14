@@ -1,0 +1,260 @@
+# MAG-Forge 论文逻辑线 — 最终确认版（FINAL；2026-07-31 thesis 重定为「开源自治框架」）
+
+> ⚠️ **本文档是论文逻辑的唯一权威来源（single source of truth）。**
+>
+> ✅ **数字权威**：所有实验数字一律以 [`docs/experiment_results_FINAL_decontaminated_2026-07-16.md`](experiment_results_FINAL_decontaminated_2026-07-16.md)（§1–§17 主表 + §18 E1–E7 + §19 P0 实验）的去泄露后完整总表为准。本文若含绝对数字仅为索引。
+>
+> 🆕 **2026-07-31 thesis 重定（本次，最高优先）**：论文 hero 从「去泄露 verifier + 自治 schema 发现」**改为「开源自治多智能体 MAG 构造框架」**。去泄露**降级为 benchmark 的一个正确性属性**（质量保证手段），不再是头条贡献。
+> - **用户的真实落脚点** = 开源框架补 MAG 数据集稀缺，自动化造**高质量 + 正确 + 可快速复用**的数据集。
+> - **因此 C1–C4 重排为 5 链环逻辑链**：①稀缺(动机) → ②自动化 → ③高质量 → ④正确(无泄露) → ⑤可复用。
+> - **旧叙事废止**：①「去泄露 verifier 当 hero / C2 护城河」②「C4 benchmark 科学发现当支柱（steering 皇冠）」③「三层时间层」演进叙述。**所有数字、红线、攻击面保留**，仅重新归类解读。
+> - **steering（r=0.846 controlled trend）降 appendix** 当机制演示（effective n≈3、block-perm p=0.143 统计死 + 不服务框架 thesis；E7 合成 r=0.940 仅证机制方向，非独立发现支柱）。
+> - **E1（领域金标准 ship 结构泄露）改支撑 C2**「去泄露价值不只自家、是领域系统性漏掉的维度」，非独立 C4 发现。
+> - **C3 决策（2026-07-31）**：**修现在的 4 个金标准域（arxiv/steam/tmdb/wikiart），不补新域，保证 4 个都 benchmark 正确**（质量优先于数量）。amazon/spotify 保留为 held-out 泛化 / 零代码复用证据，不扩展。
+>
+> 📋 **技术修订记录（数字/术语，仍有效）**：mean 融合 + grad-clip + 10 seed 修 GIN 崩溃；text 去泄露（strip `Style:`/`Genres:`，wikiart 纯标题）；LP-ceiling 改名 **structure-leakage ceiling**（=label-propagation 非性链路预测，target-edge 泄露不成立）；CLIP 预训练污染 profiling（ImageNet-only 对照，E5 refine 为任务依赖）。泄露诊断详见 [`benchmark_text_decontamination_2026-07-15.md`](benchmark_text_decontamination_2026-07-15.md) / [`clip_contamination_finding_2026-07-16.md`](clip_contamination_finding_2026-07-16.md) / [`lp_ceiling_clarification_2026-07-16.md`](lp_ceiling_clarification_2026-07-16.md)。
+
+---
+
+## 2026-09-09 protocol-aware 逻辑修订（覆盖旧“跨切分边=结构泄露”表述）
+
+### 六模块最终框架
+
+1. **Real-world Multimodal Sources**
+2. **Autonomous Schema Discovery**
+3. **Schema-Guided MAG Construction**
+4. **Protocol-Aware Integrity Auditing**
+5. **Integrity-Guided Representation Encoding**
+6. **Multi-Task Benchmarking & Integrity Reporting**
+
+模块 4 不再把“普通边跨 train/val/test”直接判成泄露，而是先回答三类不同问题：
+
+- **真实完整性缺陷**：target-derived 字段/关系、重复实体跨 split、未来信息、或明确违反已声明 protocol；这些可触发修复。
+- **协议依赖的信息暴露**：完整 topology 能否单独预测标签、结果对删跨 split 边有多敏感；这些是诊断量，不自动叫 leakage。
+- **数据可用性**：节点覆盖、类别覆盖、时间字段覆盖、group 字段覆盖；缺失必须显式报告。
+
+模块 4 对每个完成构造的数据集生成四个不可混称的派生视图，raw MAG 始终不可变：
+
+| View | 节点切分 | 图暴露 | 回答的问题 |
+|---|---|---|---|
+| **Transductive** | 分层随机 60/20/20 | 保留完整 topology，仅隐藏 val/test labels | 标准转导设定下能做到什么？ |
+| **Split-disjoint** | 与 transductive 相同的节点 | 只保留各 split 内部边 | 结果对跨 split 结构暴露有多敏感？ |
+| **Temporal-inductive** | 按真实时间排序 60/20/20，同一时间桶不拆分 | 只保留各时间段内部边 | 面向未来数据是否稳健？ |
+| **Group-inductive** | 按真实实体组整体划分 60/20/20 | 只保留各 split 内部边 | 面向未见作者/开发者/导演/艺术家是否稳健？ |
+
+四个成熟域的 protocol provenance 固定为：arxiv=`arXiv ID 月份 + 论文首作者`；steam=`release_date + primary developer`；tmdb=`release_date + primary director`；wikiart=`year + artist`。时间/组提取覆盖率和 split overlap 必须写入 manifest，不能用随机数替代缺失 provenance。
+
+模块 5 的职责是“审计后再编码”，不是重新切分数据：
+
+- 先按 target provenance 删除被证实的 label-derived 文本字段/关系输入；
+- 冻结 encoder 并记录 checkpoint、预训练语料 provenance 和 overlap 风险；
+- 每个节点只编码一次，text/image/formula 在同一维度做无监督 mean fusion；
+- 四个 view 复用同一份冻结节点表示，避免把相同 embedding 重算四遍。若未来加入 PCA、标准化、可学习融合等有 fitted state 的步骤，则只能在各 protocol 的 train split 上拟合，再作用于 val/test。
+
+### 新的论文中心实验问题
+
+> **RQ-Protocol：同一个自动构造的 MAG，在 transductive、split-disjoint、temporal-inductive 和 group-inductive 四种部署假设下，模型排名、图价值和模态价值是否稳定？**
+
+该实验不是“再证明一次去泄露”，而是把 benchmark 从单一分数升级为**协议敏感性画像**：
+
+- `Transductive − Split-disjoint`：结构暴露敏感性；
+- `Transductive − Temporal`：时间分布漂移代价；
+- `Transductive − Group-inductive`：新实体组泛化代价；
+- 各 view 的 `best GNN − MLP`：图结构在该部署条件下是否仍有增益；
+- 各 view 的 single-vs-multimodal gap：模态结论是否跨协议稳定。
+
+论文必须双报 accuracy 与 macro-F1，并报告 split 大小、类别覆盖、保留边数、孤立节点率及时间/group coverage。不得把某个协议下的下降事后解释为 leakage；只有 provenance 审计确认的 defect 才使用该词。
+
+### Four-protocol 实验已完成（4 域 × 4 views × 6 模型 × 5 seeds）
+
+主模态结果（accuracy；括号为最佳模型）如下，完整 accuracy/macro-F1/std/edge/split 表见实验线 §21 和 `benchmark/results/newdomain_nc/protocol_matrix/protocol_matrix_all.{json,md}`：
+
+| 域 | Transductive | Split-disjoint | Temporal | Group-inductive |
+|---|---:|---:|---:|---:|
+| arxiv | **0.9165** (GIN) | 0.8999 (GCNII) | 0.8664 (GCNII) | 0.9028 (GIN) |
+| steam | **0.6825** (GraphSAGE) | 0.6621 (MLP) | 0.6165 (GraphSAGE) | 0.6569 (GraphSAGE) |
+| tmdb | **0.5908** (GraphSAGE) | 0.5892 (MLP) | 0.5474 (GraphSAGE) | 0.5796 (GraphSAGE) |
+| wikiart | **0.8897** (GraphSAGE) | 0.7926 (GraphSAGE) | 0.0075 (GCNII) | 0.5661 (GraphSAGE) |
+
+这组结果给论文增加一个比旧“统一去结构泄露”更完整的发现：**benchmark 质量不是单一分数，而是 protocol-conditioned profile**。固定 transductive winner 比较时，split-disjoint 下降 1.01–9.71pp，前三域 temporal 下降 4.35–6.60pp，group-inductive 在 wikiart 下降 32.36pp。WikiArt temporal 的 0.0075 是一个必须正面解释的 open-set 现象：只有 85.99% 节点有 year，严格时间训练段缺 19/64 个后生 style 类，不能把 −88.35pp 简化为“时间泛化差”，更不能叫 leakage。
+
+进入四协议实验前，先按 provenance 排除 target-derived relations：steam/tmdb `shared_genre`、wikiart `shared_style`；arxiv citation 保留。raw MAG 不修改，四种 view 都从同一个 sanitized base graph 派生。由此，论文的新承重证据是“自动生成 + 自动审计 + 多协议发布”，而不是把某一种剪边设定包装成唯一正确答案。
+
+### 对旧结论的覆盖规则
+
+- 旧文档中的 “leak-free pruned” 统一重命名为 **split-disjoint robustness view**。
+- “LP-ceiling 高于 majority = structural leakage” 作废；改为 **topology-only predictability**。它需要 permutation/null 对照，且本身不触发删边。
+- `shared_style/shared_genre` 的问题来自它们由 target 字段直接派生，而不是因为 homophily 高；`same_artist/cites` 即使高同质也不能只凭分数删掉。
+- CLIP-vs-ImageNet 性能差只表示 encoder sensitivity；预训练污染结论必须有 sample-level overlap 证据和 clean/overlap performance gap。
+
+### 更新后的贡献链
+
+论文主线仍是“真实源 → 自治 schema → 自动构图 → 质量保证 → 表征 → benchmark”，但 C2 的可辩护定义变为：**provenance-based integrity audit + protocol view generation + representation provenance + integrity card**。四协议矩阵成为 C2 与 C3 的连接实验：它既证明框架能自动生成可复现实验视图，也展示四个 MAG 在不同真实部署条件下的能力边界。
+
+---
+
+## 0. 最终决策
+
+| 项 | 决策 |
+|---|---|
+| 目标 track | **ICLR 2027 main**（iclr2026 模板，`/home/dev_qw/iclr2027_paper/`，已编译）；**NeurIPS D&B 作拒稿 fallback**（数据集 + 协议 + 复用本身够 D&B 门槛）。 |
+| Thesis hero | **「开源自治多智能体 MAG 构造框架」**——自动把真实多模态源编排成**高质量、正确（去泄露）、可快速复用**的 MAG benchmark，补 MAG 数据集稀缺。 |
+| 域 | **arxiv / steam / tmdb / wikiart（4 金标准，全部修到 benchmark 正确）** + spotify（零代码首触复用）+ amazon（held-out 端到端泛化）。**不补新域。** |
+| 逻辑链（5 环） | ①稀缺(动机) ②自动化 ③高质量 ④正确(无泄露) ⑤可复用 —— 每环证据与补全实验见 §2 / §2.5。 |
+| Agent 红线 | ① 不声称 LLM 决策 > 规则（greedy=oracle）② 不声称引用匹配 LLM 独有（P2 embedding 等价）③ "self-verifying" → "audit-capable pipeline" ④ **不声称全域 benchmark 都图有用 / 都多模态必需**（去泄露是正确性属性，不保证图有用；用报告卡诚实标注退化域）。 |
+| 写作状态 | 逻辑线按新 thesis 重锁；**P0 三项已全部完成 2026-07-31**（Exp2 报告卡门 + Exp5a TMDB 归因活口关闭 + Exp1 修 4 域诚实结论：正确性 4/4、质量项靠谱重框）；**进入撰写**。 |
+
+---
+
+## 1. Thesis（一句话）+ hero 定位
+
+> **一个开源自治多智能体框架，把真实世界多模态源（论文 / 游戏 / 电影 / 艺术 / 音乐 / 商品 API）自动编排成高质量、正确（去泄露）、可快速复用的多模态属性图（MAG）benchmark——补当下 MAG 数据集稀缺、手建昂贵、且常带隐性泄露的缺口。框架的可靠性来自一个嵌入质量保证协议（C2：确定性去泄露 + 报告卡质量门）的确定性 verifier；LLM 贡献自治 schema 发现 + 端到端编排 + 真实源获取，把专家数月手建变成分钟级 + 声明式 YAML 复用。**
+
+**hero 定位（消融打不穿 vs 打穿）——一切 framing 以此为准：**
+- **✅ 打不穿（框架 load-bearing）**：自动化端到端（E2 ~3s/域 vs 25–90 min，18/18 含 held-out）+ 自治 schema 发现泛化（E4 6/6）+ 正确性保证（E1 外生 7 公开 benchmark 全检出泄露 + E6 去泄露 32/32）+ 可复用（spotify 0 LOC/41 YAML）。
+- **❌ 打穿（绝不声称）**：构造微观决策（greedy=oracle）+ 引用匹配 LLM 独有（P2 embedding 等价）+ "全域 benchmark 都图有用 / 都多模态必需"（去泄露后多域退化，见 §4.5 中心张力）。
+
+**与旧 thesis 的关键区别**：去泄露从「头条护城河」降为「benchmark 的正确性属性」——它是质量保证（C2）的一部分，不是卖点本身。**卖点 = 开源框架能自动化造出「带质量保证的」MAG 数据集**（高质量 + 正确 + 可复用三合一）。
+
+---
+
+## 2. 四个贡献 C1–C4（重排为 5 链环）× 证据 × OpenMAG 维度
+
+| 贡献 | 内容 | 关键证据（已核实） | OpenMAG 维度 |
+|---|---|---|---|
+| **C1（hero）开源自治多智能体 MAG 构造框架 [= 链环②自动化]** | 范式 = **LLM-orchestrate-real-fetch**（vs BenchAgents/AutoBencher 的 LLM-generate 合成）；架构 `planner(LLM 发现 schema) ↔ verifier(确定性, 嵌 C2 质量保证) → executor(配置驱动建图) → formatter → encoder → evaluator`；agent 价值 = ① 自治 schema 发现 ② 端到端编排 + 真实源获取 ③ 分钟级造图 | P4: 4 金标准域 12/12 合法去泄露 schema；P5-A label 抗 prompt（verifier 闭环纠回）；P5-B amazon 新脏域端到端 3/3（5438 节点/28612 边/7 类/homo 0.979）；E4: 6/6 held-out build_valid+decontam；E2: ~3s/~2200 tok/域 vs 专家 25–90 min，18/18 含 held-out | Significance / Necessity / Extensibility |
+| **C2 benchmark 质量保证协议 [= 链环④正确 + ③高质量]** | 两层：① **正确性 = 去泄露**（三层 leak-profiling：结构 structure-leakage ceiling + 跨切分剪枝 / 特征 text label strip / 编码器 frozen CLIP 污染 profiling + ImageNet-only 对照；LP 三档负采样；逐关系 homophily 标定义性边；builder↔verifier 回路）② **高质量 = 报告卡质量门（新增 P0）**：每域自动出卡（统计 / 泄露画像 / 难度饱和度 / 模态价值 / 图价值 / 类平衡），退化 / 饱和域诚实标红 | E1: 外生 7 公开 benchmark raw +0.43~+0.68 结构泄露 → 剪枝全 ≤ majority（coauthor_cs +0.675 / amazon_photo +0.660 / cora +0.546 / amazon_computers +0.512 / citeseer +0.487 / coauthor_physics +0.449 / pubmed +0.429）= **去泄露价值真实、是领域系统性漏掉的维度**；E6: 去泄露 32/32 = 100%，loop 88%→94%（+4 恢复）；E5: CLIP 污染 refine 为任务依赖（DTD/Pets Δ≈0，集中 style/genre）；剪枝后 4 域 structure-leakage ceiling 全 ≤ 多数类（wikiart 0.921→0.024）；**✅ Exp2 报告卡门已实跑**（4 域正确性 4/4 全过，见实验线 §19） | Data Quality / Necessity |
+| **C3 高质量 MAG 数据集 portfolio [= 链环③高质量，产品]** | **4 金标准域全部修到 benchmark 正确**：arxiv/steam/tmdb/wikiart（同质性 0.24→0.93 谱 + 独有 formula 模态）；每域附**报告卡 + leak-profile** 一等元数据；spotify（零代码复用）/amazon（held-out 泛化）作辅助证据。**质量优先于数量：4 个全对 > 多个半对** | 4 域 `*_multimodal_graph_agent.json`（字面 = agent 产物）；同质性谱 tmdb 0.24 / steam 0.52 / wikiart 0.90 / arxiv 0.93；**中心张力（Exp1 实测后定论：内禀特性非 bug）**：arxiv NC 饱和（全模型 89.34–90.00）、tmdb/steam GNN≤MLP（图退化）、仅 wikiart 图有用、§10 无域双模态必需 → **Exp1 证 relabel 修不动**（arxiv feature-saturated / tmdb 异质 / steam co-attribute 限），靠 Exp2 报告卡诚实标注 + 同质性谱重框（见实验线 §19） | Data Quality / Significance / Reproducibility |
+| **C4 开源·快速复用 [= 链环⑤可复用]** | 声明式 YAML 复用：新域零 / 低代码；可审计复用 manifest（SLOC 计）；外部用户验证（待补） | spotify **0 Python LOC / 41 YAML = 100% 复用**（10000 节点/17440 边/homo 0.741，NC+LP+leak-profile 齐全）；复用 manifest steam/tmdb/wikiart **94.6–97.2%**（arxiv 例外 68–78%，citation/fuzzy-OCR 引擎拖低，独有图族）；共享骨架 ~5175 SLOC；**待补 Exp3 真 human baseline + Exp4 外部用户验证** | Extensibility / Reproducibility |
+
+**动机（链环①稀缺）**：进 §1 Intro + Exp0 landscape 表（盘点现存 MAG benchmark：少、手建、未审计泄露、域窄）——详见 §2.5 P2。
+
+**从旧 C4 拆出的去向（2026-07-31）**：
+- **E1（领域金标准 ship 结构泄露）** → 改支撑 C2「去泄露价值不只自家数据，是领域金标准系统性漏掉的维度」（agent-verifier 的外部铁证）。
+- **steering（r=0.846 controlled trend）** → **降 appendix 当机制演示**（effective n≈3、block-perm p=0.143 统计死 + 不服务框架 thesis；E7 合成 9 档 r=0.940 仅证机制方向，crossover 合成 0.37 ≪ 真实 0.91 依赖 feature SNR 非普适常数）。
+- **跨域迁移 12/12 linear-probe 负** → appendix（特征不迁移是预期，非框架头条证据）。
+
+---
+
+## 2.5 逻辑链完整性 × 实验补全计划（投稿前必看）
+
+> 5 链环逐环核验：现有证据 / 缺口 / 补全实验 / 优先级。**P0 = 投稿阻塞**，完成即进入撰写。
+
+| 链环 | 现有证据 | 缺口 | 补全实验 | 优先级 |
+|---|---|---|---|---|
+| **①稀缺** | §2 定性提 OpenMAG/MAGB | 无量化 landscape | **Exp0**：MAG 数据集 landscape 表（名称/年份/域/模态/规模/构造方式/是否审计泄露/是否开源），量化"少、手建、未审计、域窄" gap | P2（文献为主） |
+| **②自动化** | E2/E4/P4/P5-B | E2 人工基线 = 专家估计；E4 只过 valid 门 | **Exp3**：3 研究生 × 2 held-out 域计时手建 vs agent（协议就绪，需招人，见 [`p1_protocol_exp3_4b_5b`](p1_protocol_exp3_4b_5b_2026-07-31.md)）；**✅ Exp6（已完成）**：post-hoc 审计 E4——validity 6/6 vs quality ~2/6（license 语义退化 / categories 843 过细）→ 报告卡质量门必要；e6: 去泄露 100% vs label 发现 88–94% | ✅ Exp6 / P1 Exp3 |
+| **③高质量** | §2–§14 任务表 + Exp1 实测 | **arxiv 饱和 / tmdb·steam 图退化 / 无双模态必需域** | **✅ Exp1（已完成 2026-07-31，诚实结论）**：relabel **修不动 3/4**——arxiv 4→26 类去天花板饱和(0.90→0.46 ✅)但 spread 仍 0.008 ❌（**feature-saturated**）；tmdb(异质 0.239)/steam(co-attribute 边)无平衡非-genre label（studio/dev 幂律）→ **内禀特性非 bug**。结论 = 靠 Exp2 报告卡诚实标注 + 同质性谱重框，不硬凑"4 域都图有用"。详见 [`docs/exp1_fix4domains_result_2026-07-31.md`](exp1_fix4domains_result_2026-07-31.md) | ✅ done（定性） |
+| **③质量门** | 无 | pipeline 只有 valid+decontam 门，缺"是不是好 benchmark"门 | **Exp2（P0）**：定义并自动生成报告卡（统计/泄露/难度饱和/模态价值/图价值/类平衡），4 域全出卡，退化/饱和标红 | **P0（Exp2）** |
+| **④正确** | C2/E1/E6 | ~~TMDB R@1=0.761 活口~~（**Exp5a 已关闭**）；~~未对比 OpenMAG/MAGB 真图~~（**Exp5b 已完成**） | **✅ Exp5a（2026-07-31）**：基线 R@1=0.7613 复现 §9；剥 18 genre 词后 0.7572（Δ−0.004）→ genre 词非因、活口关闭，TMDB 非 live leak。**✅ Exp5b（2026-07-31）**：OpenMAG 真图 books-nc leakage **+0.50** / ele-fashion **+0.47**（raw LP 0.74~0.80 vs majority 0.28~0.30）→ **领域已发 MAG 同 ship 结构泄露**，堵死"leak-free 靠 C2 自证循环"指控 | ✅ done（5a+5b） |
+| **⑤可复用** | spotify / SLOC | 零代码只 1 例、无外部用户 | **Exp4**：4a 再建 2–3 零代码域（**涉及新域，本次跳过，留 P2**）；4b Exp3 的人用框架建域计时 + LOC + 报告卡 | P1（仅 4b） |
+
+**P0（投稿阻塞，3 项）—— ✅ 全部完成 2026-07-31**：
+- **Exp2 ✅**：报告卡质量门（`benchmark/generate_report_card.py`）—— 4 域出卡：**正确性 4/4 全过**、质量项 0/4（arxiv 饱和 / tmdb·steam 图无用 / wikiart 单模态），量化基线。
+- **Exp5a ✅**：TMDB R@1 归因——基线 0.7613 复现 §9，剥 18 genre 词后 0.7572（Δ−0.004）→ **genre 词非因、正确性活口关闭，TMDB 非 live leak**。
+- **Exp1 ✅（诚实结论）**：relabel 修不动 3/4——arxiv feature-saturated（4→26 类去天花板但 spread 仍 0.008）、tmdb 天生异质、steam co-attribute 限；**正确性 4/4 全过（用户底线达成）**，质量项靠报告卡+谱重框（不硬凑）。详见 [`docs/exp1_fix4domains_result_2026-07-31.md`](exp1_fix4domains_result_2026-07-31.md)。
+
+> **P0 结论**：进入撰写的前提不是"4 域都图有用"（不可达，内禀特性），而是**正确性 4/4 + 报告卡诚实标注 + 谱重框**——已达成。
+
+**P1**：**✅ Exp6（已完成 post-hoc，见实验线 §20.1）**；**✅ Exp5b（已完成，见实验线 §20.2）**——OpenMAG books-nc/ele-fashion leakage +0.50/+0.47，堵循环指控；Exp3/Exp4b 是 user study、**唯一需真人受试者**（与网络/机器无关），协议见 [`docs/p1_protocol_exp3_4b_5b_2026-07-31.md`](p1_protocol_exp3_4b_5b_2026-07-31.md)。本机实际：`.env` 配齐 + LLM(DashScope)可达 + HF(镜像)可达，仅直连 huggingface.co/github.com 超时（镜像全覆盖）。
+**P2**：Exp0（landscape）/ Exp4a·Exp1d（新域，本次范围外，留作 future work）。
+
+> ⚠️ **Exp1 技术风险（须正面处理）**：memory `gnn-loses-root-cause-pruning-not-bug` 记录——tmdb/steam 退化的真因是**正确剪掉定义性 / 泄露边后剩余结构本就低同质性**（非性构图 bug，arxiv 反例佐证）。因此"修 tmdb/steam 图复有用"的正路是**重发现更高同质性的 label / 非泄露关系**（= 框架自治 schema 发现的本职，与 Exp6 闭环），**而非**把泄露边加回来。若某域经重发现仍天然低同质，诚实 fallback：报告卡标注为 "structure-adversarial" 端点 + 同质性谱重框，**绝不**为凑 GNN>MLP 重新引入泄露（违反红线④）。
+
+---
+
+## 3. Agent 诚实定位（核心智力动作，不得违反）
+
+| 任务 | LLM agent 是否 load-bearing | 证据 |
+|---|---|---|
+| **schema 发现（label/关系）+ 端到端自治** | ✅ **是（主线）** | P4 12/12；P5-A verifier 闭环纠退化 label；P5-B amazon 3/3；E4 6/6 held-out；E2 成本 ~3s vs 25–90 min |
+| **去泄露 + 纠错（verifier 环）** | ✅ **是**，但 verifier = **确定性测量（=C2）** | E6 decontam 32/32=100%；E1 外生 7 公开 benchmark 全检出；比人写金标准更一致剔除定义性关系（3/4 金标准含定义性泄露，自治版一律按 C2 剔除）|
+| label 发现机制（诚实披露） | single-shot LLM（**loop 从不改 label，0/12**） | prompt-fragile（P1 不同 prompt：steam 选 price 2/3）；但 verifier 闭环救退化/连续 label（P5-A）；E4 arxiv_cs/math 选 `license`（valid 非最优，loop 不纠"合理非最优"） |
+| 图构建/去泄露**微观决策 vs 规则** | ❌ 不是（测量才是） | greedy=oracle（IGC: S1b blind **tmdb 0.300=0.300, wikiart 0.880=0.880**；closed_loop **反而更差** tmdb 0.401>0.300——回路是审计机制非优化器）；schema_rule/naive_keyword 全线坍缩 |
+| 引用匹配（fuzzy OCR） | ❌ 不独有 | P2: embedding fuzzy **0.778 = LLM 0.778**（全量 emb 0.967 > LLM 0.950）；McNemar 配对（n=60）：vs shortlist **p=0.0625（边际）**/ vs production **p=0.625（不显著）**；combined non-clean(n=17) LLM 0.824 vs production 0.706 vs shortlist 0.529 |
+
+**红线（不可违反）**：① 不声称 LLM 决策 > 规则（greedy=oracle）；② 不声称引用匹配 LLM 独有（P2 embedding 等价）；③ "self-verifying" 改称 **audit-capable pipeline**（verifier↔builder 回路只干净跑通 1 次，2/3 崩溃/跳过，日志 LLM 计数幻觉）；④ **不声称全域 benchmark 都图有用/都多模态必需**——退化/饱和域用报告卡诚实标注（见 §4.5 中心张力）。
+
+**软肋（写进 limitation）**：
+- ① **关系召回**：P6「宽松枚举 + LLM curate + 语义定义性检查」大幅改善（丰富度 1→2-3 关系/域，3/4 域全召回）；残留稀疏 opaque-id 关系（spotify track_album_id）仍被 curate 丢——id-looking，defensible。
+- ② **"合理但非最优"的替代 label 不被 loop 纠**：loop 只纠退化/连续硬错误（E4 arxiv_cs/math 选 `license`）——Exp1（2026-07-31）实测：relabel 修不动 3/4 域的图价值（内禀 feature-saturation/异质，非 label 不优），详见实验线 §19。
+- ③ **decontam 100% 循环指控已堵**：E1 验证探测器在 7 公开 PyG benchmark 有效；✅ **Exp5b（2026-07-31）进一步对同产物（真实 MAG）裁定**——OpenMAG books-nc/ele-fashion leakage +0.50/+0.47（见实验线 §20.2），证领域已发 MAG 同 ship 结构泄露，C2 去泄露价值非自证。✅ **TMDB R@1 归因（Exp5a 已完成、活口关闭，见实验线 §19）**。
+- ④ **label 发现 prompt-fragile**：P1（不同 prompt）steam price 2/3；P4（本 prompt）genres 12/12 → 稳健性依赖 prompt 工程，未充分证。
+
+**诚实核心（2026-07-31 新 thesis 版）**：框架的**可靠性**来自 **C2 确定性质量保证（去泄露是测量不是 LLM）**；agent 的**价值**在 **自动化**——自治 schema 发现 + 端到端编排 + 真实源获取，把专家数月手建变成分钟级 + 声明式 YAML 复用。回答 reviewer"拆掉 LLM 会怎样"：失去自动化（要人写 YAML + 手选 label），但去泄露仍由测量保证——**端到端自治（含 label 发现）正是框架区别于确定性脚本的价值，而"造出的 benchmark 正确"由 C2 兜底。** **Exp6（2026-07-31）补充**：validity（合法 + 去泄露，agent 6/6 / 100%）**≠** quality（好 benchmark，~2/6）——label 发现是脆弱环节（88–94%），须经报告卡质量门复核；故 C2 = 去泄露 + 报告卡质量门，二者都不可少。
+
+---
+
+## 4. 四条硬约束（不可违反）
+
+1. **不碰 agent 决策优越性**（greedy=oracle 已证伪）。
+2. **不用的弱结果**：G2Image 空目录 / G2Text 仅低质初步数 / Reddit-Amazon 异构 GNN（RGCN/HAN/HGT 有代码无结果）。
+3. **citation fuzzy matching 是边际证据点**（McNemar p=0.0625 vs shortlist / p=0.625 vs production）——agent 主线证据已转为 **自动化端到端（E2+E4）+ 正确性（E1+E6）**，citation 仅作次要语义 wrangling 证据，**不卖"决定性优于规则"**。
+4. **🆕 不声称全域 benchmark 都图有用 / 都多模态必需**：去泄露是正确性属性，剪掉结构捷径后低同质域图自然退化；**修 4 域走"重发现更高同质 label/非泄露关系"正路（Exp1），绝不加回泄露边**；修不动者用报告卡诚实标注 + 同质性谱重框。
+
+---
+
+## 4.5 Reviewer 攻击面 + 诚实重定位（完备性批判产出，写论文逐条防）
+
+| 攻击面 | 诚实重定位 |
+|---|---|
+| **🆕【中心张力】去泄露让 benchmark 退化（arxiv 饱和 / tmdb·steam 图负信号 / 仅 wikiart 图有用）** | **新 thesis 下最大攻击面**，须在 §8 Discussion 正面处理。**Exp1（2026-07-31）实测后定性**：relabel 修不动——arxiv feature-saturated（4→26 类去天花板但 spread 仍 0.008）、tmdb 天生异质（homo 0.239，studio/director 幂律无平衡 label）、steam co-attribute 边只对定义性 label 同质。**故解法落 ②+③**：Exp2 报告卡诚实标注每域图价值 + 同质性谱重框（feature-saturated arxiv ↔ heterophilous tmdb ↔ graph-useful wikiart，全是合法 benchmark 类型）+ arxiv NC 不当"可区分"头条（靠规模+formula+LP+检索）。**绝不**为 GNN>MLP 加回泄露边（红线④）。正确性 4/4 全过（无泄露）= 用户底线已达成。 |
+| **🆕 arxiv 最大域却饱和（89.34–90.00）** | Exp1a 细粒度 label 去饱和；否则最大域成负资产。 |
+| **🆕 E2 人工基线是"专家估计"非 user study** | Exp3 真 human baseline（n=3×2 计时）替换。 |
+| **🆕 E4 只过 valid 门、无"是不是好 benchmark"门** | Exp2 报告卡质量门补。 |
+| Formula 独有模态但消融 +0.0006（no-op） | 当**模态丰富度/完整性**卖，非性能；或找数学密集子集证其有用（LP 里 formula +0.025 §16 是起点） |
+| "agent 建了数据集"但 greedy=oracle | 框架 load-bearing 在**自动化端到端 + 自治 schema 发现 + 正确性保证**（E2+E4+E1+E6），**不**在构造决策（greedy=oracle）；"agent-built" = 自治编排非决策必要 |
+| "自校验框架"但回路只成 1 次、closed_loop<greedy | 改称 **audit-capable pipeline**；披露脆弱；scope 到单次干净 wikiart 跑 |
+| "零代码 / 94% 复用"不可审计、spotify 未建 | spotify **已零代码建出**（10000 节点/17440 边/homo 0.741，0 Python LOC/41 YAML）→ extensibility 已证；出复用 manifest（steam/tmdb/wikiart 94.6–97.2%）；Exp4b 外部用户验证待补 |
+| "leak-free 靠 C2"但逐域机制不同、0.045 应为 0.024 | 逐域精确归因；**structure-leakage ceiling**（旧名 LP-ceiling，=label-propagation 非性链路预测）改 **0.921→0.024**；三层 leak-profiling（结构/特征/编码器） |
+| "6/6 跨域负"但仅 linear_probe | 报双协议：linear-probe 负（特征不迁移）、full_finetune 中性（模型重学） |
+| "主动设计同质性谱"但 4 域是自然源选择 | 数据集用 "spanning natural sources"；"controlled/causal" **只**留给 appendix 的 steering |
+| **P1-14**："多模态 benchmark"但 image 模态边际(drop_image≈0，tmdb 反 +0.007) | **text 主导**(drop_text wikiart −0.120)；卖"模态丰富度/灵活性+未来 trainable encoder 空间"，与 formula no-op 一致；**不**卖"多模态涨点"。🆕 2026-07-17：image NC 高分部分来自 **frozen CLIP LAION 预训练污染**（ImageNet-only 对照 ΔF1 wikiart 0.21/tmdb 0.15/steam 0.11）→ 撤 "image 全域转正" 干净叙事，改 limitation；C2 升级为 encoder-contamination profiling |
+| **P1-13**：leak-free NC 表上 GNN 不碾压 MLP | 去泄露后真值：wikiart GCN 0.805>MLP 0.649（GNN 赢）、arxiv +0.005（持平但饱和）、steam/tmdb GNN<MLP（图退化）。**Exp1 实测**：relabel 修不动（arxiv feature-saturated / tmdb 异质 / steam co-attribute 限），故靠报告卡诚实标注 + 同质性谱重框，不硬凑 4 域都图有用；structure 价值靠 appendix steering 佐证，非头条 NC 表 |
+| **P1-2/P1-3**：聚类/few-shot 与 steering 一致 | 高同质 GNN 助(wikiart few-shot gcn 0.823>mlp 0.773；聚类 gcnii 0.848≫raw)，低同质无效——多任务交叉验证结构×同质性耦合 |
+| **P1-8**：citation LLM 0.714 实为边际(McNemar p=0.0625) | agent 主线证据已转 **E2+E4（自动化）+ E1+E6（正确性）**；citation 缩为"边际语义 wrangling + 编排"次要证据；**不**卖"LLM 决定性优于规则" |
+| **P1-4**："单一 CLIP 编码器"但未证编码器选择 | **域依赖**：clip_large 赢 arxiv(长文档，分块+pool) 但 siglip 赢 steam(短文本)；证 per-domain encoder profiling 必要，headline 选 clip_large 是 arxiv 最优非全局最优 |
+| **TMDB R@1=0.761 vs CKA≈0（原 live leak 怀疑，✅ 已关闭）** | **Exp5a（2026-07-31）归因完成**：基线 R@1=0.7613 复现 §9；剥 18 genre 词（影响 29.65% overview）后 R@1=0.7572（Δ−0.004）、CKA 不变 → **genre 词非因**。0.761 是 CLIP 对 overview↔poster 的真实跨模态检索能力，非性泄露；CKA≈0 与 R@1 高不矛盾（CKA 测线性子空间重叠、R@1 测近邻排序，CLIP 文/图投影子空间本不线性同构）。**活口关闭，TMDB 可称 leak-free。** |
+
+---
+
+## 5. Story Arc（章节，ICLR 方法论文向，2026-07-31 新 thesis）
+
+§1 Intro（**MAG 数据集稀缺瓶颈**：少、手建贵、易泄露 + frozen-encoder 预训练污染；开源框架 thesis）→ §2 Related（OpenMAG/MAGB/OGB + BenchAgents/AutoBencher **generation-vs-extraction 范式对比** + landscape gap）→ **§3 开源自治框架（C1：planner↔verifier↔executor 架构 + 自治 schema 发现 + 端到端编排；含 greedy=oracle 诚实消融）** → **§4 质量保证协议（C2：去泄露三层 + 报告卡质量门 + E1 去泄露价值外部铁证 + CLIP-vs-ImageNet-only 污染对照）** → **§5 数据集 portfolio（C3：4 金标准域修后报告卡 + 同质性谱 + 模态多样）** → **§6 复用性（C4：零代码 YAML + 外部用户 + vs 人工成本 E2/E3）** → §7 广度任务（NC/LP/模态匹配，**只留报告卡相关**；聚类/few-shot/鲁棒性/邻居注入 → appendix）→ §8 Discussion（**中心张力正面处理** + agent 诚实 scope + limitation）→ §9 Ethics/Licensing/Reproducibility。**steering / 跨域迁移 → appendix。**
+
+---
+
+## 6. 标题候选（2026-07-31 framework 向优先）
+
+ICLR 方法向（框架 hero）：
+- *MAG-Forge: An Open Multi-Agent Framework for Automatically Constructing High-Quality Multimodal Attribute Graph Benchmarks*
+- *Autonomous, Reusable Construction of Multimodal Attribute Graph Benchmarks via a Quality-Assured Agent Framework*
+- *From Metadata to Trustworthy Benchmark: A Measurement-Grounded, Declarative Pipeline for Multimodal Attribute Graphs*
+
+诚实 sub-framing（可作副标题 / 备选）：
+- *Verifiers, Not Oracles: Autonomous Construction of Leak-Profiled Multimodal Attribute Graph Benchmarks*
+
+数据集+可复现向（D&B fallback）：
+- *MAG-Forge: Four Leak-Profiled Multimodal Attribute Graph Benchmarks and a Reusable Agent-and-Skill Construction Framework*
+
+> ⚠️ **标题措辞**：TMDB R@1 活口已关（Exp5a ✅ 证非泄露），但仍有 CLIP 预训练污染 + 循环去泄露（E1 验探测器非产物）→ 优先用 "High-Quality / Leak-Profiled / Quality-Assured"，慎用 "Trustworthy / leak-free"。
+
+---
+
+## 7. 已废止文档 / 早期版本（不再权威，避免污染后续思考）
+
+以下文档/版本的**逻辑排序/论点**已废止。其中的**原始实验数字**仍有效，仅须按本文档重新解读。
+
+| 文档 / 版本 | 状态 | 废止原因 |
+|---|---|---|
+| **本文档 2026-07-30 及更早版本** | ❌ 逻辑废止 | 旧 hero「去泄露 verifier + 自治 schema 发现」+「C4 benchmark 科学发现（steering 皇冠）」+「三层时间层」叙事；本 FINAL（2026-07-31）反转为**开源框架 hero + 5 链环 + 去泄露降为正确性属性 + 修 4 域不补新域** |
+| `docs/论文逻辑线与实验全景报告_2026-07-09.md` | ❌ 逻辑废止 | 旧排序 C1=benchmark 发现当头条、agent 降级 |
+| `docs/paper_option1_method_analysis_2026-07-07.md` / `docs/paper_storyline.md` / `docs/PAPER_THESIS_v2.md` / `docs/positioning_and_scalability_2026-06-23.md` | ❌ 废止 | 早期 thesis / storyline / positioning（含旧 agent 定位）|
+| `docs/leakfree_main_tables_2026-07-03.md` | ⚠️ 数据有效，定位重解读 | 表数字有效，去泄露降为 C2 正确性属性，非头条 |
+| `docs/AMMAG_全域基准实验报告_2026-06-20.md` / `Supplementary_Experiment_Report.md` / `igc_results_2026-07-03.md` / `all_experiment_results.json` | ✅ 数据有效 | 原始实验数据，按 C1–C4（5 链环版）重新归类 |
+
+**后续会话如发现思路与本文档冲突，以本文档为准；不得回退到上述废止文档/版本的论点。**
+
+---
+
+*生成于 2026-07-11；2026-07-17 对抗审稿修订；2026-07-21 Path-B（agent 升回 C1）；2026-07-30 三层时间层统一；**2026-07-31 thesis 重定为「开源自治框架」hero + 5 链环 + 去泄露降为正确性属性 + 修 4 域不补新域（本次）**。实验权威数字见同目录 `experiment_results_FINAL_decontaminated_2026-07-16.md`（§1–§17 主表 + §18 E1–E7）。*

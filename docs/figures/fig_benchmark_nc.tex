@@ -1,0 +1,61 @@
+\begin{table}[ht]
+\centering\small\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.12}
+\caption{Node classification (NC). \textbf{(A)} Main results: accuracy (\%) on \emph{text+image}, 10 seeds, leak-free protocol. Best per column in \textbf{bold}. \textbf{(B)} GNN$-$MLP gap (pp): positive (green) only at high homophily (arxiv 0.93, wikiart 0.89), negative (red) at low homophily (steam 0.52, tmdb 0.24).}
+\label{tab:nc_main}
+\textbf{(A) NC main --- accuracy (\%), text+image}\\[2pt]
+\begin{tabular}{lcccc}
+\toprule
+Model & arxiv & steam & tmdb & wikiart \\
+\midrule
+MLP        & 89.34 & \textbf{65.88} & \textbf{59.06} & 64.86 \\
+GCN        & 89.91 & 61.02 & 48.02 & 80.54 \\
+GAT        & 89.68 & 59.48 & 48.14 & 70.29 \\
+GRAPHSAGE  & 89.73 & 65.43 & 57.54 & \textbf{82.44} \\
+GIN        & 89.81 & 55.84 & 37.95 & 69.72 \\
+GCNII      & \textbf{90.00} & 64.54 & 58.22 & 74.29 \\
+\bottomrule\end{tabular}\\[6pt]
+\textbf{(B)} GNN$-$MLP gap (percentage points)\\[2pt]
+\begin{tabular}{lcccc}
+\toprule
+Model & arxiv (h.93) & steam (h.52) & tmdb (h.24) & wikiart (h.89) \\
+\midrule
+GCN        & \textcolor{bestgreen}{+0.57} & \textcolor{worstred}{-4.86} & \textcolor{worstred}{-11.04} & \textcolor{bestgreen}{+15.68} \\
+GAT        & \textcolor{bestgreen}{+0.34} & \textcolor{worstred}{-6.40} & \textcolor{worstred}{-10.92} & \textcolor{bestgreen}{+5.43} \\
+GRAPHSAGE  & \textcolor{bestgreen}{+0.39} & \textcolor{worstred}{-0.45} & \textcolor{worstred}{-1.52} & \textcolor{bestgreen}{+17.58} \\
+GIN        & \textcolor{bestgreen}{+0.47} & \textcolor{worstred}{-10.04} & \textcolor{worstred}{-21.11} & \textcolor{bestgreen}{+4.86} \\
+GCNII      & \textcolor{bestgreen}{+0.66} & \textcolor{worstred}{-1.34} & \textcolor{worstred}{-0.84} & \textcolor{bestgreen}{+9.43} \\
+\bottomrule\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering\small\setlength{\tabcolsep}{6pt}\renewcommand{\arraystretch}{1.1}
+\caption{NC modality ablation: accuracy (\%) per modality and the multimodal gain $\Delta$ = (text+image)$-$text (pp). Image dominates on wikiart ($\Delta$ up to $+34.9$); text dominates on arxiv. 10 seeds.}
+\label{tab:nc_modality}
+\begin{tabular}{llcccc}
+\toprule
+Domain & Model & text & image & text+image & $\Delta$(multi$-$text) \\
+\midrule
+steam    & MLP        & 63.5 & 62.1 & 65.9 & +2.4 \\
+         & GCN        & 60.4 & 60.7 & 61.0 & +0.7 \\
+         & GAT        & 58.0 & 58.3 & 59.5 & +1.5 \\
+         & GRAPHSAGE  & 63.3 & 63.4 & 65.4 & +2.1 \\
+         & GIN        & 53.8 & 53.9 & 55.8 & +2.0 \\
+         & GCNII      & 61.9 & 63.8 & 64.5 & +2.7 \\
+\midrule
+tmdb     & MLP        & 55.1 & 56.1 & 59.1 & +4.0 \\
+         & GCN        & 46.3 & 47.2 & 48.0 & +1.8 \\
+         & GAT        & 45.3 & 46.9 & 48.1 & +2.9 \\
+         & GRAPHSAGE  & 54.5 & 54.8 & 57.5 & +3.0 \\
+         & GIN        & 37.6 & 38.4 & 38.0 & +0.4 \\
+         & GCNII      & 54.2 & 55.4 & 58.2 & +4.0 \\
+\midrule
+wikiart  & MLP        & 29.9 & 65.7 & 64.9 & +34.9 \\
+         & GCN        & 56.0 & 80.6 & 80.5 & +24.5 \\
+         & GAT        & 35.3 & 76.7 & 70.3 & +35.0 \\
+         & GRAPHSAGE  & 58.0 & 82.7 & 82.4 & +24.5 \\
+         & GIN        & 48.7 & 70.5 & 69.7 & +21.1 \\
+         & GCNII      & 39.8 & 76.7 & 74.3 & +34.5 \\
+\bottomrule
+\end{tabular}
+\par\smallskip\footnotesize\emph{arxiv}: text-only vs.\ text+image already on par (image = paper preview adds noise); the arxiv-specific \emph{formula} modality is a no-op for NC (text+image+formula 89.81 vs text+image 89.73).
+\end{table}

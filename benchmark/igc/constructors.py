@@ -284,13 +284,13 @@ def _planner_user(spec, inventory, critique):
         sus = critique.get("suspect_relations", [])
         reason = critique.get("critique", "")
         sus_str = ", ".join(sus) if sus else "（无）"
-        crit_str = (f"\n\n【verifier 测量反馈】泄露画像显示【单独 LP-ceiling 最高的关系】: {sus_str}\n"
+        crit_str = (f"\n\n【verifier 诊断反馈】topology-only predictability 最高的关系: {sus_str}\n"
                     f"反馈: {reason}\n"
-                    f"请据此修订：禁用上述高泄露关系，保留其余（至少保留 1 条关系，不要全删）。"
+                    f"若当前目标是构造低结构暴露的 robustness view，可禁用上述关系并保留其余（至少保留 1 条）。"
                     f"即使整体仍偏高，也要先移除最差的关系——下一轮会重新测量确认。")
     else:
         crit_str = ("\n\n【首轮】尚无 verifier 测量。请【启用全部关系】作为初始图，"
-                    "以便 verifier 测量每个关系的泄露画像；后续轮次再据反馈移除泄露关系。"
+                    "以便 verifier 测量每个关系的 topology-only predictability；后续仅为低暴露视图再调整。"
                     "不要在没有任何测量证据时禁用关系。")
     return (f"【构建 spec】\n{spec['text']}\n\n"
             f"【可选关系类型】\n{inv_str}{crit_str}\n\n"
@@ -307,11 +307,10 @@ def _critic_user(spec, meas, picked):
             f"【planner 当前选择的关系】{picked}\n"
             f"【executor 测量(原始构造图)】当前图 LP-ceiling={meas['lp_ceiling']:.3f} "
             f"(多数类基线={meas['majority_acc']:.3f}), 同质性={meas['homophily']:.3f}, 边数={meas['n_edges']}\n"
-            f"【泄露画像: 每个关系单独成图的 LP-ceiling】{prlp_str}\n"
-            f"  (LP-ceiling 越高 = 该关系越泄露标签；接近多数类基线 = 不泄露)\n\n"
-            f"判断: 若 spec 要去泄露——LP-ceiling 应接近多数类基线；高于基线说明仍有泄露，"
-            f"应移除【单独 LP-ceiling 最高的那些】关系。若所有关系单独 LP-ceiling 都高，"
-            f"则泄露是结构性的、关系选择无法消除，应 satisfied=true 并在 critique 注明。"
+            f"【结构暴露画像: 每个关系单独成图的 LP probe】{prlp_str}\n"
+            f"  (LP 越高 = topology-only predictability 越强；这不是独立泄露判据)\n\n"
+            f"若 spec 要构造低结构暴露 robustness view，可移除 LP 最高的关系。"
+            f"这只能改变协议视图，不能据此宣称原始关系存在泄露；真实缺陷需 provenance 证据。"
             f"严格以 JSON 输出: {{\"satisfied\": true/false, "
             f"\"suspect_relations\": [\"<关系名>\"], \"critique\": \"<理由>\"}}。")
 

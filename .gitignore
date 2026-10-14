@@ -54,6 +54,7 @@ data/*.json
 data/*_papers/
 # Generated per-domain data (raw crawls, graphs, datasets, LP splits — large)
 data/*_raw/
+data/*_cslo/
 data/*_games/
 data/*_movies/
 data/*_products/

@@ -141,7 +141,10 @@ class DomainGraphBuilderAgent(ReActAgent):
             return {"status": "error", "message": "build_fn 未配置 — 必须在子类 __init__ 传入"}
         items = self._accumulated_results.get("items", [])
         data_dir = self._accumulated_results.get("data_dir", self.cfg["default_data_dir"])
-        opts = self._current_task.get("graph_opts", {})
+        opts = dict(self._current_task.get("graph_opts", {}))
+        confirmed_schema = None
+        if self.blackboard:
+            confirmed_schema = self.blackboard.read("schema", "confirmed_graph_config", None)
 
         # ---- 多智能体 reprocess 回路 ----
         # Verifier→Builder reprocess: 携带 exclude_relations, 重建时过滤泄露边。
@@ -154,7 +157,15 @@ class DomainGraphBuilderAgent(ReActAgent):
                 f"(reason: {reprocess.get('reason', '')[:120]})"
             )
 
-        nodes, edges, stats = self.build_fn(items, data_dir, opts)
+        if confirmed_schema:
+            # All homogeneous builders share the same confirmed-schema path,
+            # including legacy --domain entry points. This prevents the schema
+            # gate from being merely decorative.
+            from crawlers.config_driven import build_graph_from_config
+            nodes, edges, stats = build_graph_from_config(
+                items, data_dir, confirmed_schema, opts)
+        else:
+            nodes, edges, stats = self.build_fn(items, data_dir, opts)
 
         # 应用 exclude_relations (后过滤, 不修改 crawler SoT)
         if exclude:

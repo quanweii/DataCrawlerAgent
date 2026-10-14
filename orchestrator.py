@@ -24,7 +24,7 @@ from agents import (
     # WikiArt
     WikiartArtworkCollectorAgent, WikiartArtworkGraphBuilderAgent,
     # 对抗性校验 (多智能体闭环关节)
-    GraphVerifierAgent,
+    GraphVerifierAgent, SchemaDiscoveryAgent,
 )
 from agents.orchestrator_agent import OrchestratorAgent
 from tools import create_mcp_tool_manager
@@ -119,6 +119,13 @@ class DataCrawlerOrchestrator:
         """初始化各分管Agent — 按领域动态选择"""
         # 所有领域共享的 Agent
         shared_agents = {
+            'schema_discovery': SchemaDiscoveryAgent(
+                client=self.client,
+                system_prompt=("Profile fields, confirm or propose a graph schema, then "
+                               "validate identifier, label and relation provenance deterministically."),
+                mcp_tool_manager=self.mcp_tool_manager,
+                agent_name="schema_discovery",
+            ),
             'data_cleaner': DataCleanerAgent(
                 client=self.client,
                 system_prompt=self.data_cleaner_prompt,
@@ -560,16 +567,22 @@ Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"
 
 你必须逐项检查:
 1. 加载图数据(从blackboard)
-2. 检测标签泄露: 计算LP-ceiling(原始图 vs 剪枝图)。若原始图LP-ceiling
-   显著高于多数类基线(差值>0.10)，说明存在结构泄露。
-3. 检测定义性同质: 逐关系计算同质性。若某关系的homophily>0.95且边数≥50，
-   该关系等同于标签 → 必须标记为exclude。
-4. 检查节点覆盖: 是否有大量孤立节点(>30%) — 说明collector或edge builder不完整。
-5. 汇总所有问题。若有问题，发reprocess_request给图构建agent
+2. 测量 topology-only predictability: 计算 LP probe（full topology vs
+   split-disjoint）。高分只说明图结构具有标签预测力，不能单独判为泄露。
+3. 生成四个协议视图：transductive、split-disjoint、temporal、
+   group-inductive；raw MAG 保持不可变。
+4. 只有 provenance 证实的 target-derived 字段/关系、重复实体、未来信息，
+   或明确违反所声明 protocol 时，才能判为 integrity defect 并触发重建。
+5. 测量逐关系同质性，但只有关系 lineage 明确来自 target 字段时才标记为
+   target-derived defect；高同质本身不是充分证据。
+6. 检查节点覆盖: 是否有大量孤立节点(>30%) — 说明collector或edge builder不完整。
+7. 汇总所有已验证问题。若有问题，发reprocess_request给图构建agent
    (携带exclude_relations列表)，触发重建回路。
 
-你是多智能体质量闭环的关键一环:没有你，泄露边不会被发现和修正。
-对wikiart:shared_style边homophily≈1.0 → 你必须标记它并触发重建。」"""
+你是多智能体质量闭环的关键一环：负责区分真实完整性缺陷、协议依赖的信息暴露
+和正常结构信号，并产出可复现 protocol views 与 integrity card。
+对wikiart: shared_style 来自 target 字段 style，所以应由 provenance 判定并触发重建；
+same_artist 即使高同质，也只能作为 topology signal 记录。"""
 
     # ==================== YAML 驱动域支持 ====================
 
@@ -596,6 +609,7 @@ Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"
         对全新域: 使用 DomainCollectorAgent + DomainGraphBuilderAgent。
         """
         from agents.domain_graph_builder import DomainGraphBuilderAgent
+        from agents.schema_discovery import SchemaDiscoveryAgent
         from crawlers.config_driven import build_graph_from_config
         from domains.domain_schema import yaml_to_graph_config
 
@@ -662,6 +676,12 @@ Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"
         builder_prompt = (yc.builder_prompt or
                          self._load_prompt_for(builder_name) or
                          self._default_generic_builder_prompt())
+        def yaml_build(items, cs_lo_dir, opts=None):
+            local_opts = dict(opts or {})
+            runtime_schema = local_opts.pop("_schema_config", graph_config)
+            return build_graph_from_config(
+                items, cs_lo_dir, runtime_schema, local_opts)
+
         builder = DomainGraphBuilderAgent(
             client=self.client, system_prompt=builder_prompt,
             mcp_tool_manager=self.mcp_tool_manager,
@@ -669,8 +689,7 @@ Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"
             # Wrap build_graph_from_config so the 3-arg signature (items, cs_lo_dir, opts)
             # used by DomainGraphBuilderAgent.build_action is compatible with the 4-arg
             # signature (items, cs_lo_dir, config, opts) required by build_graph_from_config.
-            build_fn=lambda items, cs_lo_dir, opts=None:
-                build_graph_from_config(items, cs_lo_dir, graph_config, opts),
+            build_fn=yaml_build,
             config={
                 "collector_ns": f"{domain}_collector",
                 "graph_ns": f"{domain}_graph",
@@ -682,8 +701,16 @@ Builder构建图以"满足spec"为目标;你以"找到任何违反spec的缺陷"
         # Store graph_config on builder for build_fn to access
         builder._graph_config = graph_config
 
+        schema_agent = SchemaDiscoveryAgent(
+            client=self.client,
+            system_prompt=("Profile fields, confirm or propose a graph schema, and publish "
+                           "it only after deterministic provenance validation."),
+            mcp_tool_manager=self.mcp_tool_manager,
+            agent_name="schema_discovery")
+
         return {
             collector_name: collector,
+            "schema_discovery": schema_agent,
             builder_name: builder,
         }
 
@@ -721,6 +748,7 @@ def load_orchestrator_from_yaml(yaml_path: str) -> DataCrawlerOrchestrator:
     orch.agents = {
         **yaml_agents,
         "data_cleaner": orch.agents.get("data_cleaner"),
+        "schema_discovery": yaml_agents.get("schema_discovery"),
         "dataset_formatter": orch.agents.get("dataset_formatter"),
         "graph_verifier": orch.agents.get("graph_verifier"),
     }

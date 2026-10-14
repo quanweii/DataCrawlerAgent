@@ -1,230 +1,147 @@
-# 数据爬取多Agent系统
+# MAG-Forge / DataCrawlerAgent
 
-一个基于多Agent架构的数据爬取和处理系统，专门用于收集论文PDF并构建多模态属性图数据集。
+MAG-Forge 是一个把真实多模态来源转换为可审计多模态属性图（MAG）benchmark 的多智能体框架。当前论文主线以 arxiv、Steam、TMDB、WikiArt 四个成熟域为核心，并用 Spotify 等域检查声明式复用。
 
-## 系统架构
+## 六模块框架
 
+```text
+Real-world Multimodal Sources
+  → Autonomous Schema Discovery
+  → Schema-Guided MAG Construction
+  → Protocol-Aware Integrity Auditing
+  → Integrity-Guided Representation Encoding
+  → Protocol-Conditioned Benchmarking & Integrity Reporting
 ```
-DataCrawlerOrchestrator (主协调器)
-    ├── PaperCollectorAgent (论文收集Agent)
-    │   └── 负责论文PDF下载和多模态数据提取
-    ├── DataCleanerAgent (数据清洗Agent)
-    │   └── 负责数据质量检查和清洗
-    └── DatasetFormatterAgent (数据集封装Agent)
-        └── 负责转换为多模态属性图格式
+
+生产执行链为：
+
+```text
+Collector → SchemaDiscoveryAgent → GraphBuilder → DatasetFormatter → GraphVerifier
 ```
 
-## 执行流程
+- `SchemaDiscoveryAgent` 对字段做画像，确认 YAML schema 或请求 LLM 提议 schema，然后确定性检查 ID、label、关系字段和 target provenance。
+- Builder 只消费已经发布的 confirmed schema。
+- Verifier 检查重复实体、关系语义、覆盖率和 topology-only signal，并生成协议派生视图。
+- 原始 MAG 不被协议实验覆盖；target-derived 关系只从 benchmark 派生视图中排除。
+- LLM 可以规划可选步骤，但不能省略 schema gate 和最终 verifier。
 
-1. **论文收集** → 下载PDF，提取文本/图像/表格/公式
-2. **数据清洗** → 去重、验证、标准化
-3. **数据封装** → 构建属性图，保存数据集
+## Evaluation protocols
 
-## 快速开始
+成熟四域同时发布：
 
-### 1. 安装依赖
+1. `transductive`：分层 60/20/20，保留完整 sanitized topology；
+2. `split_disjoint`：与 transductive 使用相同 node masks，只保留 split 内边；
+3. `temporal`：按真实时间排序，同一时间桶不拆，只保留 split 内边；
+4. `group_inductive`：真实 primary group 整体分配，只保留 split 内边。
+
+普通 transductive train–test 边、高 homophily 或 topology-only 高分本身都不是 leakage 结论。协议必须有真实 provenance；没有可信 timestamp 的新域会把 temporal 标成不适用，而不是伪造。
+
+## 环境
+
+服务器已验证环境：
 
 ```bash
 cd /home/dev_qw/DataCrawlerAgent
-pip install -r requirements.txt
+source /home/dev_qw/miniconda3/bin/activate agent_env
 ```
 
-### 2. 配置环境变量
+LLM 驱动的真实流水线还需要在 `.env` 中设置：
+
+```text
+API_KEY=...
+MODEL_BASE_URL=...
+MODEL_NAME=...
+```
+
+## 运行声明式域
+
+YAML 本身是可执行域声明：
 
 ```bash
-cp .env.example .env
-# 编辑 .env 文件，填入你的 API Key
+python main.py --domain-config domains/steam/domain.yaml
+python main.py --domain-config domains/tmdb/domain.yaml
+python main.py --domain-config domains/wikiart/domain.yaml
+python main.py --domain-config domains/spotify/domain.yaml
 ```
 
-### 3. 运行
+可用 JSON 覆盖运行参数：
 
 ```bash
-# 交互模式
-python main.py --interactive
-
-# 使用示例配置运行
-python main.py --sample
-
-# 使用配置文件
-python main.py --config task_config_example.json
+python main.py --domain-config domains/steam/domain.yaml --config task_override.json
 ```
 
-## 项目结构
+详细字段见 `domains/README.md`。
 
-```
-DataCrawlerAgent/
-├── agents/                 # Agent模块
-│   ├── __init__.py
-│   ├── base_agent.py       # Agent基类
-│   ├── paper_collector.py  # 论文收集Agent
-│   ├── data_cleaner.py     # 数据清洗Agent
-│   └── dataset_formatter.py # 数据集封装Agent
-├── tools/                  # 工具模块
-│   ├── __init__.py
-│   ├── mcp_tools.py        # MCP工具管理器
-│   └── pdf_extractor_tool.py # PDF多模态提取工具
-├── prompts/                # 提示词
-│   ├── paper_collector_prompt.txt
-│   ├── data_cleaner_prompt.txt
-│   └── dataset_formatter_prompt.txt
-├── data/                   # 数据目录
-│   ├── papers/            # 论文PDF
-│   ├── extracted/         # 提取的多模态数据
-│   ├── cleaned/           # 清洗后数据
-│   └── datasets/          # 最终数据集
-├── logs/                   # 日志文件
-├── main.py                 # 主入口
-├── orchestrator.py         # 主协调器
-├── task_config_example.json # 示例配置文件
-├── .env.example           # 环境变量示例
-└── requirements.txt       # 依赖列表
+## 核心 benchmark 与复核
+
+生成协议视图及运行四协议六任务：
+
+```bash
+PYTHONPATH=. python benchmark/generate_protocol_views.py
+PYTHONPATH=. python benchmark/run_newdomain_nc.py --help
+PYTHONPATH=. python benchmark/run_four_protocol_graph_tasks.py --help
+PYTHONPATH=. python benchmark/run_four_protocol_modality_tasks.py --help
 ```
 
-## 核心MCP工具
+当前最终证据已经完成，不需要为了验证结果重新训练 GPU 模型。可直接重新计算报告和一致性检查：
 
-### PDF多模态提取工具 (extract_pdf_multimodal)
-
-这是核心工具，调用 [pdf-extract-kit](../pdf-extract-kit) 进行论文PDF的多模态数据提取。
-
-**功能：**
-- 布局检测（标题、正文、图片、表格、公式等）
-- OCR文字识别
-- 公式检测与识别（转LaTeX）
-- 图片/表格提取
-
-**输入：** PDF文件路径
-
-**输出结构：**
-```
-output_dir/
-└── {paper_name}/              # 以论文名称命名的文件夹
-    ├── {paper_name}.md        # Markdown文件
-    ├── {paper_name}.npy       # NPY格式数据
-    └── images/                # 图片文件夹
-        ├── 0.png
-        ├── 1.png
-        └── ...
+```bash
+PYTHONPATH=. python benchmark/generate_report_card.py
+PYTHONPATH=. python benchmark/validate_final_evidence.py
+PYTHONPATH=. python benchmark/aggregate_validate_four_protocol_tasks.py
+PYTHONPATH=. python benchmark/run_reusability_audit.py
+PYTHONPATH=. python -m pytest -q tests
 ```
 
-**使用示例：**
+已验证结果：
 
-```python
-# 方式1：通过配置文件
-# task_config.json
-{
-    "paper_sources": [
-        {
-            "type": "local",
-            "path": "/path/to/paper.pdf",
-            "name": "my_paper"
-        }
-    ],
-    "extract_multimodal": true,
-    "output_dir": "./data/extracted",
-    "device": "cuda:0"
-}
+- 64 个 dataset×protocol×modality cells；
+- 384 个 model cells；
+- 1,920 个五初始化种子训练结果；
+- 480 个 label-free LP/clustering 联合训练种子、120 个 modality-matching 种子；
+- 24 个 retrieval/alignment protocol×pair cells；
+- 400 次 label permutation 与 40 次 degree-preserving rewires；
+- 最终证据审计 1,739/1,739 checks PASS；
+- 六任务审计 2,665/2,665 checks PASS；
+- 自动测试 11/11 PASS；
+- 四个成熟域 integrity cards 全部 PASS；
+- Steam、TMDB、WikiArt、held-out Spotify 的生产复用合同全部 PASS。
 
-# 方式2：直接调用工具
-from tools import MCPToolManager
+## 关键产物
 
-manager = MCPToolManager()
-result = manager.call_tool(
-    "extract_pdf_multimodal",
-    pdf_path="/path/to/paper.pdf",
-    output_dir="./output",
-    paper_name="my_paper",
-    device="cuda:0"
-)
+```text
+agents/schema_discovery.py                 production schema gate
+agents/graph_verifier.py                   provenance/protocol integrity audit
+benchmark/data/protocols.py                protocol view generator
+benchmark/run_newdomain_nc.py              protocol-conditioned NC
+benchmark/run_four_protocol_graph_tasks.py protocol-aware LP + clustering
+benchmark/run_four_protocol_modality_tasks.py retrieval + alignment + matching
+benchmark/aggregate_validate_four_protocol_tasks.py six-task evidence audit
+benchmark/run_topology_nulls.py            topology null diagnostics
+benchmark/generate_report_card.py          current-only integrity cards
+benchmark/validate_final_evidence.py        final numerical consistency audit
+benchmark/sync_protocol_manifests.py        guarded manifest/result metadata sync
+benchmark/run_reusability_audit.py          production YAML reusability audit
 ```
 
-### 其他MCP工具
+结果与论文权威文件：
 
-- `download_arxiv_paper` - 下载arXiv论文
-- `download_doi_paper` - 通过DOI下载论文
-- `batch_extract_pdf_multimodal` - 批量提取多个PDF
-- `clean_text` - 文本清洗
-- `deduplicate_data` - 数据去重
-- `validate_data` - 数据验证
-- `format_attribute_graph` - 格式化属性图
-- `save_dataset` - 保存数据集
-
-## 任务配置格式
-
-```json
-{
-    "paper_sources": [
-        {
-            "type": "local",
-            "path": "/path/to/paper.pdf",
-            "name": "paper_name"
-        },
-        {
-            "type": "arxiv",
-            "id": "2301.07041",
-            "title": "论文标题"
-        }
-    ],
-    "extract_multimodal": true,
-    "output_dir": "./data/extracted",
-    "device": "cuda:0",
-    "cleaning_rules": {
-        "min_text_length": 50,
-        "remove_special_chars": true
-    },
-    "dataset_name": "my_dataset",
-    "output_format": "json"
-}
+```text
+docs/paper_logic_DnB_FINAL_2026-07-11.md
+docs/experiment_results_FINAL_decontaminated_2026-07-16.md
+benchmark/results/newdomain_nc/protocol_matrix/
+benchmark/results/four_protocol_tasks/
+benchmark/results/protocol_views/
+benchmark/results/topology_nulls.{json,md}
+benchmark/results/report_cards.{json,md}
+benchmark/results/final_evidence_audit.{json,md}
+benchmark/results/reusability_audit.{json,md}
 ```
 
-## 数据集输出格式
+## 结论边界
 
-最终输出的多模态属性图数据集格式：
-
-```json
-{
-  "nodes": [
-    {
-      "id": "paper_0",
-      "type": "paper",
-      "attributes": {"title": "...", "source": {...}},
-      "modalities": ["text"]
-    },
-    {
-      "id": "image_1",
-      "type": "image",
-      "attributes": {"path": "...", "source_paper": "..."},
-      "modalities": ["image"]
-    }
-  ],
-  "edges": [
-    {
-      "id": "edge_0",
-      "source": "paper_0",
-      "target": "image_1",
-      "type": "contains",
-      "attributes": {"relationship": "paper_contains_modality"}
-    }
-  ],
-  "metadata": {
-    "name": "dataset_name",
-    "version": "1.0.0",
-    "created_at": "...",
-    "statistics": {...}
-  }
-}
-```
-
-## 依赖说明
-
-本项目依赖以下外部工具：
-
-- **pdf-extract-kit**: 位于 `/home/dev_qw/pdf-extract-kit`，用于PDF多模态提取
-  - 布局检测模型: DocLayout-YOLO
-  - 公式检测模型: YOLOv8
-  - 公式识别模型: UniMERNet
-  - OCR模型: PaddleOCR
-
-## 参考
-
-- 本项目架构参考了 [XianyuAutoAgent](../XianyuAutoAgent) 的多Agent设计模式
-- PDF提取基于 [pdf-extract-kit](../pdf-extract-kit)
+- 构建与评估正确性由 provenance、重复检查、边端点与 split invariants 证明，不由模型高分证明。
+- 模型成绩用于说明 benchmark 的效用、难度与协议敏感性。
+- 多模态融合不是普遍占优：Steam/TMDB 四协议均为正，Arxiv 多数 view 由 text 更强，WikiArt group-inductive 中 image 单模态更强。
+- WikiArt temporal 是 label-space emergence 与 severe distribution shift 叠加的 stress test：train-support test mass 仅 0.3885、可见类 prior TVD 为 0.965，不能当作一般 closed-set temporal 结果。
+- sample-level pretraining overlap、真人效率研究和真实外部用户复用仍需要外部资源/受试者，代码不能伪造这些证据。

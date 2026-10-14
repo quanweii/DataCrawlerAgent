@@ -114,9 +114,9 @@ def measure_subset(base: dict, rel_set: set[str], split_seed: int = 1,
     """对 G(S) 计算：LP-ceiling、homophily、边数、per-rel homo。全确定性。
 
     prune:
-      - False (默认, IGC 头条用) → LP-ceiling 在【原始构造图】上算 = 结构泄露信号。
-        含定义性边(如 same_artist)的图 LP-ceiling 高；构造时把它们排除则低。
-        这是 IGC 的核心指标：构造者能否在【构建期】(关系选择)而非【评估期】(剪枝)消除泄露。
+      - False → LP probe 在原始构造图上测量 topology-only predictability。
+        高分是结构暴露/标签可预测性，不自动等于泄露；只有 target provenance
+        证实关系由标签字段派生时，才构成需修复的 integrity defect。
       - True → 跨切分边剪枝后再算（与 leak-free NC 主表口径一致，用于 NC 一致性对照）。
     """
     from benchmark.data.splits import (stratified_split, prune_cross_split_edges,
@@ -144,7 +144,7 @@ def per_rel_lp_profile(base, split_seed=1):
 
 
 def measure_leakage(base, rel_set, split_seed=1, prlp=None):
-    """IGC 头条：原始构造图(未剪枝)上的 LP-ceiling = 结构泄露信号。
+    """Compatibility API: topology-only predictability on the construction view.
 
     prlp: 可选的预算 per_rel_lp_profile（避免每轮重算）。提供则直接挂到结果里。
     """

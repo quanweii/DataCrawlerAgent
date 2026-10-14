@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-无泄漏切分工具（T0②）—— 治 wikiart 标签泄露。
+"""Protocol-aware node split and graph-view utilities.
 
 问题
 ----
-transductive NC 里，GNN 对全图做消息传递；若 train 和 test 节点之间有边相连，
-train 的标签信息会经消息传递/label-propagation 流到 test → test 预测被结构泄露抬高
-（wikiart LP-ceiling 无特征就到 0.915 = 铁证）。
+Cross-split edges are normal in a transductive protocol and are not, by
+themselves, evidence of leakage.  This module therefore exposes both the full
+transductive graph and a split-disjoint robustness view.  Only target-derived
+relations/features, duplicates, future information, or an explicitly violated
+protocol are treated as integrity defects.
 
-修复：stratified 切分后，**删掉所有跨 {train,val,test} 的边**，使三者成为不相连组件。
-于是 label propagation 无法从 train 抵达 test（无路径）→ 结构泄露被消除。
-代价：test 只剩 intra-test 边，transductive 信号减弱 —— 这是严谨 NC 的正确代价，
-且对所有模型对称公平。用 LP-ceiling 在剪枝图上跌到≈随机来"证明"泄露已消除。
+The label-propagation routine is a topology-only predictability diagnostic.  A
+high value can be a legitimate property of graph structure and must not be
+reported as proof of leakage without provenance evidence.
 
 提供
 ----
@@ -67,8 +67,8 @@ def split_id(masks):
     return sid
 
 
-def prune_cross_split_edges(edge_index: torch.Tensor, masks) -> torch.Tensor:
-    """删除两端不在同一切分的边 → train/val/test 成为不相连组件。
+def make_split_disjoint_view(edge_index: torch.Tensor, masks) -> torch.Tensor:
+    """Return the within-split edge union for a split-disjoint view.
 
     保留：两端都在 train / 都在 val / 都在 test 的边。
     删除：任何跨切分的边（train-val / train-test / val-test）。
@@ -79,9 +79,15 @@ def prune_cross_split_edges(edge_index: torch.Tensor, masks) -> torch.Tensor:
     return edge_index[:, keep]
 
 
+def prune_cross_split_edges(edge_index: torch.Tensor, masks) -> torch.Tensor:
+    """Backward-compatible alias for :func:`make_split_disjoint_view`."""
+    return make_split_disjoint_view(edge_index, masks)
+
+
 def label_propagation_ceiling(y: torch.Tensor, edge_index: torch.Tensor,
                               train_mask: torch.Tensor, test_mask: torch.Tensor,
-                              num_iters: int = 50) -> dict:
+                              num_iters: int = 50,
+                              seed_labels: torch.Tensor = None) -> dict:
     """迭代 label propagation（无特征、仅图结构）→ test 上的 acc/macro-F1。
 
     经典闭式/迭代 LP：用 train 的 one-hot 标签做种子，沿边扩散，test 取 argmax。
@@ -89,13 +95,14 @@ def label_propagation_ceiling(y: torch.Tensor, edge_index: torch.Tensor,
     在【剪枝图】上应跌到≈多数类 = 泄露被消除的证据。
     """
     y = y.cpu()
+    seed_labels = y if seed_labels is None else seed_labels.cpu()
     ei = edge_index.cpu()
     C = int(y.max().item()) + 1
     N = y.size(0)
     # 种子 one-hot（仅 train 节点初始化为真实标签，其余均匀先验）
     H = torch.full((N, C), 1.0 / C)
     H[train_mask] = 0.0
-    H[train_mask, y[train_mask]] = 1.0
+    H[train_mask, seed_labels[train_mask]] = 1.0
     # 归一化邻接（对称）— 向量化度数（避免 Python 边循环）
     src, dst = ei[0], ei[1]
     deg = torch.zeros(N)
