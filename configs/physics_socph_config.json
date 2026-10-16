@@ -1,0 +1,21 @@
+{
+    "metadata_path": "/home/dev_qw/DataCrawlerAgent/arxiv-metadata-cleaned.json",
+    "category": "physics.soc-ph",
+    "limit": 99999,
+    "extract_multimodal": true,
+    "stage_overlap": true,
+    "output_dirs": {
+        "papers": "./data/physics_socph_papers",
+        "cleaned": "./data/physics_socph_cleaned",
+        "graphs": "./data/physics_socph_graphs",
+        "datasets": "./data/physics_socph_datasets"
+    },
+    "dataset_name": "physics_socph_multimodal_graph",
+    "output_format": "json",
+    "include_metadata": true,
+    "parallel": {
+        "num_gpus": 8,
+        "num_cpu_workers": 16,
+        "batch_size": 20
+    }
+}

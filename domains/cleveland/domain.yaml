@@ -1,0 +1,31 @@
+domain: cleveland
+graph_mode: homogeneous
+data:
+  id_field: id
+  label_field: type
+  min_class_size: 20
+  max_items: 900
+  data_source: api
+  data_file: ./data/cleveland_raw/cleveland_items.json
+protocol:
+  protocols: [transductive, split_disjoint, group_inductive]
+  time_field: ''
+  group_field: creator_ids
+  group_semantics: primary creator ID; missing values use entity-specific singleton keys
+relations:
+  - name: same_creator
+    group_by: creator_ids
+    cap: 30
+  - name: shared_culture
+    group_by: culture
+    cap: 20
+    freq_filter: 0.30
+output_dirs:
+  raw: ./data/cleveland_raw
+  items: ./data/cleveland_cslo
+  graphs: ./data/cleveland_graphs
+  datasets: ./data/cleveland_datasets
+agents:
+  collector_agent_name: cleveland_collector
+  builder_agent_name: cleveland_graph_builder
+  tool_manager_class: tools.cleveland_tools.ClevelandToolManager

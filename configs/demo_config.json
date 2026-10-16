@@ -1,0 +1,23 @@
+{
+    "metadata_path": "./arxiv-cs.json",
+    "paper_sources": [
+        {"type": "arxiv", "id": "2206.00606", "title": "Topological Deep Learning: Going Beyond Graph Data"},
+        {"type": "arxiv", "id": "2409.15369", "title": "Geometric Relational Embeddings"},
+        {"type": "arxiv", "id": "2205.14651", "title": "Contributions to Representation Learning with Graph Autoencoders"},
+        {"type": "arxiv", "id": "2202.13491", "title": "Sparsity-aware Neural User Behavior Modeling in Online Interaction Platforms"},
+        {"type": "arxiv", "id": "2203.03602", "title": "Using Timeliness in Tracking Infections"}
+    ],
+    "extract_multimodal": true,
+    "output_dirs": {
+        "papers": "./data/demo_papers",
+        "cleaned": "./data/demo_cleaned",
+        "graphs": "./data/demo_graphs",
+        "datasets": "./data/demo_datasets"
+    },
+    "edges_file": "./data/demo_graphs/demo_citation_edges.csv",
+    "dataset_name": "demo_multimodal_graph",
+    "output_format": "json",
+    "include_metadata": true,
+    "num_gpus": 1,
+    "num_workers": 4
+}

@@ -1,0 +1,73 @@
+# AMMAG Benchmark 默认配置 - OpenMAG 768维统一编码
+
+project_root: "/home/dev_qw/DataCrawlerAgent"
+
+data:
+  root: "/home/dev_qw/DataCrawlerAgent/data"
+  domains: ["cs_si", "cs_lo", "math_lo", "physics_socph"]
+  processed_dir: "/home/dev_qw/DataCrawlerAgent/benchmark/processed"
+  results_dir: "/home/dev_qw/DataCrawlerAgent/benchmark/results"
+
+modalities:
+  text:
+    encoder: "openai/clip-vit-large-patch14"
+    dim: 768
+  image:
+    encoder: "openai/clip-vit-large-patch14"
+    dim: 768
+  formula:
+    encoder: "openai/clip-vit-large-patch14"
+    dim: 768
+
+modality_combos:
+  - "text"
+  - "image"
+  - "formula"
+  - "text+image"
+  - "text+formula"
+  - "image+formula"
+  - "text+image+formula"
+
+models:
+  - "mlp"
+  - "gcn"
+  - "gat"
+  - "graphsage"
+  - "gin"
+  - "gt"
+  - "revgat"
+
+training:
+  hidden_dim: 256
+  num_layers: 2
+  dropout: 0.5
+  lr: 0.001
+  weight_decay: 0.0005
+  num_epochs: 500
+  patience: 25
+  batch_size: 256
+
+experiments:
+  node_classification:
+    num_runs: 3
+    split: "supervised"
+    train_ratio: 0.6
+    val_ratio: 0.2
+  few_shot:
+    num_runs: 3
+    ks: [3, 10]
+  link_prediction:
+    num_runs: 3
+  per_domain_ablation:
+    model: "gcn"
+    num_runs: 3
+  cross_domain:
+    models: ["gcn", "graphsage"]
+    num_runs: 3
+  subcat_nc:
+    models: ["gcn", "gat", "graphsage"]
+    modalities: ["text", "text+image+formula", "formula"]
+    num_runs: 3
+
+device: "cuda"
+gpu_id: 0

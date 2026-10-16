@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.venv/
+venv/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Data & artifacts (rebuild via main.py / benchmark scripts)
+data/
+logs/
+benchmark/results/
+benchmark/processed/
+benchmark/analysis/output/
+*.pt
+*.pth
+*.npy
+*.npz
+*.parquet
+*.h5
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

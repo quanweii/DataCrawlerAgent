@@ -1,0 +1,44 @@
+# Reddit Post Co-Attribute Graph — YAML Domain Config
+#
+# Held-out contract-reuse exhibit (2026-09-19): schema transcribed from the
+# stored e4 discovery record (benchmark/results/e4_scale.json:reddit), which
+# selected label=subreddit with relations same_author/same_flair. Built only
+# to exercise the production YAML/schema/plan/graph-consistency contract; no
+# benchmark training uses this domain. created_utc exists but was not
+# validated as a trustworthy temporal field for this exhibit, so temporal is
+# not offered. Relation semantics are coarse (empty flairs, deleted authors);
+# per-group caps bound their influence.
+
+domain: reddit
+graph_mode: homogeneous
+
+data:
+  id_field: post_id
+  label_field: subreddit
+  min_class_size: 20
+  max_items: 10000
+  data_source: file
+  data_file: ./data/reddit_raw/posts.json
+
+protocol:
+  protocols: [transductive, split_disjoint, group_inductive]
+  group_field: author
+  group_semantics: post author
+
+relations:
+  - name: same_author
+    group_by: author
+    cap: 30
+  - name: same_flair
+    group_by: link_flair_text
+    cap: 30
+
+output_dirs:
+  raw: ./data/reddit_raw
+  items: ./data/reddit_cslo
+  graphs: ./data/reddit_graphs
+  datasets: ./data/reddit_datasets
+
+agents:
+  collector_agent_name: post_collector
+  builder_agent_name: social_graph_builder

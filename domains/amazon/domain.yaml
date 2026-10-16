@@ -1,0 +1,39 @@
+# Amazon Product Co-Attribute Graph — YAML Domain Config
+#
+# Held-out contract-reuse exhibit (2026-09-19): schema transcribed from the
+# stored e4 discovery record (benchmark/results/e4_scale.json:amazon), which
+# selected label=main_cat and relation=brand. Built only to exercise the
+# production YAML/schema/plan/graph-consistency contract; no benchmark
+# training uses this domain. No trustworthy per-item timestamp is declared,
+# so temporal is intentionally not offered.
+
+domain: amazon
+graph_mode: homogeneous
+
+data:
+  id_field: asin
+  label_field: main_cat
+  min_class_size: 20
+  max_items: 10000
+  data_source: file
+  data_file: ./data/amazon_raw/products.json
+
+protocol:
+  protocols: [transductive, split_disjoint, group_inductive]
+  group_field: brand
+  group_semantics: product brand
+
+relations:
+  - name: shared_brand
+    group_by: brand
+    cap: 30
+
+output_dirs:
+  raw: ./data/amazon_raw
+  items: ./data/amazon_cslo
+  graphs: ./data/amazon_graphs
+  datasets: ./data/amazon_datasets
+
+agents:
+  collector_agent_name: product_collector
+  builder_agent_name: product_graph_builder

@@ -1,0 +1,38 @@
+{
+    "domain": "reddit",
+    "graph_mode": "heterogeneous",
+    "data_source": "file",
+    "load_from_files": true,
+    "subreddits": [
+        "MachineLearning",
+        "datascience",
+        "artificial",
+        "deeplearning",
+        "learnmachinelearning",
+        "statistics",
+        "computerscience",
+        "programming",
+        "technology",
+        "science"
+    ],
+    "posts_per_subreddit": 1500,
+    "comments_per_post": 25,
+    "comment_depth": 3,
+    "sort": "hot",
+    "time_filter": "year",
+    "collect_images": false,
+    "max_user_profiles": 500,
+    "output_dirs": {
+        "raw": "./data/reddit_raw",
+        "cleaned": "./data/reddit_cleaned",
+        "graphs": "./data/reddit_graphs",
+        "datasets": "./data/reddit_datasets",
+        "images": "./data/reddit_raw/images"
+    },
+    "dataset_name": "reddit_multimodal_graph",
+    "output_format": "json",
+    "include_metadata": true,
+    "parallel": {
+        "num_workers": 4
+    }
+}

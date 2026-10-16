@@ -1,0 +1,42 @@
+# WikiArt Artwork Co-Attribute Graph — YAML Domain Config
+#
+# WikiArt painting IDs require sanitization (re.sub(r'[^\w\-.]', '_', pid))
+# to match cs_lo directory names. shared_style is recorded in the raw MAG but
+# excluded from benchmark views because its source field is the target field.
+
+domain: wikiart
+graph_mode: homogeneous
+
+data:
+  id_field: painting_id
+  label_field: style
+  min_class_size: 20
+  max_items: 22000
+  data_source: file
+  data_file: ./data/wikiart_raw/wikiart_v2_enriched.json
+  id_sanitize: '[^\w\-.]'
+
+protocol:
+  protocols: [transductive, split_disjoint, temporal, group_inductive]
+  time_field: year
+  group_field: artist
+  group_semantics: artist
+
+relations:
+  - name: same_artist
+    group_by: artist
+    cap: 100
+  - name: shared_style
+    group_by: style
+    cap: 50
+
+output_dirs:
+  raw: ./data/wikiart_raw
+  items: ./data/wikiart_artworks_v2
+  graphs: ./data/wikiart_graphs
+  datasets: ./data/wikiart_datasets
+
+agents:
+  collector_agent_name: wikiart_artwork_collector
+  builder_agent_name: wikiart_artwork_graph_builder
+  tool_manager_class: tools.wikiart_tools.WikiartToolManager

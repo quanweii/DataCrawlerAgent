@@ -1,0 +1,21 @@
+{
+    "metadata_path": "/home/dev_qw/DataCrawlerAgent/arxiv-metadata-cleaned.json",
+    "category": "math.LO",
+    "limit": 99999,
+    "extract_multimodal": true,
+    "stage_overlap": true,
+    "output_dirs": {
+        "papers": "./data/math_lo_papers",
+        "cleaned": "./data/math_lo_cleaned",
+        "graphs": "./data/math_lo_graphs",
+        "datasets": "./data/math_lo_datasets"
+    },
+    "dataset_name": "math_lo_multimodal_graph",
+    "output_format": "json",
+    "include_metadata": true,
+    "parallel": {
+        "num_gpus": 8,
+        "num_cpu_workers": 16,
+        "batch_size": 20
+    }
+}

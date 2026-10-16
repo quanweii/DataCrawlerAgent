@@ -1,0 +1,12 @@
+{
+    "domain": "arxiv",
+    "arxiv_unify": true,
+    "graph_data_pt": "./benchmark/processed/graph_data.pt",
+    "graph_mode": "homogeneous",
+    "output_format": "json",
+    "output_dirs": {
+        "datasets": "./data/arxiv_datasets"
+    },
+    "dataset_name": "arxiv_multimodal_graph_agent",
+    "include_metadata": true
+}

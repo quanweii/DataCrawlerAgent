@@ -1,0 +1,28 @@
+{
+    "domain": "amazon",
+    "graph_mode": "heterogeneous",
+    "categories": [
+        "Electronics",
+        "Books",
+        "Clothing_Shoes_and_Jewelry"
+    ],
+    "products_per_category": 5000,
+    "reviews_per_product": 10,
+    "require_images": false,
+    "require_description": false,
+    "max_images_per_product": 3,
+    "skip_image_download": true,
+    "output_dirs": {
+        "raw": "./data/amazon_raw",
+        "cleaned": "./data/amazon_cleaned",
+        "graphs": "./data/amazon_graphs",
+        "datasets": "./data/amazon_datasets",
+        "images": "./data/amazon_raw/images"
+    },
+    "dataset_name": "amazon_multimodal_graph",
+    "output_format": "json",
+    "include_metadata": true,
+    "parallel": {
+        "num_workers": 8
+    }
+}

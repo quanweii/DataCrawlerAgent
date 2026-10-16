@@ -1,0 +1,45 @@
+# TMDb Movie Co-Attribute Graph — YAML Domain Config
+#
+# Build order: build-then-filter (nodes built first, then small classes removed).
+# TMDb is heterophilic (~0.24 homophily), so no homophily warning is needed.
+
+domain: tmdb
+graph_mode: homogeneous
+
+data:
+  id_field: movie_id
+  label_field: genres[0]
+  min_class_size: 20
+  max_items: 13000
+  data_source: file
+  data_file: ./data/tmdb_raw/tmdb_movies_raw.json
+
+protocol:
+  protocols: [transductive, split_disjoint, temporal, group_inductive]
+  time_field: release_date
+  group_field: directors
+  group_semantics: primary director
+
+relations:
+  - name: shared_genre
+    group_by: genres
+    cap: 30
+    freq_filter: 0.30
+  - name: same_director
+    group_by: directors
+    cap: 30
+  - name: shared_actor
+    group_by: actors
+    cap: 30
+    field_slice: ":3"
+
+output_dirs:
+  raw: ./data/tmdb_raw
+  items: ./data/tmdb_movies
+  graphs: ./data/tmdb_graphs
+  datasets: ./data/tmdb_datasets
+
+agents:
+  collector_agent_name: tmdb_movie_collector
+  builder_agent_name: tmdb_movie_graph_builder
+  tool_manager_class: tools.tmdb_tools.TmdbToolManager
