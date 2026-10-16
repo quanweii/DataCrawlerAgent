@@ -1,4 +1,4 @@
-# MAG-Forge (DataCrawlerAgent)
+# MAG-Forge
 
 **MAG-Forge** is a multi-agent framework for constructing **auditable multimodal
 attributed graph (MAG) benchmarks** from real-world sources. Instead of a
