@@ -1,43 +1,92 @@
-# AMMAG Dataset Card — Multimodal Attributed Graph Benchmark (English)
+# MAG-Forge Dataset Card — Multimodal Attributed Graph Benchmarks
 
-> Version 1.1 · 2026-07-11 · Datasheets-for-Datasets compliant.
-> Auto-generated fields: see `benchmark/results/dataset_card/manifest.json`. Canonical statistics: `docs/canonical_statistics_2026-07-11.md`. Frozen splits: `data/{domain}_splits/`.
+> Version 2.0 · 2026-10-16 · Datasheets-for-Datasets compliant.
+> Aligned with the current paper: declarative schemas, lineage-based auditing,
+> four named evaluation protocols, six tasks, integrity cards.
 
 ## 1. Summary
-A set of cross-modal multimodal attribute graphs (MAGs) spanning a natural homophily spectrum (0.24 → 0.93), built by a single reusable multi-agent framework. Four primary domains plus one zero-code demonstration domain (spotify) that proves the framework's extensibility.
+Real-source multimodal attributed graphs (MAGs) constructed by the MAG-Forge
+multi-agent framework from declarative domain schemas. Four mature benchmark
+domains plus three held-out contract-reuse domains that were exercised at the
+schema/construction stage only.
 
-| Domain | Nodes | Unique edges | Classes | Homophily | Modalities | Edge type |
-|---|---|---|---|---|---|---|
-| arxiv | 45,672 | 57,045 | 4 | **0.933** | text+image+**formula** | citation (cites) |
-| steam | 2,760 | 54,424 | 8 | 0.529 | text+image | shared_genre/same_developer/same_publisher/shared_category |
-| tmdb | 13,037 | 193,346 | 18 | **0.237** | text+image | shared_genre/same_director/shared_actor |
-| wikiart | 21,968 | 520,570 | 64 | 0.894 | text+image | same_artist/shared_style |
-| spotify | 10,000 | 17,440 | 6 | 0.741 | text | same_artist/same_album |
+| Domain | Nodes | Classes | Modalities | Time / group provenance | Excluded before all views |
+|---|---|---|---|---|---|
+| arxiv | 45,672 | 4 | text+image+formula | month / first author | none (citations retained) |
+| steam | 2,760 | 8 | text+image | release / developer | shared genre |
+| tmdb | 13,037 | 18 | text+image | release / director | shared genre |
+| wikiart | 21,968 | 64 | text+image | year / artist | shared style |
+| spotify (held-out) | 10,000 | 6 | text | — (no trusted timestamp) | — |
+| amazon / reddit (held-out) | 5,364 / 7,257 | 20 / 10 | title-only stubs | — | — |
 
-**Tasks**: Node Classification (NC), Link Prediction (LP; random/hard/hard_degree negatives + standard Hits@k over 1000 filtered negatives), edge-relation-type prediction, cross-domain transfer.
+**Tasks (six)**: node classification, link prediction, node clustering,
+modality retrieval, modality alignment, modality matching.
+**Protocols (four)**: transductive, split-disjoint, temporal, group-inductive.
+Unavailable protocols are marked as such rather than synthesized (e.g.,
+temporal is unavailable for sources without trustworthy timestamps).
 
 ## 2. Motivation
-Existing MAG benchmarks (e.g., OpenMAG, ICML'26) ship fixed, uncontrollable graph structures and cannot answer "how does GNN behavior change if we change the edge-construction rule?" We make **homophily a controllable axis** (E1 steering: fix nodes/features/labels/splits/seeds, swap only the edge relation) and automate/audit construction via a multi-agent framework + declarative YAML + an interactive skill.
+Multimodal graph benchmarks couple entity identities, modality associations,
+targets, and relation definitions. Existing benchmarks fix these choices at
+dataset construction; researchers who need newly available data, different
+modality combinations, or their own edge rules must modify the underlying
+pipeline. MAG-Forge makes construction configurable around research needs
+while keeping the coupling auditable: an accepted schema is a construction
+contract, deterministic audits use recorded lineage to exclude target-derived
+inputs, and named evaluation protocols specify which entities and edges are
+observable during learning.
 
 ## 3. Composition
-- **Per node**: CLIP-ViT-L/14 768-d text embedding + 768-d image embedding (arxiv additionally has a 768-d formula embedding; spotify is text-only). Missing modalities → zero vector.
-- **Per edge**: a `relation` attribute (used for E1 steering filtering at load time).
-- **Labels**: arxiv = 4 research fields; steam = 8 game genres; tmdb = 18 movie genres; wikiart = 64 art styles; spotify = 6 playlist genres.
-- **Class imbalance**: e.g., steam Racing 58 vs Action 1403; tmdb History 84 vs Drama 2690; wikiart smallest class ~21.
+- **Per node**: frozen CLIP ViT-L/14 embeddings — a 768-d text vector (text
+  tower; also used for arXiv LaTeX formulas, 77-token limit) and, where
+  present, a 768-d image vector (vision tower). Node-local mean fusion of
+  L2-normalized modality vectors, followed by an outer normalization. Missing
+  modalities are zero-filled; all-missing nodes retain zero vectors with
+  task-specific eligibility.
+- **Per edge**: a `relation` attribute plus its recorded source field
+  (lineage). Edges are built by deterministic rules — observed citations
+  (arXiv) or capped co-attribute groups (per-group connection caps, frequency
+  filters); self-loops and exact duplicates are removed and endpoints
+  validated. No LLM is involved in edge materialization.
+- **Labels**: declared target fields — arXiv = 4 research fields;
+  Steam/TMDB = the configured first genre (`genres[0]`); WikiArt = 64 art
+  styles (predicted principally from artwork-title text and images).
 
-## 4. Collection Process
-- **arxiv**: public arXiv metadata + per-paper markdown/images; citation edges from `data/{sub}_graphs/*.csv`; 4 sub-fields merged. Built by the multi-agent pipeline (reference_graph_builder → formatter).
-- **steam/tmdb**: public storefront / API (Steam Store, TMDb API v3); edges by deterministic co-occurrence + density-capped sampling rules.
-- **wikiart**: WikiArt.org artworks; `same_artist` / `shared_style` edges.
-- **spotify**: Tidy Tuesday "Spotify Songs" public CSV (GitHub raw: rfordatascience/tidytuesday), derived from Spotify; 10k stratified subsample of 28,356 unique tracks. Built **zero-code** via the `build-mag-dataset` skill + `config_driven.build_graph_from_config` (1 YAML + data, no framework Python).
-- Edge construction is **deterministic rules, no LLM in semantic edge decisions** (code-verified). The LLM agent's load-bearing roles are semantic wrangling (citation fuzzy matching) and the reusable interface — see `docs/paper_logic_DnB_FINAL_2026-07-11.md` §3.
+## 4. Collection process
+- **arxiv**: open-access arXiv metadata + per-paper markdown/images; citation
+  edges from public citation records; specialized citation pipeline with a
+  fixed category schema.
+- **steam / tmdb**: public storefront / official APIs (Steam, TMDb API v3);
+  co-attribute edges from metadata fields with configured caps.
+- **wikiart**: public WikiArt.org artwork pages.
+- **spotify**: public Tidy Tuesday "Spotify Songs" CSV (derived from Spotify);
+  built through the same declarative config path.
+- **amazon / reddit**: file-backed stubs transcribed from stored discovery
+  records; construction-interface reuse only (no encoding/training).
 
-## 5. Preprocessing
-- Features: each modality L2-normalized (CLIP convention); concatenation globally L2-normalized (for LP dot-product decoding).
-- Graph: undirected, self-loops removed, deduplicated.
-- Splits: NC = stratified per-class 60/20/20 (fixed seed=1); LP = OGB-style 80/10/10 edges + random/hard/hard_degree negatives.
+## 5. Preprocessing and protocol views
+The raw MAG is immutable. Lineage-based exclusions are applied **before every
+view**: relations whose source field resolves to the target field (shared
+genre in Steam/TMDB, shared style in WikiArt) are removed from derived views;
+arXiv citations are retained (not target-derived). Feature exclusions follow
+the same recorded lineage (e.g., structured genre lines removed for
+Steam/TMDB; artist/style/year/biography removed for WikiArt, retaining
+principally titles).
 
-## 6. Distribution / License
+- **transductive**: stratified 60/20/20 node masks; full sanitized topology.
+- **split-disjoint**: identical masks; cross-split edges removed.
+- **temporal**: whole time buckets ordered chronologically (monthly for
+  arXiv/Steam/TMDB, annual for WikiArt); nodes missing timestamps are excluded
+  (4 Steam, 1 TMDB, 3,078 WikiArt).
+- **group-inductive**: whole primary groups assigned together; nodes missing
+  primary groups receive disclosed singleton keys (350/2/4 arXiv/Steam/TMDB).
+- **Link prediction**: transductive edges split 60/20/20; other views use
+  within-partition positives. The message graph contains training positives
+  only; one fixed uniform negative per positive, excluding every true edge in
+  the view. Non-transductive held-out endpoints have no message neighbors.
+- Seeds: NC split seed 1 with five initialization seeds (0–4).
+
+## 6. Distribution / license
 | Domain | Source | License |
 |---|---|---|
 | arxiv | arXiv | CC0 (metadata); paper text under each arXiv license |
@@ -46,16 +95,36 @@ Existing MAG benchmarks (e.g., OpenMAG, ICML'26) ship fixed, uncontrollable grap
 | wikiart | WikiArt.org | artwork images © respective owners (research/display) |
 | spotify | Tidy Tuesday / Spotify | Tidy Tuesday open data; track metadata derived from Spotify |
 
-⚠ Scraped domains (steam/wikiart) require per-source ToS review before release; we recommend releasing graph structure + features rather than raw images to reduce copyright risk. See `DATASET_LICENSING_en.md` and `ETHICS_STATEMENT.md`.
+See `DATASET_LICENSING_en.md` for the tiered release plan.
 
-## 7. Known Issues / Leakage (transparent) ⚠
-- **wikiart label leakage**: `same_artist`/`shared_style` edges are **definitionally homophilic** (same artist/style ⇒ same label). Evidence: feature-free label-propagation ceiling on the raw graph = 0.921. **Fix**: after cross-split-edge pruning, LP-ceiling drops to **0.024** (< majority 0.025) → leakage eliminated. We report NC on the pruned (leak-free) graph and always co-report the LP-ceiling. Each domain ships a **leak-profile** (`benchmark/results/leak_profile_table.json`).
-- **LP saturation**: on high-homophily graphs, random-negative LP degenerates to "same label ⇒ edge" — we use hard/hard_degree negatives and report Δ(random − hard_degree).
-- **statistics.json num_classes**: an earlier arxiv `num_classes` was mis-recorded as 7 (correct: 4); **fixed 2026-07-11**.
+## 7. Transparency notes
+- **WikiArt temporal is open-set**: 18 test classes are unseen in training and
+  seen classes cover 38.85% of test nodes; temporal scores must be interpreted
+  with label-support analysis, not as pure "future prediction" failure.
+- **Structural access matters**: with partitions and features fixed, removing
+  cross-split edges changes GraphSAGE accuracy differently by domain (WikiArt
+  −9.75 points, replicated as −10.02 under a second partition; smaller
+  differences are partition-sensitive).
+- **Integrity cards** accompany every release, separating checked correctness
+  (identity, lineage, protocol invariants) from applicability (label support,
+  open-set exposure, modality dependence).
+- Topology-only probes and label permutations are descriptive diagnostics,
+  not leakage verdicts; leakage determinations require contradicted lineage or
+  invariants.
 
-## 8. Intended Use / Misuse
-- **Intended**: GNN/MAG model evaluation, homophily/heterophily studies, cross-domain transfer, controlled graph experiments, extensibility demonstration.
-- **Misuse**: reporting raw wikiart NC 0.97 as true performance (leakage); using random-negative LP as the headline (saturated); claiming the LLM agent outperforms rules at edge construction (falsified — `greedy=oracle`; see FINAL §3).
+## 8. Intended use / misuse
+- **Intended**: multimodal graph model evaluation under explicit exposure
+  conditions, protocol sensitivity studies, controlled construction
+  experiments, benchmark customization and reuse.
+- **Misuse**: reading transductive accuracy as evidence about unseen-group
+  generalization; treating descriptive test-score maxima as deployment
+  estimates (validation-selected and test-maximum architectures agree in only
+  7/16 domain–protocol cells); interpreting an audit pass as task-suitability;
+  claiming a causal multi-agent advantage (not established — see the paper's
+  scope statements).
 
 ## 9. Maintenance
-Maintained by the authors. To add a new domain, follow `docs/ADD_NEW_DOMAIN.md` (or run the `build-mag-dataset` skill): author one `domains/<name>/domain.yaml`, run `python main.py --domain-config domains/<name>/domain.yaml`, then encode + benchmark. Zero framework Python for standard co-attribute domains.
+Maintained by the authors. To add a new domain: author one
+`domains/<name>/domain.yaml` (identifier, target, relation rules, caps), run
+`python main.py --domain-config domains/<name>/domain.yaml`, then encode and
+benchmark through the same production path.

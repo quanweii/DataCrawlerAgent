@@ -24,8 +24,8 @@
 ### Tier 2 — Structure + embeddings (Steam / TMDb / WikiArt)
 - `*_multimodal_graph_agent.json` (graph structure only: node IDs, labels, edge lists)
 - Pre-computed CLIP embeddings (`.pt`, N×768 float matrices; not invertible to raw text/image)
-- Graph statistics (homophily, degree, label distribution, **leak-profile**)
-- LP negative-sample CSVs (train/val/test pos/neg/hard/hard_degree)
+- Graph statistics and protocol manifests (node masks, cross-split edge counts, group overlap) with integrity cards
+- Evaluation splits and exposure definitions (LP message-edge and negative-sampling rules per protocol view)
 - **Excluded**: raw `.md` text, raw image files, raw API responses
 
 ### Tier 2-lite — spotify (zero-code exhibit)
@@ -35,11 +35,11 @@
 ### Tier 3 — Build scripts (all domains)
 - `python main.py --domain-config domains/<name>/domain.yaml` fully reproducible
 - Domain YAML configs + `crawlers/` + `benchmark/` pipeline
-- The `build-mag-dataset` skill for adding new domains
+- New-domain authoring guide: `domains/README.md`
 
 ## 3. Reproducibility statement (paper text)
 
-> **Reproducibility.** The multi-agent framework and all benchmark code are released under the MIT License at [URL]. The arxiv and spotify datasets are released in full (open-access / public metadata). For Steam, TMDb, and WikiArt, we release the graph structure (node IDs, labels, edge lists), pre-computed CLIP embeddings, and link-prediction negative samples. Raw text and images are not redistributable due to copyright; however, the complete datasets can be reproduced by running `python main.py --domain-config domains/<name>/domain.yaml`. Exact pinned dependencies, encoder hashes, and SHA-256 checksums of every released artifact and frozen split are provided in `REPRODUCIBILITY.md`.
+> **Reproducibility.** The multi-agent framework and all benchmark code are released under the MIT License at [URL]. The arxiv and spotify datasets are released in full (open-access / public metadata). For Steam, TMDb, and WikiArt, we release the graph structure (node IDs, labels, edge lists), pre-computed CLIP embeddings, protocol view manifests, and evaluation splits. Raw text and images are not redistributable due to copyright; however, the complete datasets can be reproduced by running `python main.py --domain-config domains/<name>/domain.yaml`. Exact pinned dependencies, encoder hashes, and SHA-256 checksums of every released artifact and frozen split are provided in `REPRODUCIBILITY.md`.
 
 ## 4. Per-source attribution
 - **TMDb**: "This product uses the TMDB API but is not endorsed or certified by TMDB." (required by TMDb ToS)

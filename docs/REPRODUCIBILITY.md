@@ -1,68 +1,92 @@
 # Reproducibility Statement
 
-> P0-8 deliverable. Enables bit-level reproduction of every released artifact and benchmark number.
+> Enables reproduction of the released code, protocol views, and benchmark
+> procedures. Aligned with the current paper (four protocols, six tasks,
+> validation-AP selection for LP/clustering, frozen diagnostics).
 
 ## 1. Software environment (pinned)
 
-Exact versions used to produce all reported results:
-
 | Component | Version |
 |---|---|
-| Python | 3.9.23 |
-| torch | 2.8.0+cu128 (CUDA 12.8, cuDNN 9.1.0) |
+| Python | 3.9 |
+| torch | 2.8.0+cu128 |
 | torch-geometric | 2.6.1 |
-| transformers | 4.52.4 (tokenizers 0.21.4) |
-| numpy | 2.0.2 · scikit-learn 1.6.1 · scipy 1.13.1 · pandas 2.3.3 |
-| GPU | 8× NVIDIA RTX 4090 (24 GB) |
+| transformers | 4.52.4 |
+| GPU | a single NVIDIA RTX 4090 (24 GB) |
 
-Full pinned dependency list: [`requirements-pinned.txt`](../requirements-pinned.txt). Install:
+Full pinned dependency list: [`requirements-pinned.txt`](../requirements-pinned.txt).
+
 ```bash
 pip install -r requirements-pinned.txt
-# torch wheel matched to CUDA 12.8; PyG 2.6.1 with torch-scatter/torch-sparse built for torch 2.8.0+cu128
 ```
+
+LLM-driven stages (schema discovery in discovery mode, orchestration planning)
+read `API_KEY` / `MODEL_BASE_URL` / `MODEL_NAME` from `.env`
+(see `.env.example`). The schema-comparison experiments used `qwen-plus`,
+temperature 0.2, 1,200-token output caps.
 
 ## 2. Encoder provenance
 
 | Encoder | Revision | Notes |
 |---|---|---|
-| CLIP-ViT-Large-Patch14 (768-d) | HF snapshot `32bd64288804d66eefd0ccbe215aa642df71cc41` | default for text+image (+formula via text branch); HF_HUB_OFFLINE=1 during encoding |
-| SigLIP (1152-d), CLIP-base (512-d) | encoder-comparison arm | see `benchmark/processed/{domain}/` |
+| CLIP-ViT-Large-Patch14 (768-d) | HF `openai/clip-vit-large-patch14`, snapshot `32bd64288804d66eefd0ccbe215aa642df71cc41` | text tower for text and LaTeX formulas (77-token limit); vision tower for images; frozen, no fine-tuning |
 
-Encoder embeddings are frozen (no fine-tuning) — this is a **frozen-encoder benchmark**.
+This is a **frozen-encoder benchmark**: encoding and mean fusion fit no
+split-dependent state, so embeddings are reusable across protocols whenever
+entity identities, retained content, and encoder settings are unchanged.
 
-## 3. Split & seed protocol
+## 3. Splits, seeds, and selection
 
-- **NC**: stratified per-class 60/20/20, `split_seed=1`; headline = 5-init-seed mean±std (seeds 1/43/85/127/169). See `benchmark/results/dataset_card/manifest.json`.
-- **LP**: OGB-style 80/10/10 edges (`seed=42`); negatives random/hard/hard_degree from `scripts/lp_hard_negative_sampler.py`. Standard Hits@k computed on-the-fly over 1000 filtered random negatives (file-based ratio=1 makes tabulated Hits@3/10 degenerate, so they are computed separately — see `benchmark/run_newdomain_lp.py::_hitsk_metrics`).
-- NC splits for the 4 primary domains are frozen under `data/{domain}_splits/`. spotify NC uses the deterministic `split_seed=1` stratified split (regenerated identically each run; no stored file needed).
+- **NC**: stratified 60/20/20 node masks, split seed 1; five initialization
+  seeds (0–4) per cell; checkpoints selected on validation accuracy. A
+  second-partition campaign (split seed 2) reruns the fused-modality grid.
+- **LP / clustering**: shared label-free graph autoencoder (≤200 epochs);
+  architecture and checkpoints selected by validation AP. LP message graph
+  contains training positives only; one fixed uniform negative per positive
+  excluding every true edge in the view.
+- **Matching**: entity-disjoint train/validation/test with same-label
+  different-entity negatives; validation-AP checkpointing.
+- **Retrieval / alignment**: deterministic evaluations over frozen
+  representations (24 protocol–pair cells); no training.
+- Historical architecture maxima summarized by mean test accuracy are
+  descriptive, not deployment estimates; per-model values are retained by the
+  runners below.
 
-## 4. Artifact integrity (SHA-256)
+## 4. Artifact integrity
 
-[`checksums.sha256`](../checksums.sha256) lists SHA-256 for:
-- All 5 released graphs: `data/{arxiv,steam,tmdb,wikiart,spotify}_datasets/*_multimodal_graph_agent.json`
-- Frozen NC splits (`data/{domain}_splits/`)
-- LP split files (`data/{domain}_lp/{test_pos,test_neg_hard_degree,train_pos}.csv`)
-- Encoder embeddings (`benchmark/processed/**/*embeddings*.pt`)
+Protocol manifests record eligible node counts, missing-time coverage,
+exclusions, group overlap, cross-split edge counts, and unavailable protocols
+alongside source fields and parent artifacts. SHA-256 checksums for released
+data artifacts accompany the tiered data release (see
+`DATASET_LICENSING_en.md`); raw source data is not redistributed.
 
-Verify after download:
-```bash
-sha256sum -c checksums.sha256
-```
+## 5. Reproducing each component
 
-## 5. Reproducing each artifact
-
-| Artifact | Command |
+| Component | Command |
 |---|---|
-| arxiv graph | multi-agent pipeline → `data/arxiv_datasets/arxiv_multimodal_graph_agent.json` (reference_graph_builder + formatter) |
-| steam/tmdb/wikiart graph | `python main.py --domain-config domains/{steam,tmdb,wikiart}/domain.yaml` |
-| spotify graph (zero-code) | `python main.py --domain-config domains/spotify/domain.yaml` (or `build-mag-dataset` skill) |
-| embeddings | `python benchmark/encode_domain.py --domain {domain} --gpu 0 --modalities text,image` |
-| LP negatives | `python scripts/lp_hard_negative_sampler.py --domain {domain}` |
-| NC table | `python benchmark/run_newdomain_nc.py --domain {domain} --models mlp,gcn,gat,graphsage,gin,gcnii --seeds 5` |
-| LP table (incl. Hits@k) | `python benchmark/run_newdomain_lp.py --domain {domain} --models mlp,gcn,gat,graphsage,gin,gcnii --seeds 5` |
-| leak-profile | `benchmark/results/leak_profile_table.json` (aggregated) |
+| domain graph | `python main.py --domain-config domains/<name>/domain.yaml` |
+| protocol views | `python benchmark/generate_protocol_views.py` |
+| NC suite | `python benchmark/run_newdomain_nc.py` |
+| LP / clustering | `python benchmark/run_four_protocol_graph_tasks.py` |
+| retrieval / alignment / matching | `python benchmark/run_four_protocol_modality_tasks.py` |
+| second-partition replication | `python benchmark/run_split_seed2_nc.py` |
+| held-out contract builds | `python benchmark/run_heldout_contract.py` |
+| topology nulls | `python benchmark/run_topology_nulls.py` |
+| schema/gate mechanisms | `python benchmark/run_framework_mechanisms.py` && `python benchmark/validate_framework_mechanisms.py` |
+| release stress test | `python benchmark/run_artifact_release_study.py` && `python benchmark/validate_artifact_release_study.py` (opt-in gate: `benchmark/artifact_release.py`) |
+| report cards | `python benchmark/generate_report_card.py` |
+| final evidence audit | `python benchmark/validate_final_evidence.py` |
+| six-task consistency audit | `python benchmark/aggregate_validate_four_protocol_tasks.py` |
+| production YAML reuse audit | `python benchmark/run_reusability_audit.py` |
+| unit tests | `pytest tests/` (protocols, framework integrity, orchestrator feedback) |
 
-## 6. What is NOT claimed (honest scope)
-- The LLM agent does **not** make construction/de-leaking decisions (`greedy=oracle`; see FINAL §3). Numbers are identical under a rule-based greedy builder.
-- Encoder set is frozen CLIP-family (+ SigLIP/base for comparison); a trainable-encoder arm is out of P0 scope (optional P2-7).
-- See `docs/paper_logic_DnB_FINAL_2026-07-11.md` §4.5 for the full overclaim-guard list.
+## 6. What is not claimed (honest scope)
+- No matched-tools/budget end-to-end comparison of multi-agent coordination
+  against a single agent or scripted workflow is included.
+- The release stress test covers known, explicitly injected contract
+  violations; it is not an estimate of natural failure rates, unseen-fault
+  robustness, or human error prevalence.
+- Frozen encoders may contain unverified pretraining overlap with benchmark
+  content; no sample-level overlap evidence is claimed.
+- Temporal/group results inherit source coverage and label shifts; the WikiArt
+  temporal view is an open-set condition (18 unseen test classes).
