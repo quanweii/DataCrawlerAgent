@@ -30,6 +30,7 @@ example and saved-result verification:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -r requirements-dev.txt
 python -m pytest -q tests

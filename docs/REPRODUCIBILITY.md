@@ -6,6 +6,7 @@ Resource version: `www2027-20261027`. Run commands from the repository root.
 
 Use Python 3.10 or 3.11 and `requirements-pinned.txt`; tests additionally use
 `requirements-dev.txt`. CPU suffices for artifact checks and the skill example.
+Upgrade pip before installing the CPU PyTorch wheel, as shown in the root README.
 The paper uses frozen CLIP ViT-L/14 (`openai/clip-vit-large-patch14`, revision
 `32bd64288804d66eefd0ccbe215aa642df71cc41`), with 768-dimensional vectors and
 77-token text/formula inputs. Using released features requires no encoder download.
