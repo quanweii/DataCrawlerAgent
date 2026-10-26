@@ -1,111 +1,112 @@
 # MAG-Forge
 
-**MAG-Forge** is a multi-agent framework for constructing **auditable multimodal
-attributed graph (MAG) benchmarks** from real-world sources. Instead of a
-one-off data pipeline, a research requirement becomes a declarative schema —
-entity identifiers, a prediction target, and supported relation rules — and the
-framework carries that contract through acquisition, graph building, formatting,
-verification, and protocol-conditioned evaluation.
+MAG-Forge is an open-source multi-agent system for constructing auditable
+multimodal attributed graph benchmarks. A coordinator connects source collection,
+schema discovery, deterministic construction, formatting and integrity checks.
+The `build-mag-dataset` skill helps a researcher author a validated domain YAML
+and trial-build a graph. Four frozen benchmarks support four protocols and six
+downstream tasks.
 
-```
-Real-world multimodal sources (APIs / files)
-   → Autonomous schema discovery or researcher YAML
-   → Schema-guided MAG construction
-   → Protocol-aware integrity auditing (lineage, duplicates, invariants)
-   → Integrity-guided frozen encoding + fusion
-   → Protocol-conditioned benchmarking & integrity cards
-```
+This release accompanies **MAG-Forge: Multi-Agent Construction of Auditable
+Multimodal Graph Benchmarks**. The resource version is `www2027-20261027`.
 
-Production execution chain:
+## Start here
 
-```
-Collector → SchemaDiscoveryAgent → GraphBuilder → DatasetFormatter → GraphVerifier
-```
-
-- **Schema as a contract.** Builders only materialize relations declared in an
-  accepted schema; a deterministic gate checks IDs, target/relation fields, and
-  class support before anything is built.
-- **Lineage-based auditing.** Relations derived directly from the target field
-  (e.g., shared-genre edges for a genre target) are excluded from derived views;
-  feature exclusions follow recorded provenance. The raw MAG artifact is never
-  rewritten.
-- **Named evaluation protocols.** Each release publishes transductive,
-  split-disjoint, temporal, and group-inductive views when provenance supports
-  them, with manifests recording cross-split edges, group overlap, and
-  unavailable protocols. Sources without trustworthy timestamps mark temporal
-  *unavailable* rather than fabricating an order.
-- **Integrity cards.** Every release ships a card separating checked
-  correctness (identity, lineage, protocol invariants) from applicability
-  (label support, open-set exposure, modality dependence).
-
-## Repository layout
-
-| Path | Contents |
+| Goal | Entry point |
 |---|---|
-| `agents/` | Role agents: collector, schema discovery, graph builders, formatter, verifier, orchestrator (`react_agent.py`, `orchestrator_agent.py`, `schema_discovery.py`) |
-| `crawlers/` | Source adapters (config-driven + Steam/TMDb/WikiArt/arXiv) |
-| `domains/` | Declarative per-domain YAML schemas (steam, tmdb, wikiart, spotify, amazon, reddit, cleveland) |
-| `tools/` | Executable tools invoked by the agents |
-| `prompts/` | Role prompts |
-| `main.py`, `orchestrator.py` | Entry points |
-| `benchmark/` | Protocol generation, six-task evaluation suite, audits, release gate (`artifact_release.py`), validation runners |
-| `scripts/` | Data preparation / rebuild / verification helpers |
-| `configs/` | Example legacy JSON crawl configs |
-| `tests/` | Protocol, framework-integrity, orchestrator-feedback tests |
-| `docs/` | Reproducibility statement, dataset card, licensing, ethics |
+| Try graph construction without an API or model download | [Offline skill example](#offline-skill-example) |
+| Inspect or use the skill | [skills/build-mag-dataset/SKILL.md](skills/build-mag-dataset/SKILL.md) |
+| Obtain the four datasets and experiment records | [Artifact files and checksums](artifacts/README.md) |
+| Check published data and retained results without fitting models | `python scripts/verify_release.py` |
+| Reproduce training and evaluation | [Reproducibility guide](docs/REPRODUCIBILITY.md) |
+| Locate evidence cited in the paper | [Anonymous review guide](README_ANONYMOUS.md) |
 
 ## Installation
 
+Use Python 3.10 or 3.11. The tested project environment uses PyTorch 2.8.0 and
+torch-geometric 2.6.1. A CPU installation is sufficient for unit tests, the skill
+example and saved-result verification:
+
 ```bash
-python -m venv .venv && source .venv/bin/activate   # or use conda
-pip install -r requirements.txt                     # or requirements-pinned.txt for exact versions
-cp .env.example .env                                # fill in your LLM endpoint
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -r requirements-dev.txt
+python -m pytest -q tests
 ```
 
-Pinned versions, encoder provenance, and per-artifact SHA-256 checksums are
-listed in [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
+For GPU training, install the matching PyTorch GPU wheel and then use
+`requirements-pinned.txt`. LLM-driven construction additionally reads `API_KEY`,
+`MODEL_BASE_URL` and `MODEL_NAME` from your own `.env`; see `.env.example`.
+Frozen artifact loading, saved-result checks and the example below do not make
+LLM calls.
 
-## Usage
+## Offline skill example
 
-Build a benchmark from a domain declaration:
+The bundled example is deliberately synthetic software test data, separate from
+the research datasets. From the repository root:
+
+```bash
+python scripts/skill_dataset.py inspect --source examples/skill_demo/items.json
+python scripts/skill_dataset.py trial --config examples/skill_demo/domain.yaml --output trial_output
+```
+
+Expected result: 40 nodes, 140 edges, two classes and a valid schema contract.
+The structural trial creates temporary label-free placeholders, never frozen
+features or scientific evaluation scores. To make the skill discoverable in an
+assistant, install the `skills/build-mag-dataset` folder in its skill directory;
+the same entry point is also supplied under `.claude/skills/`.
+
+## Frozen research resources
+
+| Dataset | Nodes | Classes | Modalities | Raw edges |
+|---|---:|---:|---|---:|
+| arXiv | 45,672 | 4 | text, image, formula | 57,045 |
+| Steam | 2,760 | 8 | text, image | 54,642 |
+| TMDB | 13,037 | 18 | text, image | 193,475 |
+| WikiArt | 21,968 | 64 | text, image | 520,330 |
+
+The repository includes the real frozen resources as hash-checked archive parts,
+not download placeholders or Git LFS pointers. Install both resource groups:
+
+```bash
+python scripts/install_artifacts.py
+python scripts/verify_release.py
+```
+
+The installer only reads files shipped with this repository. It restores graph
+IDs/labels/edges, the original 768-dimensional CLIP vectors, protocol tensors,
+source-derived time/group metadata, manifests, evidence and saved checkpoints.
+It verifies each part, reconstructed archive and installed file. Raw source text
+and images are excluded. Existing different local files are not overwritten
+without `--force`.
+
+The protocols are Trans, Split, Temporal and Group; the tasks are node
+classification, link prediction, clustering, retrieval, alignment and matching.
+Current LP code enforces disjoint negative prediction objects as well as disjoint
+positive splits. Historical results are retained with their source/version
+labels; [the review guide](README_ANONYMOUS.md) identifies the active LP records.
+
+## Construct a domain
+
+Use the skill to inspect a file-backed source and confirm its ID, scalar target,
+relations and class support. Full execution uses the shared production pipeline:
 
 ```bash
 python main.py --domain-config domains/steam/domain.yaml
 ```
 
-Add a new file-backed source by writing a `domain.yaml` (identifier, target,
-relation rules, caps) — the schema gate, builders, audits, and protocol views
-run through the same production path. Run the test suite:
+This full run requires source records and extracted per-entity text/images at
+the configured locations, plus an LLM endpoint. A new API source additionally
+needs acquisition/extraction adapters. See [domains/README.md](domains/README.md).
+arXiv PDF extraction uses an external backend configured by
+`PDF_EXTRACT_KIT_PATH` and optional `PDF_EXTRACT_PYTHON`.
 
-```bash
-pytest tests/
-```
+## Code and data terms
 
-Reproduce the benchmark suite (protocol views → six tasks → audits):
-
-```bash
-python benchmark/generate_protocol_views.py
-python benchmark/run_newdomain_nc.py
-python benchmark/run_four_protocol_graph_tasks.py
-python benchmark/run_four_protocol_modality_tasks.py
-python benchmark/validate_final_evidence.py
-```
-
-## Data release and licensing
-
-See [`docs/DATASET_LICENSING_en.md`](docs/DATASET_LICENSING_en.md) for the
-full tiered plan. In brief:
-
-- **arXiv / Spotify** — full release (open-access / public metadata).
-- **Steam / TMDb / WikiArt** — graph structure + frozen CLIP embeddings +
-  labels + rebuild scripts; raw text/images are not redistributable, but the
-  complete dataset is reproducible via `python main.py --domain-config ...`.
-- **All domains** — deterministic build scripts and audit trail.
-
+Code is covered by the [MIT License](LICENSE). Source-derived research artifacts
+retain the per-source access and attribution conditions documented in
+[docs/DATASET_LICENSING_en.md](docs/DATASET_LICENSING_en.md).
 This product uses the TMDB API but is not endorsed or certified by TMDB.
 
-## License
-
-Code is released under the [MIT License](LICENSE). Released data artifacts
-follow the per-domain terms in `docs/DATASET_LICENSING_en.md`; source data
-remains subject to the respective access/licensing terms.
+Frozen-row alignment details are recorded in [artifacts/DATA_NOTES.md](artifacts/DATA_NOTES.md).

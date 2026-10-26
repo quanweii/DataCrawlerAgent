@@ -14,7 +14,7 @@ venv/
 .env.*.local
 
 # Data & artifacts (rebuild via main.py / benchmark scripts)
-data/
+/data/
 logs/
 benchmark/results/
 benchmark/processed/
@@ -30,3 +30,7 @@ benchmark/analysis/output/
 .vscode/
 .idea/
 .DS_Store
+
+# Installed research artifacts are reconstructed from artifacts/ chunks.
+.release_checks/
+trial_output/

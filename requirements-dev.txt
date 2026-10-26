@@ -1,0 +1,2 @@
+-r requirements-pinned.txt
+pytest==8.4.2

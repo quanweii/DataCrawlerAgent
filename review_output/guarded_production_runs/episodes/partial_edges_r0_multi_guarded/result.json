@@ -1,0 +1,32 @@
+{
+  "method": "multi_guarded",
+  "condition": "partial_edges",
+  "repetition": 0,
+  "success": true,
+  "model": {
+    "test_acc": 0.9388888888888889,
+    "test_f1": 0.9388414391092339,
+    "val_acc": 0.9444444444444444,
+    "val_f1": 0.9433563748079877,
+    "train_acc": 0.9981481481481481,
+    "best_epoch": 110,
+    "training_time": 2.4036643505096436,
+    "checkpoint_sha256": "84fafff0c767342f45b9bae72e10bf7594d0226fd6bd8a9cae118078c25877d9",
+    "bundles": 3,
+    "predictions": 180
+  },
+  "evaluation_seconds": 2.620596755295992,
+  "seconds": 124.83112864941359,
+  "llm_calls": 40,
+  "input_tokens": 30170,
+  "output_tokens": 4857,
+  "tool_actions": 35,
+  "llm_seconds": 119.3951702080667,
+  "automatic_feedback": [],
+  "faults_fired": [
+    "edges"
+  ],
+  "estimated_api_rmb": 0.03385,
+  "assistance_rounds": 0,
+  "assisted_success": true
+}

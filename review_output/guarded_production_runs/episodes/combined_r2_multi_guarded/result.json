@@ -1,0 +1,33 @@
+{
+  "method": "multi_guarded",
+  "condition": "combined",
+  "repetition": 2,
+  "success": true,
+  "model": {
+    "test_acc": 0.9333333333333333,
+    "test_f1": 0.9335427251096263,
+    "val_acc": 0.9388888888888889,
+    "val_f1": 0.9373954599761052,
+    "train_acc": 1.0,
+    "best_epoch": 100,
+    "training_time": 2.3630099296569824,
+    "checkpoint_sha256": "47ba6012bc1f59198dfe9ba720b2ac20d9630d1a8238c92c74caddfeb9993587",
+    "bundles": 3,
+    "predictions": 180
+  },
+  "evaluation_seconds": 2.603314124047756,
+  "seconds": 142.77074741572142,
+  "llm_calls": 47,
+  "input_tokens": 34178,
+  "output_tokens": 5509,
+  "tool_actions": 39,
+  "llm_seconds": 136.48181803524494,
+  "automatic_feedback": [],
+  "faults_fired": [
+    "edges",
+    "write"
+  ],
+  "estimated_api_rmb": 0.0383604,
+  "assistance_rounds": 0,
+  "assisted_success": true
+}

@@ -1,6 +1,6 @@
 # MAG-Forge Dataset Card — Multimodal Attributed Graph Benchmarks
 
-> Version 2.0 · 2026-10-16 · Datasheets-for-Datasets compliant.
+> Resource version www2027-20261027; composition and evaluation documentation.
 > Aligned with the current paper: declarative schemas, lineage-based auditing,
 > four named evaluation protocols, six tasks, integrity cards.
 
@@ -86,16 +86,18 @@ principally titles).
   the view. Non-transductive held-out endpoints have no message neighbors.
 - Seeds: NC split seed 1 with five initialization seeds (0–4).
 
-## 6. Distribution / license
-| Domain | Source | License |
-|---|---|---|
-| arxiv | arXiv | CC0 (metadata); paper text under each arXiv license |
-| steam | Steam Store | Steam Subscriber Agreement (research use) |
-| tmdb | TMDb | **CC-BY (attribution required)**: "This product uses the TMDB API but is not endorsed or certified by TMDB." |
-| wikiart | WikiArt.org | artwork images © respective owners (research/display) |
-| spotify | Tidy Tuesday / Spotify | Tidy Tuesday open data; track metadata derived from Spotify |
+## 6. Distribution / source terms
+The versioned release contains graph IDs, categorical labels, edges, frozen
+representations, protocol time/group metadata and experiment artifacts. Raw paper
+text, storefront descriptions, API responses and source images are excluded.
+The code's MIT license does not relicense third-party content. Source-specific
+terms and attributions are described in
+[DATASET_LICENSING_en.md](DATASET_LICENSING_en.md); TMDB content is not labeled
+CC-BY, and public availability is not a uniform redistribution license.
 
-See `DATASET_LICENSING_en.md` for the tiered release plan.
+Install the actual frozen resources using `python scripts/install_artifacts.py`.
+The file manifest and checksums are in `artifacts/manifest.json`; original
+feature alignment details are in `artifacts/DATA_NOTES.md`.
 
 ## 7. Transparency notes
 - **WikiArt temporal is open-set**: 18 test classes are unseen in training and

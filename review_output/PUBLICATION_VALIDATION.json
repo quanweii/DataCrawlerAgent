@@ -1,0 +1,17 @@
+{
+  "resource_release": "www2027-20261027",
+  "manuscript_title": "MAG-Forge: Multi-Agent Construction of Auditable Multimodal Graph Benchmarks",
+  "manuscript_pdf_sha256": "7d95ef5afb630e1252b8866901c724ac26b3fa484159c96b6e5cfc66306e5714",
+  "archived_primary_fit_count": 2520,
+  "new_training_runs_for_this_publication": 0,
+  "validated_protocol_regeneration": 16,
+  "validated_LP_checkpoint_score_records": 120,
+  "unit_tests_passed": 29,
+  "skill_demo": {
+    "nodes": 40,
+    "edges": 140,
+    "classes": 2
+  },
+  "original_features_and_protocol_tensors_preserved": true,
+  "notes": "Historical controlled-fault/museum snapshots remain versioned separately from repaired active LP selections."
+}

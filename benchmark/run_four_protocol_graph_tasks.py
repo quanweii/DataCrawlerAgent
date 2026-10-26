@@ -117,8 +117,17 @@ def prepare_splits(protocol, edge_index, masks, n, seed):
         eligible = [torch.arange(n)] * 3
     else:
         eligible = [m.nonzero(as_tuple=True)[0] for m in masks]
-    neg = [sample_negatives(eligible[i], p.size(1), forbidden, n, seed + 101 + i)
-           for i, p in enumerate((trp, vap, tep))]
+    # All prediction objects, including absent unordered pairs, are split-disjoint.
+    # Keep training negatives identical; validation/test exclude earlier negatives.
+    neg = []
+    unavailable = set(forbidden)
+    for i, p in enumerate((trp, vap, tep)):
+        sampled = sample_negatives(eligible[i], p.size(1), unavailable, n, seed + 101 + i)
+        neg.append(sampled)
+        unavailable.update(positive_keys(sampled, n))
+    negative_sets = [positive_keys(e, n) for e in neg]
+    assert not any(negative_sets[i] & negative_sets[j]
+                   for i in range(3) for j in range(i + 1, 3))
     # Hard safety checks used again by the standalone validator.
     psets = [positive_keys(p, n) for p in (trp, vap, tep)]
     assert not (psets[0] & psets[1] or psets[0] & psets[2] or psets[1] & psets[2])

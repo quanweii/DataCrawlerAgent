@@ -1,0 +1,23 @@
+{
+  "archives": [
+    {
+      "file": "MAGForge-anonymous-review.tar.gz",
+      "bytes": 693748302,
+      "sha256": "45721dbaadd06d8a608d9f06b5f9a114eb74fc3e8963e2a27355441f102329b5"
+    },
+    {
+      "file": "MAGForge-anonymous-inputs.tar.gz",
+      "bytes": 825388857,
+      "sha256": "d5bfff84ec5f2510755669433673629d56ad61d0574d993f73b74bcd24ca16a0"
+    },
+    {
+      "file": "MAGForge-anonymous-controller-traces.tar.gz",
+      "bytes": 14537527,
+      "sha256": "35ff46f3c2fdf82eee7cc00fb5c3a56fbe369425aa17ade7fc5ca5bbd2bdb6c4"
+    }
+  ],
+  "direct_identity_scan_pass": true,
+  "no_public_host_created": true,
+  "media_files_included": 1933,
+  "no_credentials_or_git_history": true
+}

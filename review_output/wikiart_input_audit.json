@@ -1,0 +1,486 @@
+{
+  "all_checks_pass": true,
+  "graph_sha256": "f809353d8849b16104ca0192d202e56eb4dfc157938840040e05af8397b5c571",
+  "input_hashes": {
+    "x": "0f6dbd1ce9124b74942bfe62e167a506689b5c90b40f2faa8aeddb7e738cd609",
+    "y": "1b52d0416315205fb8766c88abe354e721377f4b5f11908c125fd90c40306588",
+    "base_edges": "f4d0273748a0920f781315e262591d3fbbb8a507f88e44e2166686046a3eb3ce",
+    "node_ids": "da7a5e3c60a7b45b15016918261e8c6f2aa8b846ba3ae6f8fd21e86a23fdc160"
+  },
+  "view_hashes": {
+    "edges": "e1829dc68b67656560a130d0816a16f3d138d046fc134c2b764f86afb87e9798",
+    "masks": [
+      "f82759e86e414c2789c2cc1705398efd3d3dfa1f049fef97b3bbad7b98468b46",
+      "a69ea875acf208a6e2bb4083e0ad725c290692dc5dcc5f56e2c3cbc7994050c3",
+      "ee8a638db4866d67fc986f7a3d19cb326c95d9d1f3cc34e4c2b58d6971089e81"
+    ]
+  },
+  "embeddings": [
+    {
+      "modality": "text",
+      "sha256": "8df21e684696839ad5940a213d71b687a6a28e37b201c469229696039a3d470c",
+      "aligned_rows": 21968
+    },
+    {
+      "modality": "image",
+      "sha256": "beec51b5bc3291a596297f3bba9e665d6ff6414fd1c848436651723b5447d92f",
+      "aligned_rows": 21968
+    }
+  ],
+  "labels_one_to_one": true,
+  "masks_disjoint": true,
+  "support": [
+    {
+      "index": 0,
+      "label": "Abstract Art",
+      "train": 502,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 1,
+      "label": "Abstract Expressionism",
+      "train": 307,
+      "val": 137,
+      "test": 0
+    },
+    {
+      "index": 2,
+      "label": "Analytical Realism",
+      "train": 82,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 3,
+      "label": "Art Deco",
+      "train": 431,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 4,
+      "label": "Art Informel",
+      "train": 88,
+      "val": 368,
+      "test": 0
+    },
+    {
+      "index": 5,
+      "label": "Art Nouveau",
+      "train": 439,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 6,
+      "label": "Art Singulier",
+      "train": 0,
+      "val": 0,
+      "test": 21
+    },
+    {
+      "index": 7,
+      "label": "Baroque",
+      "train": 440,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 8,
+      "label": "Classical Realism",
+      "train": 16,
+      "val": 50,
+      "test": 135
+    },
+    {
+      "index": 9,
+      "label": "Conceptual Art",
+      "train": 5,
+      "val": 432,
+      "test": 0
+    },
+    {
+      "index": 10,
+      "label": "Confessional Art",
+      "train": 0,
+      "val": 5,
+      "test": 93
+    },
+    {
+      "index": 11,
+      "label": "Constructivism",
+      "train": 416,
+      "val": 55,
+      "test": 0
+    },
+    {
+      "index": 12,
+      "label": "Contemporary",
+      "train": 0,
+      "val": 0,
+      "test": 477
+    },
+    {
+      "index": 13,
+      "label": "Contemporary Realism",
+      "train": 12,
+      "val": 239,
+      "test": 78
+    },
+    {
+      "index": 14,
+      "label": "Coptic Art",
+      "train": 0,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 15,
+      "label": "Cubism",
+      "train": 531,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 16,
+      "label": "Cubo Futurism",
+      "train": 156,
+      "val": 0,
+      "test": 1
+    },
+    {
+      "index": 17,
+      "label": "Dada",
+      "train": 377,
+      "val": 39,
+      "test": 0
+    },
+    {
+      "index": 18,
+      "label": "Digital Art",
+      "train": 0,
+      "val": 0,
+      "test": 173
+    },
+    {
+      "index": 19,
+      "label": "Early Renaissance",
+      "train": 535,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 20,
+      "label": "Excessivism",
+      "train": 0,
+      "val": 4,
+      "test": 23
+    },
+    {
+      "index": 21,
+      "label": "Existential Art",
+      "train": 8,
+      "val": 13,
+      "test": 9
+    },
+    {
+      "index": 22,
+      "label": "Expressionism",
+      "train": 534,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 23,
+      "label": "Fantasy Art",
+      "train": 0,
+      "val": 10,
+      "test": 72
+    },
+    {
+      "index": 24,
+      "label": "Feminist Art",
+      "train": 8,
+      "val": 76,
+      "test": 359
+    },
+    {
+      "index": 25,
+      "label": "Fiber Art",
+      "train": 0,
+      "val": 6,
+      "test": 23
+    },
+    {
+      "index": 26,
+      "label": "Folk Art",
+      "train": 3,
+      "val": 16,
+      "test": 5
+    },
+    {
+      "index": 27,
+      "label": "Futurism",
+      "train": 277,
+      "val": 11,
+      "test": 0
+    },
+    {
+      "index": 28,
+      "label": "High Renaissance",
+      "train": 540,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 29,
+      "label": "Impressionism",
+      "train": 529,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 30,
+      "label": "Indian Space Painting",
+      "train": 18,
+      "val": 38,
+      "test": 18
+    },
+    {
+      "index": 31,
+      "label": "Joseon Dynasty",
+      "train": 8,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 32,
+      "label": "Junk Art",
+      "train": 0,
+      "val": 8,
+      "test": 60
+    },
+    {
+      "index": 33,
+      "label": "Kinetic Art",
+      "train": 68,
+      "val": 138,
+      "test": 47
+    },
+    {
+      "index": 34,
+      "label": "Kitsch",
+      "train": 157,
+      "val": 82,
+      "test": 11
+    },
+    {
+      "index": 35,
+      "label": "Lettrism",
+      "train": 0,
+      "val": 28,
+      "test": 18
+    },
+    {
+      "index": 36,
+      "label": "Light And Space",
+      "train": 0,
+      "val": 157,
+      "test": 255
+    },
+    {
+      "index": 37,
+      "label": "Lowbrow Art",
+      "train": 0,
+      "val": 1,
+      "test": 97
+    },
+    {
+      "index": 38,
+      "label": "Magic Realism",
+      "train": 380,
+      "val": 78,
+      "test": 0
+    },
+    {
+      "index": 39,
+      "label": "Mannerism Late Renaissance",
+      "train": 502,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 40,
+      "label": "Maximalism",
+      "train": 0,
+      "val": 0,
+      "test": 55
+    },
+    {
+      "index": 41,
+      "label": "Medieval Art",
+      "train": 20,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 42,
+      "label": "Metaphysical Art",
+      "train": 157,
+      "val": 34,
+      "test": 7
+    },
+    {
+      "index": 43,
+      "label": "Minimalism",
+      "train": 2,
+      "val": 451,
+      "test": 0
+    },
+    {
+      "index": 44,
+      "label": "Modernism",
+      "train": 540,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 45,
+      "label": "Modernismo",
+      "train": 38,
+      "val": 25,
+      "test": 0
+    },
+    {
+      "index": 46,
+      "label": "Muralism",
+      "train": 149,
+      "val": 40,
+      "test": 13
+    },
+    {
+      "index": 47,
+      "label": "Na Ve Art Primitivism",
+      "train": 495,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 48,
+      "label": "Native Art",
+      "train": 17,
+      "val": 69,
+      "test": 381
+    },
+    {
+      "index": 49,
+      "label": "Naturalism",
+      "train": 293,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 50,
+      "label": "Neo Concretism",
+      "train": 0,
+      "val": 48,
+      "test": 30
+    },
+    {
+      "index": 51,
+      "label": "Neo Dada",
+      "train": 0,
+      "val": 353,
+      "test": 147
+    },
+    {
+      "index": 52,
+      "label": "Neo Expressionism",
+      "train": 2,
+      "val": 227,
+      "test": 185
+    },
+    {
+      "index": 53,
+      "label": "Neo Figurative Art",
+      "train": 1,
+      "val": 28,
+      "test": 246
+    },
+    {
+      "index": 54,
+      "label": "Neo Impressionism",
+      "train": 537,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 55,
+      "label": "Neo Orthodoxism",
+      "train": 0,
+      "val": 0,
+      "test": 21
+    },
+    {
+      "index": 56,
+      "label": "Neo Pop Art",
+      "train": 0,
+      "val": 0,
+      "test": 413
+    },
+    {
+      "index": 57,
+      "label": "Neo Romanticism",
+      "train": 354,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 58,
+      "label": "Neoclassicism",
+      "train": 510,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 59,
+      "label": "New European Painting",
+      "train": 0,
+      "val": 64,
+      "test": 308
+    },
+    {
+      "index": 60,
+      "label": "Northern Renaissance",
+      "train": 510,
+      "val": 0,
+      "test": 0
+    },
+    {
+      "index": 61,
+      "label": "Nouveau R Alisme",
+      "train": 0,
+      "val": 143,
+      "test": 67
+    },
+    {
+      "index": 62,
+      "label": "Op Art",
+      "train": 87,
+      "val": 332,
+      "test": 0
+    },
+    {
+      "index": 63,
+      "label": "Orientalism",
+      "train": 156,
+      "val": 0,
+      "test": 0
+    }
+  ],
+  "seen_test": 1495,
+  "unseen_test": 2353,
+  "historical_checkpoints_saved": false,
+  "historical_predictions_saved": false
+}

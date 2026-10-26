@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "checks": 1176,
+  "episodes": 12,
+  "primary_successes": 12,
+  "assisted_releases": 0,
+  "classifiers_reloaded": 12,
+  "bundles_reloaded": 36,
+  "source_snapshots_verified": true,
+  "current_core_guards_recorded": true,
+  "summary": {
+    "multi_guarded": {
+      "n": 12,
+      "success": 12,
+      "fault_n": 9,
+      "fault_success": 9,
+      "assistance_rounds": 0,
+      "assisted_success": 12,
+      "seconds_mean": 112.8767274543643,
+      "seconds_std": 24.299338423237128,
+      "input_tokens": 318914,
+      "output_tokens": 51863,
+      "total_tokens_mean": 30898.083333333332,
+      "estimated_api_rmb_mean": 0.02990476666666667,
+      "calls_mean": 36
+    }
+  },
+  "by_condition": {
+    "multi_guarded/clean": {
+      "n": 3,
+      "success": 3,
+      "assistance": 0,
+      "seconds_mean": 80.74163841456175,
+      "tokens_mean": 22060.333333333332,
+      "cost_mean": 0.021365466666666666
+    },
+    "multi_guarded/write_retry": {
+      "n": 3,
+      "success": 3,
+      "assistance": 0,
+      "seconds_mean": 100.51188665131728,
+      "tokens_mean": 26731,
+      "cost_mean": 0.0259776
+    },
+    "multi_guarded/partial_edges": {
+      "n": 3,
+      "success": 3,
+      "assistance": 0,
+      "seconds_mean": 125.64501530180375,
+      "tokens_mean": 35119,
+      "cost_mean": 0.033910800000000005
+    },
+    "multi_guarded/combined": {
+      "n": 3,
+      "success": 3,
+      "assistance": 0,
+      "seconds_mean": 144.60836944977441,
+      "tokens_mean": 39682,
+      "cost_mean": 0.0383652
+    }
+  },
+  "inference_scope": "one cached source; known injected faults; assistance proxy, not human effort; architecture prompts differ; no assumed superiority"
+}

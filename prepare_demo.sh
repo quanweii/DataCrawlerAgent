@@ -6,9 +6,11 @@
 # ============================================================
 set -e
 
-SRC_DIR="/home/dev_qw/DataCrawlerAgent/data/cs_si_papers"
-DST_DIR="/home/dev_qw/DataCrawlerAgent/data/demo_papers"
-EDGE_FILE="/home/dev_qw/DataCrawlerAgent/data/citation_edges_full/cs_si_citation_edges_full.csv"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PROJECT_ROOT
+SRC_DIR="$PROJECT_ROOT/data/cs_si_papers"
+DST_DIR="$PROJECT_ROOT/data/demo_papers"
+EDGE_FILE="$PROJECT_ROOT/data/citation_edges_full/cs_si_citation_edges_full.csv"
 
 PAPERS=(
     "2206.00606"
@@ -63,15 +65,15 @@ echo "  复制完成: $total_md 篇MD, $total_img 张图片, ~$total_formula 条
 # Step 2: Extract citation edges for these 5 papers
 echo ""
 echo "[2/4] 提取引用边数据..."
-EDGE_DST="/home/dev_qw/DataCrawlerAgent/data/demo_graphs"
+EDGE_DST="$PROJECT_ROOT/data/demo_graphs"
 mkdir -p "$EDGE_DST"
 
 # Extract edges where source is one of our papers
 python3 << 'PYEOF'
 import os
 
-SRC = "/home/dev_qw/DataCrawlerAgent/data/citation_edges_full/cs_si_citation_edges_full.csv"
-DST = "/home/dev_qw/DataCrawlerAgent/data/demo_graphs/demo_citation_edges.csv"
+SRC = os.path.join(os.environ["PROJECT_ROOT"], "data/citation_edges_full/cs_si_citation_edges_full.csv")
+DST = os.path.join(os.environ["PROJECT_ROOT"], "data/demo_graphs/demo_citation_edges.csv")
 PAPERS = {"2206.00606","2409.15369","2205.14651","2202.13491","2203.03602"}
 
 total = 0
@@ -92,8 +94,8 @@ echo "[3/4] 演示数据概览:"
 python3 << 'PYEOF'
 import os
 
-DST = "/home/dev_qw/DataCrawlerAgent/data/demo_papers"
-EDGE = "/home/dev_qw/DataCrawlerAgent/data/demo_graphs/demo_citation_edges.csv"
+DST = os.path.join(os.environ["PROJECT_ROOT"], "data/demo_papers")
+EDGE = os.path.join(os.environ["PROJECT_ROOT"], "data/demo_graphs/demo_citation_edges.csv")
 PAPERS = ["2206.00606","2409.15369","2205.14651","2202.13491","2203.03602"]
 
 print("  ┌──────────────────────────────────────────────────────┐")
@@ -117,8 +119,8 @@ PYEOF
 # Step 4: Prepare cleaned data directory
 echo ""
 echo "[4/4] 创建输出目录..."
-mkdir -p /home/dev_qw/DataCrawlerAgent/data/demo_cleaned
-mkdir -p /home/dev_qw/DataCrawlerAgent/data/demo_datasets
+mkdir -p $PROJECT_ROOT/data/demo_cleaned
+mkdir -p $PROJECT_ROOT/data/demo_datasets
 
 echo ""
 echo "============================================"

@@ -22,7 +22,7 @@ from pathlib import Path
 from loguru import logger
 
 # pdf-extract-kit 路径
-PDF_EXTRACT_KIT_PATH = "/home/dev_qw/pdf-extract-kit"
+PDF_EXTRACT_KIT_PATH = os.environ.get("PDF_EXTRACT_KIT_PATH", "")
 
 
 class PDFExtractorTool:
@@ -60,6 +60,9 @@ class PDFExtractorTool:
         Returns:
             Dict: 提取结果
         """
+        if not PDF_EXTRACT_KIT_PATH or not (Path(PDF_EXTRACT_KIT_PATH) / "extract_pdf.py").is_file():
+            return {"status": "error", "message": "Configure PDF_EXTRACT_KIT_PATH and optional PDF_EXTRACT_PYTHON for the external arXiv extraction backend."}
+
         # 验证输入文件
         if not os.path.exists(pdf_path):
             return {
@@ -90,7 +93,7 @@ class PDFExtractorTool:
             abs_pdf_path = os.path.abspath(pdf_path)
             abs_output_dir = os.path.abspath(paper_output_dir)
 
-            conda_python = "/home/dev_qw/miniconda3/envs/pdf-extract-kit-1.0/bin/python"
+            conda_python = os.environ.get("PDF_EXTRACT_PYTHON", sys.executable)
             extract_script = os.path.join(PDF_EXTRACT_KIT_PATH, "extract_pdf.py")
             cmd = [
                 conda_python, extract_script,

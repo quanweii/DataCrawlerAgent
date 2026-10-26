@@ -1,92 +1,93 @@
-# Reproducibility Statement
+# Reproducibility
 
-> Enables reproduction of the released code, protocol views, and benchmark
-> procedures. Aligned with the current paper (four protocols, six tasks,
-> validation-AP selection for LP/clustering, frozen diagnostics).
+Resource version: `www2027-20261027`. Run commands from the repository root.
 
-## 1. Software environment (pinned)
+## Environment
 
-| Component | Version |
-|---|---|
-| Python | 3.9 |
-| torch | 2.8.0+cu128 |
-| torch-geometric | 2.6.1 |
-| transformers | 4.52.4 |
-| GPU | a single NVIDIA RTX 4090 (24 GB) |
+Use Python 3.10 or 3.11 and `requirements-pinned.txt`; tests additionally use
+`requirements-dev.txt`. CPU suffices for artifact checks and the skill example.
+The paper uses frozen CLIP ViT-L/14 (`openai/clip-vit-large-patch14`, revision
+`32bd64288804d66eefd0ccbe215aa642df71cc41`), with 768-dimensional vectors and
+77-token text/formula inputs. Using released features requires no encoder download.
 
-Full pinned dependency list: [`requirements-pinned.txt`](../requirements-pinned.txt).
+## Install and verify fixed resources
 
 ```bash
-pip install -r requirements-pinned.txt
+python scripts/install_artifacts.py
+python scripts/install_artifacts.py --verify-only
+python scripts/verify_release.py
 ```
 
-LLM-driven stages (schema discovery in discovery mode, orchestration planning)
-read `API_KEY` / `MODEL_BASE_URL` / `MODEL_NAME` from `.env`
-(see `.env.example`). The schema-comparison experiments used `qwen-plus`,
-temperature 0.2, 1,200-token output caps.
+`artifacts/manifest.json` specifies all archive parts and restored-file SHA-256
+values. `review_output/RELEASE_PROVENANCE.json` maps source records to anonymized
+release copies. Graph exports retain IDs, labels and edges and omit raw titles,
+descriptions and images; feature files and protocol tensors are byte-identical
+to their source snapshots. The original feature archives retain extra IDs or
+missing modalities: align by ID. TMDB image features omit ID `348877`, which the
+original loader zero-fills; paired tasks use observed nonzero modality rows.
 
-## 2. Encoder provenance
+## Generate protocol views
 
-| Encoder | Revision | Notes |
-|---|---|---|
-| CLIP-ViT-Large-Patch14 (768-d) | HF `openai/clip-vit-large-patch14`, snapshot `32bd64288804d66eefd0ccbe215aa642df71cc41` | text tower for text and LaTeX formulas (77-token limit); vision tower for images; frozen, no fine-tuning |
+```bash
+python benchmark/generate_protocol_views.py --domains arxiv,steam,tmdb,wikiart --seed 1 --output-dir trial_output/protocol_views
+```
 
-This is a **frozen-encoder benchmark**: encoding and mean fusion fit no
-split-dependent state, so embeddings are reusable across protocols whenever
-entity identities, retained content, and encoder settings are unchanged.
+The installed time/group metadata cache reconstructs the original protocol
+assignments without raw descriptions or images. To use fresh source metadata,
+give an explicit metadata configuration through the source pipeline.
 
-## 3. Splits, seeds, and selection
+## Training commands
 
-- **NC**: stratified 60/20/20 node masks, split seed 1; five initialization
-  seeds (0–4) per cell; checkpoints selected on validation accuracy. A
-  second-partition campaign (split seed 2) reruns the fused-modality grid.
-- **LP / clustering**: shared label-free graph autoencoder (≤200 epochs);
-  architecture and checkpoints selected by validation AP. LP message graph
-  contains training positives only; one fixed uniform negative per positive
-  excluding every true edge in the view.
-- **Matching**: entity-disjoint train/validation/test with same-label
-  different-entity negatives; validation-AP checkpointing.
-- **Retrieval / alignment**: deterministic evaluations over frozen
-  representations (24 protocol–pair cells); no training.
-- Historical architecture maxima summarized by mean test accuracy are
-  descriptive, not deployment estimates; per-model values are retained by the
-  runners below.
+Each runner takes one domain. The following is a full-fusion example; scientific
+NC coverage also evaluates each single modality and, for arXiv, each two-modality
+combination. Keep the retained per-cell records and use validation selection.
 
-## 4. Artifact integrity
+```bash
+for domain in arxiv steam tmdb wikiart; do
+  modality=text+image
+  if [ "$domain" = arxiv ]; then modality=text+image+formula; fi
+  python benchmark/run_newdomain_nc.py --domain "$domain" --modalities "$modality" --protocols all --init-seeds 5 --split-seed 1
+  python benchmark/run_four_protocol_graph_tasks.py --domain "$domain" --modality "$modality" --protocols all --seeds 5 --split-seed 1
+  python benchmark/run_four_protocol_modality_tasks.py --domain "$domain" --protocols all --seeds 5
+done
+```
 
-Protocol manifests record eligible node counts, missing-time coverage,
-exclusions, group overlap, cross-split edge counts, and unavailable protocols
-alongside source fields and parent artifacts. SHA-256 checksums for released
-data artifacts accompany the tiered data release (see
-`DATASET_LICENSING_en.md`); raw source data is not redistributed.
+NC uses split seed 1 and initialization seeds 0-4, validation-accuracy checkpoint
+and architecture selection. Graph tasks train on training positives and select
+the shared LP/clustering encoder by mean validation AP. All positive and negative
+prediction objects are disjoint. Matching uses entity-disjoint masks and selects
+validation AP. Retrieval and CKA are deterministic frozen-feature diagnostics.
 
-## 5. Reproducing each component
+For all NC modalities, use `text`, `image`, `text+image`; arXiv additionally uses
+`formula`, `text+formula`, `image+formula`, `text+image+formula`. Models are
+`mlp,gcn,gat,graphsage,gin,gcnii`; `gcnii` names the custom initial-residual model
+called ResGCN in the paper. The second-partition script is
+`python benchmark/run_split_seed2_nc.py --help`; inspect its options and output
+directory before scheduling the full campaign.
 
-| Component | Command |
-|---|---|
-| domain graph | `python main.py --domain-config domains/<name>/domain.yaml` |
-| protocol views | `python benchmark/generate_protocol_views.py` |
-| NC suite | `python benchmark/run_newdomain_nc.py` |
-| LP / clustering | `python benchmark/run_four_protocol_graph_tasks.py` |
-| retrieval / alignment / matching | `python benchmark/run_four_protocol_modality_tasks.py` |
-| second-partition replication | `python benchmark/run_split_seed2_nc.py` |
-| held-out contract builds | `python benchmark/run_heldout_contract.py` |
-| topology nulls | `python benchmark/run_topology_nulls.py` |
-| schema/gate mechanisms | `python benchmark/run_framework_mechanisms.py` && `python benchmark/validate_framework_mechanisms.py` |
-| release stress test | `python benchmark/run_artifact_release_study.py` && `python benchmark/validate_artifact_release_study.py` (opt-in gate: `benchmark/artifact_release.py`) |
-| report cards | `python benchmark/generate_report_card.py` |
-| final evidence audit | `python benchmark/validate_final_evidence.py` |
-| six-task consistency audit | `python benchmark/aggregate_validate_four_protocol_tasks.py` |
-| production YAML reuse audit | `python benchmark/run_reusability_audit.py` |
-| unit tests | `pytest tests/` (protocols, framework integrity, orchestrator feedback) |
+Historical aggregation scripts remain for record inspection. The maintained
+release check is `scripts/verify_release.py`; it validates the frozen records
+and active repaired LP selections rather than assuming all historical files
+were regenerated with the current sampler. Do not overwrite historical results
+with a new run before copying or versioning them.
 
-## 6. What is not claimed (honest scope)
-- No matched-tools/budget end-to-end comparison of multi-agent coordination
-  against a single agent or scripted workflow is included.
-- The release stress test covers known, explicitly injected contract
-  violations; it is not an estimate of natural failure rates, unseen-fault
-  robustness, or human error prevalence.
-- Frozen encoders may contain unverified pretraining overlap with benchmark
-  content; no sample-level overlap evidence is claimed.
-- Temporal/group results inherit source coverage and label shifts; the WikiArt
-  temporal view is an open-set condition (18 unseen test classes).
+## Construction and extraction
+
+`scripts/skill_dataset.py` performs source inspection and a structural trial.
+`main.py --domain-config domains/<name>/domain.yaml` runs production agents and
+requires configured source/media paths plus an LLM endpoint. New APIs need
+collectors/extractors. arXiv extraction requires a separately installed
+pdf-extract-kit backend, configured by `PDF_EXTRACT_KIT_PATH` and optional
+`PDF_EXTRACT_PYTHON`; the code contains no machine-specific interpreter path.
+
+## Checks
+
+```bash
+python -m pytest -q tests
+python scripts/skill_dataset.py trial --config examples/skill_demo/domain.yaml --output trial_output
+python scripts/verify_release.py
+```
+
+These checks do not train models, call an LLM, or fetch raw source media.
+
+Frozen-row alignment details are recorded in [artifacts/DATA_NOTES.md](../artifacts/DATA_NOTES.md).

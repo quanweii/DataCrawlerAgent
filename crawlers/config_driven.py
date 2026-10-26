@@ -46,34 +46,12 @@ def _resolve_field(item: dict, field_path: str, field_slice: Optional[str] = Non
 
     空列表时返回 default (与原始代码的 `or ["Unknown"]` 模式一致)。
     """
-    import re
-
-    value = item
-    tokens = re.split(r'\.', field_path)
-    for token in tokens:
-        m = re.match(r'^(\w+)(?:\[(\d+)\])?$', token)
-        if not m:
-            raise ValueError(f"无法解析字段路径 '{field_path}' 中的 '{token}'")
-        key = m.group(1)
-        idx = m.group(2)
-        if isinstance(value, dict):
-            value = value.get(key)
-        else:
-            value = None
-        if value is None:
-            return default
-        if idx is not None and isinstance(value, list):
-            i = int(idx)
-            if i < len(value):
-                value = value[i]
-            else:
-                return default
-        if value is None:
-            return default
-    # Falsy list still needs default (e.g. genres=[] → "Unknown")
-    if isinstance(value, list) and not value:
+    from agents.schema_contract import resolve, PathError
+    try:
+        value = resolve(item, field_path)
+    except PathError:
         return default
-    return value
+    return default if value is None or value == [] else value
 
 
 def _group_items(items: list, field_path: str, field_slice: Optional[str] = None):
@@ -82,41 +60,23 @@ def _group_items(items: list, field_path: str, field_slice: Optional[str] = None
     field_slice 示例: ':3' 表示取列表前 3 个元素; '3' 表示取第 3 个元素后。
     对多值字段 (如 genres/actors), 每个值都将该 id 加入对应组。
     """
-    import re
-
     groups = defaultdict(list)
     for it in items:
         id_val = it.get("_config_id")
         if id_val is None:
             continue
-
-        # 解析字段 (处理 'actors[0]' 这种取首元素的语法)
-        # 先尝试: field_path 是否包含 [N] (单值路径)
-        m_single = re.match(r'^(\w+)\[(\d+)\]$', field_path)
-        if m_single:
-            key = m_single.group(1)
-            idx = int(m_single.group(2))
-            vals = it.get(key, [])
-            if isinstance(vals, list) and idx < len(vals):
-                groups[vals[idx]].append(id_val)
-            elif not isinstance(vals, list):
-                groups[vals].append(id_val)
-        else:
-            vals = it.get(field_path, [])
-            if not isinstance(vals, list):
-                vals = [vals] if vals else []
-            # 应用切片
-            if field_slice:
-                m = re.match(r'^:?(\d+)$', field_slice)
-                if m:
-                    n = int(m.group(1))
-                    if field_slice.startswith(':'):
-                        vals = vals[:n]
-                    else:
-                        vals = vals[n:n+1] if n < len(vals) else []
-            for v in vals:
-                if v:  # 跳过空字符串/None
-                    groups[v].append(id_val)
+        vals = _resolve_field(it, field_path, default=[])
+        vals = vals if isinstance(vals, list) else [vals]
+        if field_slice:
+            if field_slice.startswith(":"):
+                vals = vals[:int(field_slice[1:])]
+            else:
+                i = int(field_slice); vals = vals[i:i+1]
+        for v in vals:
+            if v is not None and v != "":
+                if isinstance(v, (dict, list)):
+                    raise ValueError("Relation path must resolve to scalar/list-of-scalars")
+                groups[v].append(id_val)
     return dict(groups)
 
 
@@ -124,7 +84,10 @@ def _label_of(item: dict, label_field: str, default: str = "Unknown"):
     """从 item 中提取标签值。label_field 如 'genres[0]' 或 'style'。
     空列表/缺失值返回 default (与原始代码的 `or [\"Unknown\"]` 模式一致)。
     """
-    return _resolve_field(item, label_field, default=default)
+    value = _resolve_field(item, label_field, default=default)
+    if isinstance(value, (list, dict)):
+        raise ValueError("Target must be scalar; list targets require an explicit indexed path")
+    return value
 
 
 def build_graph_from_config(items: list, cs_lo_dir: str, config: dict, opts: dict = None):
@@ -157,10 +120,10 @@ def build_graph_from_config(items: list, cs_lo_dir: str, config: dict, opts: dic
     if id_sanitizer:
         id_map = {}
         for it in items:
-            sid = id_sanitizer(str(it.get(id_field, "")))
+            sid = id_sanitizer(str(_resolve_field(it, id_field, default="")))
             id_map[sid] = it
     else:
-        id_map = {str(it.get(id_field, "")): it for it in items if it.get(id_field)}
+        id_map = {str(_resolve_field(it, id_field, default="")): it for it in items if _resolve_field(it, id_field) not in (None, "")}
 
     # 交叉验证: 将 item 的配置 id 注入, 仅保留同时存在于 cs_lo 和 items 的节点
     for sid, it in id_map.items():
@@ -187,7 +150,7 @@ def build_graph_from_config(items: list, cs_lo_dir: str, config: dict, opts: dic
         all_labels = set()
         for it in items:
             lbl = _label_of(it, label_field)
-            if lbl:
+            if lbl is not None and lbl != "":
                 all_labels.add(lbl)
         label_map = {l: i for i, l in enumerate(sorted(all_labels))}
     else:
@@ -198,7 +161,8 @@ def build_graph_from_config(items: list, cs_lo_dir: str, config: dict, opts: dic
     nodes = []
     for nid in sorted(keep):
         it = id_map.get(nid, {})
-        label = _label_of(it, label_field) or "Unknown"
+        label = _label_of(it, label_field)
+        label = "Unknown" if label is None or label == "" else label
         # 从 node_attrs 取文本/图像属性
         na = node_attrs.get(nid, {})
         node = {

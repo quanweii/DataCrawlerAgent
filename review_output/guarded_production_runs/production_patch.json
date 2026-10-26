@@ -1,0 +1,16 @@
+{
+  "status": "APPLIED",
+  "changes": [
+    "phase guidance",
+    "real exception propagation",
+    "acyclic mandatory dependency normalization"
+  ],
+  "before": {
+    "react_agent.py": "5ab47329acb8972fc8d9e00bde344a63a22328362a208752fbcc79ccbf6c705b",
+    "orchestrator_agent.py": "390c54b8b17113864038b8cd9ed1a7b8c9a0a32d3422f0a9cf7d27272006842d"
+  },
+  "after": {
+    "react_agent.py": "225c402f2b029a146d021ee607740430955b94481a71060b1f00c523cc200997",
+    "orchestrator_agent.py": "20cbe9d567a8346bff8a714fb5fe9830a881b309642edbdb08e30058d8c6a132"
+  }
+}

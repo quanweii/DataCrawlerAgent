@@ -104,6 +104,9 @@ def validate_schema(items: List[dict], proposal: Dict[str, Any],
             "shared_fraction": shared_fraction,
         }
 
+    from .schema_contract import inspect_schema
+    execution = inspect_schema(items, proposal, proposal, min_class_size)
+    errors.extend(execution["errors"])
     confirmed = dict(proposal)
     confirmed["relations"] = relations
     return {
@@ -201,6 +204,25 @@ class SchemaDiscoveryAgent(ReActAgent):
             self._accumulated_results.get("items", []),
             self._accumulated_results.get("proposal", {}),
             int(self._current_task.get("min_class_size", 20)))
+        # v2: execution and task confirmation are separate from historical base-field checks.
+        from .schema_contract import inspect_schema
+        confirmed = self._current_task.get("confirmed_schema")
+        if confirmed is None and self._current_task.get("schema_mode", "confirm") == "confirm":
+            confirmed = self._current_task.get("schema_hint")
+        executable = inspect_schema(
+            self._accumulated_results.get("items", []),
+            self._accumulated_results.get("proposal", {}), confirmed,
+            int(self._current_task.get("min_class_size", 20)),
+            self._current_task.get("schema_missing_policy", "error"))
+        audit["legacy_base_valid"] = audit["valid"]
+        audit["executable_contract"] = {k: v for k, v in executable.items() if k != "normalized_rows"}
+        audit["valid"] = bool(audit["valid"] and executable["valid"])
+        if executable["invalid_rows"] and self._current_task.get("schema_missing_policy", "error") == "exclude":
+            audit["valid"] = False
+            audit["errors"].append("Materialize explicitly filtered input before publishing an exclusion-policy schema")
+        if confirmed is None:
+            audit["errors"].append("Researcher confirmation of indexed target/relation semantics is required")
+        audit["errors"].extend(executable["errors"])
         self._accumulate_result({"schema_audit": audit})
         return {"status": "success" if audit["valid"] else "error", **audit}
 

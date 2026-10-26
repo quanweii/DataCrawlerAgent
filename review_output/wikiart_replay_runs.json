@@ -1,0 +1,1712 @@
+[
+  {
+    "model": "graphsage",
+    "seed": 0,
+    "training": {
+      "test_acc": 0.006756756756756757,
+      "test_f1": 0.011323853540970236,
+      "val_acc": 0.1624178712220762,
+      "val_f1": 0.09724746391033363,
+      "train_acc": 0.9397526030079203,
+      "best_epoch": 140,
+      "training_time": 3.2239794731140137
+    },
+    "matches_historical_metrics": false,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "862566a0f5d7706b9d61e90eeb3edbd84dc006adb4843c208c34eeb6c847b7b5",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 26,
+      "accuracy": 0.006756756756756757,
+      "macro_f1_truth_labels": 0.018755132427231952
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 26,
+      "accuracy": 0.017391304347826087,
+      "macro_f1_truth_labels": 0.06253678526822938
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 216
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 198
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 181
+      },
+      {
+        "true": "Native Art",
+        "pred": "Op Art",
+        "n": 141
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 118
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 117
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 111
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 111
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 107
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 100
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 98
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Op Art",
+        "n": 76
+      },
+      {
+        "true": "Digital Art",
+        "pred": "Op Art",
+        "n": 70
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Kitsch",
+        "n": 69
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 68
+      }
+    ]
+  },
+  {
+    "model": "graphsage",
+    "seed": 1,
+    "training": {
+      "test_acc": 0.005717255717255718,
+      "test_f1": 0.005630860651950436,
+      "val_acc": 0.159526938239159,
+      "val_f1": 0.10283152429008424,
+      "train_acc": 0.9369048678472902,
+      "best_epoch": 130,
+      "training_time": 2.041956901550293
+    },
+    "matches_historical_metrics": false,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "4bafe21c7fa4bc1dc7be226854960dfbcbb69bb6ce81f79ac877f1ca1ff91cf6",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 22,
+      "accuracy": 0.005717255717255718,
+      "macro_f1_truth_labels": 0.00967804174553981
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 22,
+      "accuracy": 0.01471571906354515,
+      "macro_f1_truth_labels": 0.0462316798540121
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 216
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 167
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 159
+      },
+      {
+        "true": "Native Art",
+        "pred": "Op Art",
+        "n": 152
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 147
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 119
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 119
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 101
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Kitsch",
+        "n": 91
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Op Art",
+        "n": 90
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 80
+      },
+      {
+        "true": "Digital Art",
+        "pred": "Op Art",
+        "n": 78
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Op Art",
+        "n": 78
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 71
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Kitsch",
+        "n": 67
+      }
+    ]
+  },
+  {
+    "model": "graphsage",
+    "seed": 2,
+    "training": {
+      "test_acc": 0.007016632016632017,
+      "test_f1": 0.009397406337092247,
+      "val_acc": 0.16530880420499344,
+      "val_f1": 0.10986901453492878,
+      "train_acc": 0.9407315119693869,
+      "best_epoch": 270,
+      "training_time": 3.401456832885742
+    },
+    "matches_historical_metrics": false,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "5cd65214c30f39b952b2ccf948265eb86976bf0a78eb886a158c4d89ba0a8872",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 27,
+      "accuracy": 0.007016632016632017,
+      "macro_f1_truth_labels": 0.015564454245809035
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 27,
+      "accuracy": 0.018060200668896322,
+      "macro_f1_truth_labels": 0.06208028083028083
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 235
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 189
+      },
+      {
+        "true": "Native Art",
+        "pred": "Op Art",
+        "n": 162
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 161
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 149
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 137
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 123
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 122
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Op Art",
+        "n": 92
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 90
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 90
+      },
+      {
+        "true": "Digital Art",
+        "pred": "Op Art",
+        "n": 80
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 78
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 75
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Kitsch",
+        "n": 75
+      }
+    ]
+  },
+  {
+    "model": "graphsage",
+    "seed": 3,
+    "training": {
+      "test_acc": 0.006756756756756757,
+      "test_f1": 0.0070476528666164355,
+      "val_acc": 0.16636005256241787,
+      "val_f1": 0.1001750473405442,
+      "train_acc": 0.941265462312005,
+      "best_epoch": 160,
+      "training_time": 2.3826181888580322
+    },
+    "matches_historical_metrics": false,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "df9562a52718595457a7b226703b0ae72619d35aca37d390c533d8bae2c0d8df",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 26,
+      "accuracy": 0.006756756756756757,
+      "macro_f1_truth_labels": 0.012113153364496998
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 26,
+      "accuracy": 0.017391304347826087,
+      "macro_f1_truth_labels": 0.05247528348339353
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 245
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 178
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 169
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 143
+      },
+      {
+        "true": "Native Art",
+        "pred": "Op Art",
+        "n": 142
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 139
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 125
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 118
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 88
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 83
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 83
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 82
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Kitsch",
+        "n": 75
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Op Art",
+        "n": 60
+      },
+      {
+        "true": "Digital Art",
+        "pred": "Op Art",
+        "n": 60
+      }
+    ]
+  },
+  {
+    "model": "graphsage",
+    "seed": 4,
+    "training": {
+      "test_acc": 0.006496881496881497,
+      "test_f1": 0.006606047090643408,
+      "val_acc": 0.16373193166885677,
+      "val_f1": 0.10165663508231812,
+      "train_acc": 0.9381507519800658,
+      "best_epoch": 140,
+      "training_time": 2.153716802597046
+    },
+    "matches_historical_metrics": false,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "26a324f921a5df8c97c53001306547ac6b3d0b548668024018274d8097121027",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 25,
+      "accuracy": 0.006496881496881497,
+      "macro_f1_truth_labels": 0.011147704465460753
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 25,
+      "accuracy": 0.016722408026755852,
+      "macro_f1_truth_labels": 0.05224249958837656
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 234
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 189
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 176
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 139
+      },
+      {
+        "true": "Native Art",
+        "pred": "Op Art",
+        "n": 124
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 120
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 116
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 107
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 91
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Kitsch",
+        "n": 91
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Kitsch",
+        "n": 84
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 77
+      },
+      {
+        "true": "Digital Art",
+        "pred": "Kitsch",
+        "n": 77
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 72
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 67
+      }
+    ]
+  },
+  {
+    "model": "mlp",
+    "seed": 0,
+    "training": {
+      "test_acc": 0.006756756756756757,
+      "test_f1": 0.013621066658679862,
+      "val_acc": 0.12063074901445467,
+      "val_f1": 0.06289828115401086,
+      "train_acc": 0.8350093441309958,
+      "best_epoch": 150,
+      "training_time": 0.5499475002288818
+    },
+    "matches_historical_metrics": true,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "ce7ed39f37e95de60bc89f6f3d69df6e28f0b60054837f26dd9334c50052b754",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 26,
+      "accuracy": 0.006756756756756757,
+      "macro_f1_truth_labels": 0.024262524985773505
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 26,
+      "accuracy": 0.017391304347826087,
+      "macro_f1_truth_labels": 0.08008019128049229
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 217
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 207
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 190
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 129
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 108
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 103
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 99
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 98
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 96
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 88
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 75
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 74
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 55
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 55
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Constructivism",
+        "n": 48
+      }
+    ]
+  },
+  {
+    "model": "mlp",
+    "seed": 1,
+    "training": {
+      "test_acc": 0.006756756756756757,
+      "test_f1": 0.013515607199817726,
+      "val_acc": 0.11852825229960579,
+      "val_f1": 0.060479897791269624,
+      "train_acc": 0.835543294473614,
+      "best_epoch": 150,
+      "training_time": 0.5478534698486328
+    },
+    "matches_historical_metrics": true,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "1a68187e470a19a3a4c6774bcca26e6345a1c463b0fe5baa7113ec2ee5b2d042",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 26,
+      "accuracy": 0.006756756756756757,
+      "macro_f1_truth_labels": 0.02407467532467532
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 26,
+      "accuracy": 0.017391304347826087,
+      "macro_f1_truth_labels": 0.08284199601111283
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 229
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 218
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 194
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 127
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 102
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 99
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 96
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 90
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 85
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 82
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 76
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 69
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 60
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 52
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Constructivism",
+        "n": 50
+      }
+    ]
+  },
+  {
+    "model": "mlp",
+    "seed": 2,
+    "training": {
+      "test_acc": 0.0059771309771309775,
+      "test_f1": 0.012856463242154897,
+      "val_acc": 0.12220762155059132,
+      "val_f1": 0.06446399741644472,
+      "train_acc": 0.8392809468719409,
+      "best_epoch": 240,
+      "training_time": 0.7890732288360596
+    },
+    "matches_historical_metrics": true,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "884f14d95a0932ea36b37558e99e4fbded315c6dddef4ee10f4a5aa0d266bb6e",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 23,
+      "accuracy": 0.0059771309771309775,
+      "macro_f1_truth_labels": 0.02330233962640575
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 23,
+      "accuracy": 0.015384615384615385,
+      "macro_f1_truth_labels": 0.074296220109028
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 216
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 209
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 177
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 122
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 110
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 102
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 95
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 94
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 88
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 82
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 77
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 73
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 54
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 53
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Constructivism",
+        "n": 48
+      }
+    ]
+  },
+  {
+    "model": "mlp",
+    "seed": 3,
+    "training": {
+      "test_acc": 0.007016632016632017,
+      "test_f1": 0.013094475599179005,
+      "val_acc": 0.12536136662286465,
+      "val_f1": 0.06305689340184335,
+      "train_acc": 0.8432855744415769,
+      "best_epoch": 290,
+      "training_time": 0.8184390068054199
+    },
+    "matches_historical_metrics": true,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "05302b26b0c625158714c08c241e455589511190e12df86ed532f0e118cd268f",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 27,
+      "accuracy": 0.007016632016632017,
+      "macro_f1_truth_labels": 0.023733737023511947
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 27,
+      "accuracy": 0.018060200668896322,
+      "macro_f1_truth_labels": 0.08212557750372876
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 215
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 210
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 176
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 115
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 115
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 108
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 102
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 92
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 86
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 84
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 77
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 63
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 54
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 53
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Constructivism",
+        "n": 48
+      }
+    ]
+  },
+  {
+    "model": "mlp",
+    "seed": 4,
+    "training": {
+      "test_acc": 0.006496881496881497,
+      "test_f1": 0.012043853731453643,
+      "val_acc": 0.12036793692509855,
+      "val_f1": 0.06219552021889742,
+      "train_acc": 0.840704814452256,
+      "best_epoch": 260,
+      "training_time": 0.8167695999145508
+    },
+    "matches_historical_metrics": true,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "207f2f2d925834852dbe8263c6decae0871506b0dedbda30d23e12420ab2f086",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 25,
+      "accuracy": 0.006496881496881497,
+      "macro_f1_truth_labels": 0.02182948488825972
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 25,
+      "accuracy": 0.016722408026755852,
+      "macro_f1_truth_labels": 0.07595360614228538
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 240
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 207
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 169
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 124
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 106
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 95
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 95
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 89
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 83
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 82
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 78
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Abstract Expressionism",
+        "n": 71
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Expressionism",
+        "n": 57
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Constructivism",
+        "n": 51
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 51
+      }
+    ]
+  },
+  {
+    "model": "linear",
+    "seed": 0,
+    "training": {
+      "test_acc": 0.0010395010395010396,
+      "test_f1": 0.00808080808080808,
+      "val_acc": 0.05335085413929041,
+      "val_f1": 0.02852650639150013,
+      "train_acc": 0.6437661297499333,
+      "best_epoch": 140,
+      "training_time": 0.44190192222595215
+    },
+    "matches_historical_metrics": null,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "abf887a61aa5e3600b5fefc51eaa0e34744188c5c773e2f1d416fecde96bb6ff",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 4,
+      "accuracy": 0.0010395010395010396,
+      "macro_f1_truth_labels": 0.013888888888888888
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 4,
+      "accuracy": 0.0026755852842809363,
+      "macro_f1_truth_labels": 0.031746031746031744
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 225
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 224
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 204
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 152
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 139
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 132
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 113
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 94
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Expressionism",
+        "n": 82
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 76
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 71
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 70
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Art",
+        "n": 68
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Art Deco",
+        "n": 62
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 62
+      }
+    ]
+  },
+  {
+    "model": "linear",
+    "seed": 1,
+    "training": {
+      "test_acc": 0.0010395010395010396,
+      "test_f1": 0.00808080808080808,
+      "val_acc": 0.053088042049934295,
+      "val_f1": 0.028414371238522192,
+      "train_acc": 0.6434101628548545,
+      "best_epoch": 130,
+      "training_time": 0.4175281524658203
+    },
+    "matches_historical_metrics": null,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "9209a916c5027be25b6433d0d9e2ca7f024a70c094797fab559a027615d788f0",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 4,
+      "accuracy": 0.0010395010395010396,
+      "macro_f1_truth_labels": 0.013888888888888888
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 4,
+      "accuracy": 0.0026755852842809363,
+      "macro_f1_truth_labels": 0.031746031746031744
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 225
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 224
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 198
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 156
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 145
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 128
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 112
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 93
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Expressionism",
+        "n": 83
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 75
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Art",
+        "n": 71
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 69
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 69
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 62
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Art Deco",
+        "n": 61
+      }
+    ]
+  },
+  {
+    "model": "linear",
+    "seed": 2,
+    "training": {
+      "test_acc": 0.0010395010395010396,
+      "test_f1": 0.00808080808080808,
+      "val_acc": 0.053088042049934295,
+      "val_f1": 0.02863340680814347,
+      "train_acc": 0.6434101628548545,
+      "best_epoch": 160,
+      "training_time": 0.48691797256469727
+    },
+    "matches_historical_metrics": null,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "77ce82f5f316ad8a3cb434aac22cbd40c69274dcd540ccb18b3132b765459665",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 4,
+      "accuracy": 0.0010395010395010396,
+      "macro_f1_truth_labels": 0.013888888888888888
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 4,
+      "accuracy": 0.0026755852842809363,
+      "macro_f1_truth_labels": 0.031746031746031744
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 226
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 224
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 197
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 159
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 147
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 132
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 110
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 92
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Expressionism",
+        "n": 83
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 74
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Art",
+        "n": 69
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 67
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 66
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 64
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Art Deco",
+        "n": 63
+      }
+    ]
+  },
+  {
+    "model": "linear",
+    "seed": 3,
+    "training": {
+      "test_acc": 0.0010395010395010396,
+      "test_f1": 0.00808080808080808,
+      "val_acc": 0.053088042049934295,
+      "val_f1": 0.028367034672624452,
+      "train_acc": 0.6439441131974727,
+      "best_epoch": 130,
+      "training_time": 0.40431880950927734
+    },
+    "matches_historical_metrics": null,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "e909475889a8a8c9253a33ae3f067a34b24e25ec64928c4942fd3d6219043919",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 4,
+      "accuracy": 0.0010395010395010396,
+      "macro_f1_truth_labels": 0.013888888888888888
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 4,
+      "accuracy": 0.0026755852842809363,
+      "macro_f1_truth_labels": 0.031746031746031744
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 225
+      },
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 225
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 205
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 153
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 138
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 133
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 114
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 93
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Expressionism",
+        "n": 84
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 76
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 71
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Art",
+        "n": 68
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 68
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 64
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Art Deco",
+        "n": 61
+      }
+    ]
+  },
+  {
+    "model": "linear",
+    "seed": 4,
+    "training": {
+      "test_acc": 0.0010395010395010396,
+      "test_f1": 0.00808080808080808,
+      "val_acc": 0.05335085413929041,
+      "val_f1": 0.02850593257195642,
+      "train_acc": 0.6437661297499333,
+      "best_epoch": 130,
+      "training_time": 0.40377354621887207
+    },
+    "matches_historical_metrics": null,
+    "checkpoint_reload_equal": true,
+    "checkpoint_sha256": "29c7be297d961ab39ebe812b322c5bb9c0eccae035afdc31fb15cc1596e04b00",
+    "overall": {
+      "n": 3848,
+      "classes": 32,
+      "correct": 4,
+      "accuracy": 0.0010395010395010396,
+      "macro_f1_truth_labels": 0.013888888888888888
+    },
+    "seen": {
+      "n": 1495,
+      "classes": 14,
+      "correct": 4,
+      "accuracy": 0.0026755852842809363,
+      "macro_f1_truth_labels": 0.031746031746031744
+    },
+    "unseen": {
+      "n": 2353,
+      "classes": 18,
+      "correct": 0,
+      "accuracy": 0.0,
+      "macro_f1_truth_labels": 0.0
+    },
+    "main_confusions": [
+      {
+        "true": "Feminist Art",
+        "pred": "Dada",
+        "n": 225
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Dada",
+        "n": 223
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Expressionism",
+        "n": 202
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Abstract Art",
+        "n": 154
+      },
+      {
+        "true": "Native Art",
+        "pred": "Abstract Art",
+        "n": 142
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Dada",
+        "n": 131
+      },
+      {
+        "true": "New European Painting",
+        "pred": "Abstract Expressionism",
+        "n": 113
+      },
+      {
+        "true": "Neo Dada",
+        "pred": "Dada",
+        "n": 93
+      },
+      {
+        "true": "Neo Figurative Art",
+        "pred": "Expressionism",
+        "n": 83
+      },
+      {
+        "true": "Neo Expressionism",
+        "pred": "Abstract Expressionism",
+        "n": 75
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Abstract Expressionism",
+        "n": 70
+      },
+      {
+        "true": "Neo Pop Art",
+        "pred": "Abstract Art",
+        "n": 69
+      },
+      {
+        "true": "Light And Space",
+        "pred": "Constructivism",
+        "n": 69
+      },
+      {
+        "true": "Confessional Art",
+        "pred": "Dada",
+        "n": 63
+      },
+      {
+        "true": "Contemporary",
+        "pred": "Art Deco",
+        "n": 62
+      }
+    ]
+  }
+]

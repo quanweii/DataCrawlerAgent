@@ -1,0 +1,134 @@
+[
+  {
+    "source": "steam",
+    "view": "transductive",
+    "test_positive": 9650,
+    "test_negative": 9650,
+    "auc": 0.8787242180998147,
+    "ap": 0.8236864218763666,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.3757512953367876,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "steam",
+    "view": "split_disjoint",
+    "test_positive": 2097,
+    "test_negative": 2097,
+    "auc": 0.8729624649424241,
+    "ap": 0.8158945446648812,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.3805436337625179,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "steam",
+    "view": "temporal",
+    "test_positive": 2510,
+    "test_negative": 2510,
+    "auc": 0.8986782749480167,
+    "ap": 0.8466581067950086,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.3215139442231076,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "steam",
+    "view": "group_inductive",
+    "test_positive": 2898,
+    "test_negative": 2898,
+    "auc": 0.9097971471722485,
+    "ap": 0.868242002270754,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.3692201518288475,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "tmdb",
+    "view": "transductive",
+    "test_positive": 32583,
+    "test_negative": 32583,
+    "auc": 0.9998802846758746,
+    "ap": 0.9997606281239619,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.00024552680845839857,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "tmdb",
+    "view": "split_disjoint",
+    "test_positive": 6374,
+    "test_negative": 6374,
+    "auc": 0.9998475923279868,
+    "ap": 0.9996952802693186,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.00031377470975839345,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "tmdb",
+    "view": "temporal",
+    "test_positive": 6296,
+    "test_negative": 6296,
+    "auc": 1.0,
+    "ap": 1.0,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.0,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "tmdb",
+    "view": "group_inductive",
+    "test_positive": 10696,
+    "test_negative": 10696,
+    "auc": 0.9998313177001839,
+    "ap": 0.9996627615179751,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.00037397157816005983,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "wikiart",
+    "view": "transductive",
+    "test_positive": 88712,
+    "test_negative": 88712,
+    "auc": 0.9996674632518713,
+    "ap": 0.9993353685325163,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.0006650734962575525,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "wikiart",
+    "view": "split_disjoint",
+    "test_positive": 18072,
+    "test_negative": 18072,
+    "auc": 0.9998063302346171,
+    "ap": 0.9996128104430555,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.0003873395307658256,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "wikiart",
+    "view": "temporal",
+    "test_positive": 61812,
+    "test_negative": 61812,
+    "auc": 0.9985601501326603,
+    "ap": 0.9971285691240522,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.0028796997346793502,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  },
+  {
+    "source": "wikiart",
+    "view": "group_inductive",
+    "test_positive": 93643,
+    "test_negative": 93643,
+    "auc": 0.9984836026184553,
+    "ap": 0.9969763752701566,
+    "positive_rule_coverage": 1.0,
+    "negative_rule_coverage": 0.0030327947630896064,
+    "scope": "Non-target source-attribute overlap count. Same saved LP positive/negative splits, seed1; available whole-view metadata, no target labels or fitting. Ignores sampled group caps; not evidence of semantic relationships."
+  }
+]

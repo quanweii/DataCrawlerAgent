@@ -20,11 +20,11 @@ modal = load("four_modal", "benchmark/run_four_protocol_modality_tasks.py")
 def test_lp_split_hides_validation_and_test_edges():
     pairs = torch.tensor([[0,0,0,1,1,2,3,4],[1,2,3,2,4,5,4,5]])
     edges = torch.cat([pairs, pairs.flip(0)], dim=1)
-    masks = (torch.tensor([1,1,1,0,0,0],dtype=torch.bool),
-             torch.tensor([0,0,0,1,0,0],dtype=torch.bool),
-             torch.tensor([0,0,0,0,1,1],dtype=torch.bool))
-    pos, neg, msg = graph.prepare_splits("transductive", edges, masks, 6, 1)
-    keys = lambda e: graph.positive_keys(graph.undirected_unique(e), 6)
+    masks = (torch.tensor([1,1,1,0,0,0,0],dtype=torch.bool),
+             torch.tensor([0,0,0,1,0,0,0],dtype=torch.bool),
+             torch.tensor([0,0,0,0,1,1,1],dtype=torch.bool))
+    pos, neg, msg = graph.prepare_splits("transductive", edges, masks, 7, 1)
+    keys = lambda e: graph.positive_keys(graph.undirected_unique(e), 7)
     assert not keys(msg) & (keys(pos[1]) | keys(pos[2]))
     assert all(len(keys(pos[i]) & keys(neg[i])) == 0 for i in range(3))
 

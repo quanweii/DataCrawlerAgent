@@ -1,0 +1,122 @@
+{
+  "tests": [
+    {
+      "name": "flat_scalars",
+      "expected_valid": true,
+      "actual_valid": true,
+      "errors": []
+    },
+    {
+      "name": "nested_indexed_scalar",
+      "expected_valid": true,
+      "actual_valid": true,
+      "errors": []
+    },
+    {
+      "name": "list_is_not_scalar",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 8",
+        "retained categorical support outside 2..100"
+      ]
+    },
+    {
+      "name": "index_on_scalar",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 8",
+        "retained categorical support outside 2..100"
+      ]
+    },
+    {
+      "name": "empty_list",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 1"
+      ]
+    },
+    {
+      "name": "missing",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 1"
+      ]
+    },
+    {
+      "name": "illegal_nan",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 1"
+      ]
+    },
+    {
+      "name": "object_target",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 1"
+      ]
+    },
+    {
+      "name": "mixed_scalar_types",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "mixed scalar target types require explicit normalization"
+      ]
+    },
+    {
+      "name": "duplicate_identity",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "duplicate scalar entity IDs"
+      ]
+    },
+    {
+      "name": "empty_relation_is_absent",
+      "expected_valid": true,
+      "actual_valid": true,
+      "errors": []
+    },
+    {
+      "name": "missing_nested_relation",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 8",
+        "retained categorical support outside 2..100"
+      ]
+    },
+    {
+      "name": "out_of_range_index",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 8",
+        "retained categorical support outside 2..100"
+      ]
+    },
+    {
+      "name": "different_confirmed_task_path",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": []
+    },
+    {
+      "name": "malformed_path",
+      "expected_valid": false,
+      "actual_valid": false,
+      "errors": [
+        "path/type/missing violations: 8",
+        "retained categorical support outside 2..100"
+      ]
+    }
+  ],
+  "stable_vocab_under_reordering": true
+}

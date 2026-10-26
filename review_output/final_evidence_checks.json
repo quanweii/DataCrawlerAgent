@@ -1,0 +1,33 @@
+{
+  "frozen_infrastructure_code_unchanged": true,
+  "initial_exports_verified": 60,
+  "cross_control_equal_tasks": 30,
+  "independent_negative_controls": [
+    {
+      "mutation": "feature_row",
+      "rejected": true
+    },
+    {
+      "mutation": "missing_edge",
+      "rejected": true
+    },
+    {
+      "mutation": "overlap_mask",
+      "rejected": true
+    },
+    {
+      "mutation": "missing_node",
+      "rejected": true
+    },
+    {
+      "mutation": "stale_manifest",
+      "rejected": true
+    }
+  ],
+  "nested_zero_id_target_builder_fixture_pass": true,
+  "unconfirmed_discovery_blocked": true,
+  "primary_registered_fits": 2520,
+  "diagnostic_fits": 15,
+  "all_diagnostic_checkpoints_reload": true,
+  "note": "Historical GNN replay metrics not assumed identical; all original result records preserved. Production gate/builder version change is separate from frozen historical controller results."
+}

@@ -1,0 +1,1025 @@
+{
+  "raw_graphs": [
+    {
+      "source": "arxiv",
+      "nodes": 45672,
+      "raw_edges": 57045,
+      "raw_relations": {
+        "cites": 57045
+      },
+      "excluded_relations": [],
+      "sanitized_directed_edges": 114090,
+      "raw_graph_sha256": "e905ec8c30d2e639c53bd0af17b85fb637787ad58289725bed1d81f65773a599",
+      "views_sha256": "9ee21c71a8f7b88bfdcced237c40222663d353eae233488d00f0c55280ac7bff",
+      "metadata": {
+        "name": "arxiv_multimodal_graph_agent",
+        "domain": "arxiv",
+        "created_at": "2026-07-07",
+        "category": "",
+        "statistics": {
+          "node_count": 45672,
+          "edge_count": 57045,
+          "total_images": 380517,
+          "nodes_with_images": 37210,
+          "avg_images_per_paper": 8.332,
+          "total_markdown_chars": 3385303604,
+          "avg_md_length": 74122,
+          "papers_with_formulas": 45531,
+          "avg_degree": 2.498,
+          "homophily": 0.9332,
+          "num_labels": 4,
+          "label_distribution": {
+            "physics_socph": 13176,
+            "cs_si": 11929,
+            "cs_lo": 11012,
+            "math_lo": 9555
+          }
+        },
+        "schema": {
+          "node_types": [
+            "paper"
+          ],
+          "edge_types": [
+            "citation"
+          ],
+          "node_attributes": [
+            "arxiv_id",
+            "markdown_length",
+            "image_count",
+            "markdown_size"
+          ],
+          "edge_attributes": [
+            "reference_text"
+          ]
+        },
+        "note": "statistics backfilled 2026-07-11: homophily/avg_degree computed on this artifact's own edges; modality counts from benchmark/processed/statistics.json (mean*N). Canonical numbers in benchmark/results/dataset_card/manifest.json."
+      }
+    },
+    {
+      "source": "steam",
+      "nodes": 2760,
+      "raw_edges": 54642,
+      "raw_relations": {
+        "shared_genre": 6396,
+        "same_developer": 8078,
+        "same_publisher": 12157,
+        "shared_category": 28011
+      },
+      "excluded_relations": [
+        "shared_genre"
+      ],
+      "sanitized_directed_edges": 96492,
+      "raw_graph_sha256": "4a7b0e4ce9b159637d201882302a73f5d3e64db00697d54f765ad1f52bdbf612",
+      "views_sha256": "ba9936a83c674ef94832cff14a3ea668d385c0d72c718f67bbbee93a85915b5f",
+      "metadata": {
+        "name": "steam_multimodal_graph_agent",
+        "domain": "steam",
+        "graph_mode": "homogeneous",
+        "created_at": "2026-06-16",
+        "statistics": {
+          "node_count": 2760,
+          "edge_count": 54642,
+          "total_images": 6423,
+          "nodes_with_images": 2759,
+          "total_markdown_chars": 4803271,
+          "avg_md_length": 1740,
+          "avg_degree": 39.6,
+          "homophily": 0.524,
+          "num_labels": 8,
+          "label_distribution": {
+            "Racing": 58,
+            "Action": 1403,
+            "Adventure": 482,
+            "Casual": 252,
+            "Strategy": 68,
+            "RPG": 111,
+            "Simulation": 169,
+            "Indie": 217
+          }
+        },
+        "schema": {
+          "node_types": [
+            "game"
+          ],
+          "edge_types": [
+            "co_attribute"
+          ],
+          "node_attributes": [
+            "appid",
+            "name",
+            "markdown_length",
+            "image_count",
+            "markdown_size",
+            "label",
+            "label_index"
+          ],
+          "edge_relations": [
+            "shared_genre",
+            "same_developer",
+            "same_publisher",
+            "shared_category"
+          ],
+          "modalities": [
+            "text",
+            "image"
+          ],
+          "label_field": "label"
+        }
+      }
+    },
+    {
+      "source": "tmdb",
+      "nodes": 13037,
+      "raw_edges": 193475,
+      "raw_relations": {
+        "shared_genre": 30566,
+        "same_director": 28127,
+        "shared_actor": 134782
+      },
+      "excluded_relations": [
+        "shared_genre"
+      ],
+      "sanitized_directed_edges": 325818,
+      "raw_graph_sha256": "7f1ae79f0db27575d3c4ad09c45eb4c710483b0414aea236beb8e6a2785909fb",
+      "views_sha256": "658279a1b693123f277e9b7b665a5eb5048a8fea63fd5d078b17a654d82ebfd8",
+      "metadata": {
+        "name": "tmdb_multimodal_graph_agent",
+        "domain": "tmdb",
+        "graph_mode": "homogeneous",
+        "created_at": "2026-06-16",
+        "statistics": {
+          "node_count": 13037,
+          "edge_count": 193475,
+          "total_images": 13025,
+          "nodes_with_images": 13025,
+          "total_markdown_chars": 6582849,
+          "avg_md_length": 505,
+          "avg_degree": 29.7,
+          "homophily": 0.239,
+          "num_labels": 18,
+          "label_distribution": {
+            "Drama": 2690,
+            "Action": 2008,
+            "Documentary": 139,
+            "Adventure": 680,
+            "Animation": 783,
+            "Fantasy": 290,
+            "Science Fiction": 362,
+            "Horror": 1066,
+            "Romance": 463,
+            "History": 84,
+            "Comedy": 2509,
+            "Music": 133,
+            "Western": 113,
+            "Family": 312,
+            "Thriller": 586,
+            "Crime": 527,
+            "Mystery": 172,
+            "War": 120
+          }
+        },
+        "schema": {
+          "node_types": [
+            "movie"
+          ],
+          "edge_types": [
+            "co_attribute"
+          ],
+          "node_attributes": [
+            "movie_id",
+            "title",
+            "markdown_length",
+            "image_count",
+            "markdown_size",
+            "label",
+            "label_index"
+          ],
+          "edge_relations": [
+            "shared_genre",
+            "same_director",
+            "shared_actor"
+          ],
+          "modalities": [
+            "text",
+            "image"
+          ],
+          "label_field": "label"
+        }
+      }
+    },
+    {
+      "source": "wikiart",
+      "nodes": 21968,
+      "raw_edges": 520330,
+      "raw_relations": {
+        "same_artist": 443554,
+        "shared_style": 76776
+      },
+      "excluded_relations": [
+        "shared_style"
+      ],
+      "sanitized_directed_edges": 887108,
+      "raw_graph_sha256": "f809353d8849b16104ca0192d202e56eb4dfc157938840040e05af8397b5c571",
+      "views_sha256": "b7ff34418b3788d1621130de659b74ae6f6a89045a3c260972c29e0adafad88e",
+      "metadata": {
+        "name": "wikiart_multimodal_graph_agent",
+        "domain": "wikiart",
+        "graph_mode": "homogeneous",
+        "created_at": "2026-07-09",
+        "statistics": {
+          "node_count": 21968,
+          "edge_count": 520330,
+          "total_images": 21964,
+          "nodes_with_images": 21964,
+          "total_markdown_chars": 6712253,
+          "avg_md_length": 306,
+          "avg_degree": 47.4,
+          "homophily": 0.895,
+          "num_labels": 64,
+          "label_distribution": {
+            "Neo Impressionism": 540,
+            "Art Informel": 540,
+            "Northern Renaissance": 540,
+            "Constructivism": 538,
+            "Contemporary Realism": 540,
+            "Neo Expressionism": 526,
+            "Conceptual Art": 539,
+            "High Renaissance": 540,
+            "Modernism": 540,
+            "Kitsch": 536,
+            "Abstract Art": 540,
+            "Naturalism": 540,
+            "Minimalism": 523,
+            "Early Renaissance": 540,
+            "Neo Dada": 526,
+            "Impressionism": 540,
+            "Contemporary": 539,
+            "Dada": 477,
+            "Fantasy Art": 126,
+            "Feminist Art": 489,
+            "Light And Space": 426,
+            "Kinetic Art": 295,
+            "Expressionism": 536,
+            "Art Deco": 540,
+            "Neo Romanticism": 540,
+            "Magic Realism": 538,
+            "Mannerism Late Renaissance": 540,
+            "Op Art": 508,
+            "Cubo Futurism": 179,
+            "New European Painting": 396,
+            "Baroque": 540,
+            "Abstract Expressionism": 540,
+            "Neoclassicism": 540,
+            "Futurism": 339,
+            "Native Art": 539,
+            "Muralism": 226,
+            "Junk Art": 68,
+            "Coptic Art": 78,
+            "Cubism": 531,
+            "Art Nouveau": 540,
+            "Lowbrow Art": 109,
+            "Nouveau R Alisme": 231,
+            "Na Ve Art Primitivism": 528,
+            "Neo Pop Art": 509,
+            "Digital Art": 180,
+            "Classical Realism": 226,
+            "Analytical Realism": 90,
+            "Maximalism": 62,
+            "Neo Figurative Art": 298,
+            "Modernismo": 120,
+            "Metaphysical Art": 240,
+            "Neo Concretism": 88,
+            "Existential Art": 32,
+            "Confessional Art": 120,
+            "Folk Art": 24,
+            "Indian Space Painting": 80,
+            "Lettrism": 52,
+            "Orientalism": 162,
+            "Art Singulier": 23,
+            "Joseon Dynasty": 33,
+            "Neo Orthodoxism": 21,
+            "Excessivism": 28,
+            "Medieval Art": 25,
+            "Fiber Art": 29
+          }
+        },
+        "schema": {
+          "node_types": [
+            "artwork"
+          ],
+          "edge_types": [
+            "co_attribute"
+          ],
+          "node_attributes": [
+            "painting_id",
+            "title",
+            "markdown_length",
+            "image_count",
+            "markdown_size",
+            "label",
+            "label_index"
+          ],
+          "edge_relations": [
+            "same_artist",
+            "shared_style"
+          ],
+          "modalities": [
+            "text",
+            "image"
+          ],
+          "label_field": "label"
+        }
+      }
+    }
+  ],
+  "views": [
+    {
+      "source": "arxiv",
+      "view": "transductive",
+      "tensor_nodes": 45672,
+      "node_splits": [
+        27402,
+        9133,
+        9137
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 45672,
+        "directed_edges": 114090,
+        "isolated": 20444,
+        "isolated_fraction": 0.44762655456297074,
+        "components": 21838,
+        "largest_component_fraction": 0.4712953231739359
+      },
+      "lp_train_message_and_test_inference_edges": 68454,
+      "lp_positive_splits": [
+        34227,
+        11409,
+        11409
+      ],
+      "relations": [
+        "cites"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": "retained source citations; no co-attribute group cap"
+    },
+    {
+      "source": "arxiv",
+      "view": "split_disjoint",
+      "tensor_nodes": 45672,
+      "node_splits": [
+        27402,
+        9133,
+        9137
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 45672,
+        "directed_edges": 50312,
+        "isolated": 28449,
+        "isolated_fraction": 0.6228980557015239,
+        "components": 30540,
+        "largest_component_fraction": 0.20531178840427394
+      },
+      "lp_train_message_and_test_inference_edges": 41306,
+      "lp_positive_splits": [
+        20653,
+        2366,
+        2137
+      ],
+      "relations": [
+        "cites"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": "retained source citations; no co-attribute group cap"
+    },
+    {
+      "source": "arxiv",
+      "view": "temporal",
+      "tensor_nodes": 45672,
+      "node_splits": [
+        27402,
+        8752,
+        9518
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 45672,
+        "directed_edges": 70706,
+        "isolated": 26387,
+        "isolated_fraction": 0.5777500437905062,
+        "components": 28571,
+        "largest_component_fraction": 0.26002802592397967
+      },
+      "lp_train_message_and_test_inference_edges": 63140,
+      "lp_positive_splits": [
+        31570,
+        1701,
+        2082
+      ],
+      "relations": [
+        "cites"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": "retained source citations; no co-attribute group cap"
+    },
+    {
+      "source": "arxiv",
+      "view": "group_inductive",
+      "tensor_nodes": 45672,
+      "node_splits": [
+        27403,
+        9135,
+        9134
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 45672,
+        "directed_edges": 52010,
+        "isolated": 28198,
+        "isolated_fraction": 0.6174023471711333,
+        "components": 30396,
+        "largest_component_fraction": 0.20331932037134348
+      },
+      "lp_train_message_and_test_inference_edges": 42386,
+      "lp_positive_splits": [
+        21193,
+        2381,
+        2431
+      ],
+      "relations": [
+        "cites"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": "retained source citations; no co-attribute group cap"
+    },
+    {
+      "source": "steam",
+      "view": "transductive",
+      "tensor_nodes": 2760,
+      "node_splits": [
+        1652,
+        548,
+        560
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 2760,
+        "directed_edges": 96492,
+        "isolated": 161,
+        "isolated_fraction": 0.058333333333333334,
+        "components": 204,
+        "largest_component_fraction": 0.8717391304347826
+      },
+      "lp_train_message_and_test_inference_edges": 57894,
+      "lp_positive_splits": [
+        28947,
+        9649,
+        9650
+      ],
+      "relations": [
+        "same_developer",
+        "same_publisher",
+        "shared_category"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_developer",
+          "group_by": "developers",
+          "cap": 100
+        },
+        {
+          "name": "same_publisher",
+          "group_by": "publishers",
+          "cap": 100
+        },
+        {
+          "name": "shared_category",
+          "group_by": "categories",
+          "cap": 30,
+          "freq_filter": 0.4,
+          "floor": 5
+        }
+      ]
+    },
+    {
+      "source": "steam",
+      "view": "split_disjoint",
+      "tensor_nodes": 2760,
+      "node_splits": [
+        1652,
+        548,
+        560
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 2760,
+        "directed_edges": 42774,
+        "isolated": 402,
+        "isolated_fraction": 0.14565217391304347,
+        "components": 470,
+        "largest_component_fraction": 0.5025362318840579
+      },
+      "lp_train_message_and_test_inference_edges": 35234,
+      "lp_positive_splits": [
+        17617,
+        1673,
+        2097
+      ],
+      "relations": [
+        "same_developer",
+        "same_publisher",
+        "shared_category"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_developer",
+          "group_by": "developers",
+          "cap": 100
+        },
+        {
+          "name": "same_publisher",
+          "group_by": "publishers",
+          "cap": 100
+        },
+        {
+          "name": "shared_category",
+          "group_by": "categories",
+          "cap": 30,
+          "freq_filter": 0.4,
+          "floor": 5
+        }
+      ]
+    },
+    {
+      "source": "steam",
+      "view": "temporal",
+      "tensor_nodes": 2760,
+      "node_splits": [
+        1637,
+        561,
+        558
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 2756,
+        "directed_edges": 51860,
+        "isolated": 320,
+        "isolated_fraction": 0.11611030478955008,
+        "components": 389,
+        "largest_component_fraction": 0.5649492017416545
+      },
+      "lp_train_message_and_test_inference_edges": 42134,
+      "lp_positive_splits": [
+        21067,
+        2353,
+        2510
+      ],
+      "relations": [
+        "same_developer",
+        "same_publisher",
+        "shared_category"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_developer",
+          "group_by": "developers",
+          "cap": 100
+        },
+        {
+          "name": "same_publisher",
+          "group_by": "publishers",
+          "cap": 100
+        },
+        {
+          "name": "shared_category",
+          "group_by": "categories",
+          "cap": 30,
+          "freq_filter": 0.4,
+          "floor": 5
+        }
+      ]
+    },
+    {
+      "source": "steam",
+      "view": "group_inductive",
+      "tensor_nodes": 2760,
+      "node_splits": [
+        1655,
+        553,
+        552
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 2760,
+        "directed_edges": 47482,
+        "isolated": 326,
+        "isolated_fraction": 0.11811594202898551,
+        "components": 384,
+        "largest_component_fraction": 0.5018115942028986
+      },
+      "lp_train_message_and_test_inference_edges": 35688,
+      "lp_positive_splits": [
+        17844,
+        2999,
+        2898
+      ],
+      "relations": [
+        "same_developer",
+        "same_publisher",
+        "shared_category"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_developer",
+          "group_by": "developers",
+          "cap": 100
+        },
+        {
+          "name": "same_publisher",
+          "group_by": "publishers",
+          "cap": 100
+        },
+        {
+          "name": "shared_category",
+          "group_by": "categories",
+          "cap": 30,
+          "freq_filter": 0.4,
+          "floor": 5
+        }
+      ]
+    },
+    {
+      "source": "tmdb",
+      "view": "transductive",
+      "tensor_nodes": 13037,
+      "node_splits": [
+        7815,
+        2600,
+        2622
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 13037,
+        "directed_edges": 325818,
+        "isolated": 522,
+        "isolated_fraction": 0.04003988647695022,
+        "components": 607,
+        "largest_component_fraction": 0.9420111988954514
+      },
+      "lp_train_message_and_test_inference_edges": 195490,
+      "lp_positive_splits": [
+        97745,
+        32581,
+        32583
+      ],
+      "relations": [
+        "same_director",
+        "shared_actor"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_director",
+          "group_by": "directors",
+          "cap": 30
+        },
+        {
+          "name": "shared_actor",
+          "group_by": "actors",
+          "cap": 30,
+          "field_slice": ":3"
+        }
+      ]
+    },
+    {
+      "source": "tmdb",
+      "view": "split_disjoint",
+      "tensor_nodes": 13037,
+      "node_splits": [
+        7815,
+        2600,
+        2622
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 13037,
+        "directed_edges": 144706,
+        "isolated": 1285,
+        "isolated_fraction": 0.09856562092505945,
+        "components": 1546,
+        "largest_component_fraction": 0.5439901817902891
+      },
+      "lp_train_message_and_test_inference_edges": 118966,
+      "lp_positive_splits": [
+        59483,
+        6496,
+        6374
+      ],
+      "relations": [
+        "same_director",
+        "shared_actor"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_director",
+          "group_by": "directors",
+          "cap": 30
+        },
+        {
+          "name": "shared_actor",
+          "group_by": "actors",
+          "cap": 30,
+          "field_slice": ":3"
+        }
+      ]
+    },
+    {
+      "source": "tmdb",
+      "view": "temporal",
+      "tensor_nodes": 13037,
+      "node_splits": [
+        7799,
+        2610,
+        2627
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 13036,
+        "directed_edges": 194700,
+        "isolated": 1037,
+        "isolated_fraction": 0.07954894139306536,
+        "components": 1271,
+        "largest_component_fraction": 0.5563823258668303
+      },
+      "lp_train_message_and_test_inference_edges": 165306,
+      "lp_positive_splits": [
+        82653,
+        8401,
+        6296
+      ],
+      "relations": [
+        "same_director",
+        "shared_actor"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_director",
+          "group_by": "directors",
+          "cap": 30
+        },
+        {
+          "name": "shared_actor",
+          "group_by": "actors",
+          "cap": 30,
+          "field_slice": ":3"
+        }
+      ]
+    },
+    {
+      "source": "tmdb",
+      "view": "group_inductive",
+      "tensor_nodes": 13037,
+      "node_splits": [
+        7820,
+        2608,
+        2609
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 13037,
+        "directed_edges": 173914,
+        "isolated": 890,
+        "isolated_fraction": 0.06826723939556646,
+        "components": 1116,
+        "largest_component_fraction": 0.5511237247833091
+      },
+      "lp_train_message_and_test_inference_edges": 130940,
+      "lp_positive_splits": [
+        65470,
+        10791,
+        10696
+      ],
+      "relations": [
+        "same_director",
+        "shared_actor"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "shared_genre",
+          "group_by": "genres",
+          "cap": 30,
+          "freq_filter": 0.3
+        },
+        {
+          "name": "same_director",
+          "group_by": "directors",
+          "cap": 30
+        },
+        {
+          "name": "shared_actor",
+          "group_by": "actors",
+          "cap": 30,
+          "field_slice": ":3"
+        }
+      ]
+    },
+    {
+      "source": "wikiart",
+      "view": "transductive",
+      "tensor_nodes": 21968,
+      "node_splits": [
+        13159,
+        4374,
+        4435
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 21968,
+        "directed_edges": 887108,
+        "isolated": 182,
+        "isolated_fraction": 0.008284777858703568,
+        "components": 1368,
+        "largest_component_fraction": 0.013201019664967225
+      },
+      "lp_train_message_and_test_inference_edges": 532264,
+      "lp_positive_splits": [
+        266132,
+        88710,
+        88712
+      ],
+      "relations": [
+        "same_artist"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "same_artist",
+          "group_by": "artist",
+          "cap": 100
+        },
+        {
+          "name": "shared_style",
+          "group_by": "style",
+          "cap": 50
+        }
+      ]
+    },
+    {
+      "source": "wikiart",
+      "view": "split_disjoint",
+      "tensor_nodes": 21968,
+      "node_splits": [
+        13159,
+        4374,
+        4435
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 21968,
+        "directed_edges": 389172,
+        "isolated": 1470,
+        "isolated_fraction": 0.0669155134741442,
+        "components": 3839,
+        "largest_component_fraction": 0.0065549890750182084
+      },
+      "lp_train_message_and_test_inference_edges": 318376,
+      "lp_positive_splits": [
+        159188,
+        17326,
+        18072
+      ],
+      "relations": [
+        "same_artist"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "same_artist",
+          "group_by": "artist",
+          "cap": 100
+        },
+        {
+          "name": "shared_style",
+          "group_by": "style",
+          "cap": 50
+        }
+      ]
+    },
+    {
+      "source": "wikiart",
+      "view": "temporal",
+      "tensor_nodes": 21968,
+      "node_splits": [
+        11237,
+        3805,
+        3848
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 18890,
+        "directed_edges": 657620,
+        "isolated": 430,
+        "isolated_fraction": 0.022763366860772894,
+        "components": 1690,
+        "largest_component_fraction": 0.010746426680783483
+      },
+      "lp_train_message_and_test_inference_edges": 473368,
+      "lp_positive_splits": [
+        236684,
+        30314,
+        61812
+      ],
+      "relations": [
+        "same_artist"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "same_artist",
+          "group_by": "artist",
+          "cap": 100
+        },
+        {
+          "name": "shared_style",
+          "group_by": "style",
+          "cap": 50
+        }
+      ]
+    },
+    {
+      "source": "wikiart",
+      "view": "group_inductive",
+      "tensor_nodes": 21968,
+      "node_splits": [
+        13122,
+        4421,
+        4425
+      ],
+      "nc_and_clustering_inference": {
+        "active_nodes": 21968,
+        "directed_edges": 887108,
+        "isolated": 182,
+        "isolated_fraction": 0.008284777858703568,
+        "components": 1368,
+        "largest_component_fraction": 0.013201019664967225
+      },
+      "lp_train_message_and_test_inference_edges": 514818,
+      "lp_positive_splits": [
+        257409,
+        92502,
+        93643
+      ],
+      "relations": [
+        "same_artist"
+      ],
+      "edge_count_convention": "directed; each undirected pair represented twice, no self loops",
+      "truncation_config": [
+        {
+          "name": "same_artist",
+          "group_by": "artist",
+          "cap": 100
+        },
+        {
+          "name": "shared_style",
+          "group_by": "style",
+          "cap": 50
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,322 @@
+[
+  {
+    "id": "item00",
+    "category": "class0",
+    "creators": [
+      "group0"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item01",
+    "category": "class1",
+    "creators": [
+      "group1"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item02",
+    "category": "class0",
+    "creators": [
+      "group2"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item03",
+    "category": "class1",
+    "creators": [
+      "group3"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item04",
+    "category": "class0",
+    "creators": [
+      "group4"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item05",
+    "category": "class1",
+    "creators": [
+      "group0"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item06",
+    "category": "class0",
+    "creators": [
+      "group1"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item07",
+    "category": "class1",
+    "creators": [
+      "group2"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item08",
+    "category": "class0",
+    "creators": [
+      "group3"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item09",
+    "category": "class1",
+    "creators": [
+      "group4"
+    ],
+    "date": "2020-01-01"
+  },
+  {
+    "id": "item10",
+    "category": "class0",
+    "creators": [
+      "group0"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item11",
+    "category": "class1",
+    "creators": [
+      "group1"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item12",
+    "category": "class0",
+    "creators": [
+      "group2"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item13",
+    "category": "class1",
+    "creators": [
+      "group3"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item14",
+    "category": "class0",
+    "creators": [
+      "group4"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item15",
+    "category": "class1",
+    "creators": [
+      "group0"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item16",
+    "category": "class0",
+    "creators": [
+      "group1"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item17",
+    "category": "class1",
+    "creators": [
+      "group2"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item18",
+    "category": "class0",
+    "creators": [
+      "group3"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item19",
+    "category": "class1",
+    "creators": [
+      "group4"
+    ],
+    "date": "2021-01-01"
+  },
+  {
+    "id": "item20",
+    "category": "class0",
+    "creators": [
+      "group0"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item21",
+    "category": "class1",
+    "creators": [
+      "group1"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item22",
+    "category": "class0",
+    "creators": [
+      "group2"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item23",
+    "category": "class1",
+    "creators": [
+      "group3"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item24",
+    "category": "class0",
+    "creators": [
+      "group4"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item25",
+    "category": "class1",
+    "creators": [
+      "group0"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item26",
+    "category": "class0",
+    "creators": [
+      "group1"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item27",
+    "category": "class1",
+    "creators": [
+      "group2"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item28",
+    "category": "class0",
+    "creators": [
+      "group3"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item29",
+    "category": "class1",
+    "creators": [
+      "group4"
+    ],
+    "date": "2022-01-01"
+  },
+  {
+    "id": "item30",
+    "category": "class0",
+    "creators": [
+      "group0"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item31",
+    "category": "class1",
+    "creators": [
+      "group1"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item32",
+    "category": "class0",
+    "creators": [
+      "group2"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item33",
+    "category": "class1",
+    "creators": [
+      "group3"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item34",
+    "category": "class0",
+    "creators": [
+      "group4"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item35",
+    "category": "class1",
+    "creators": [
+      "group0"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item36",
+    "category": "class0",
+    "creators": [
+      "group1"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item37",
+    "category": "class1",
+    "creators": [
+      "group2"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item38",
+    "category": "class0",
+    "creators": [
+      "group3"
+    ],
+    "date": "2023-01-01"
+  },
+  {
+    "id": "item39",
+    "category": "class1",
+    "creators": [
+      "group4"
+    ],
+    "date": "2023-01-01"
+  }
+]

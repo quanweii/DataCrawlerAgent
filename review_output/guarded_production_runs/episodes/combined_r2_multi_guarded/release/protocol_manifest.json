@@ -1,0 +1,98 @@
+{
+  "domain": "cleveland",
+  "seed": 1,
+  "ratios": [
+    0.6,
+    0.2,
+    0.2
+  ],
+  "raw_graph_immutable": true,
+  "sanitized_base_graph": true,
+  "provenance_excluded_relations": [],
+  "base_view": "provenance_sanitized_graph",
+  "excluded_target_derived_relations": [],
+  "representation_policy": "frozen per-node embeddings are encoded once, sanitized before encoding, and reused across protocol views; fusion is fitted without labels",
+  "metadata": {
+    "time_field": "",
+    "group_field": "creator_ids",
+    "group_semantics": "primary entity group",
+    "time_coverage": 0.0,
+    "group_coverage": 0.6066666666666667
+  },
+  "requested_protocols": [
+    "transductive",
+    "split_disjoint",
+    "group_inductive"
+  ],
+  "available_protocols": [
+    "transductive",
+    "split_disjoint",
+    "group_inductive"
+  ],
+  "temporal_cutoffs": null,
+  "group_counts": [
+    403,
+    135,
+    136
+  ],
+  "temporal_label_support": null,
+  "views": {
+    "transductive": {
+      "nodes": [
+        540,
+        180,
+        180
+      ],
+      "unassigned_nodes": 0,
+      "classes": [
+        6,
+        6,
+        6
+      ],
+      "train_missing_classes": 0,
+      "directed_edges": 7006,
+      "cross_split_directed_edges": 4056,
+      "isolated_fraction_among_assigned": 0.2288888888888889
+    },
+    "split_disjoint": {
+      "nodes": [
+        540,
+        180,
+        180
+      ],
+      "unassigned_nodes": 0,
+      "classes": [
+        6,
+        6,
+        6
+      ],
+      "train_missing_classes": 0,
+      "directed_edges": 2950,
+      "cross_split_directed_edges": 0,
+      "isolated_fraction_among_assigned": 0.3711111111111111
+    },
+    "group_inductive": {
+      "nodes": [
+        539,
+        180,
+        181
+      ],
+      "unassigned_nodes": 0,
+      "classes": [
+        6,
+        6,
+        6
+      ],
+      "train_missing_classes": 0,
+      "directed_edges": 4346,
+      "cross_split_directed_edges": 0,
+      "isolated_fraction_among_assigned": 0.3488888888888889
+    }
+  },
+  "checks": {
+    "non_temporal_views_assign_all_nodes": true,
+    "temporal_assigned_nodes_match_coverage": true,
+    "group_overlap": 0,
+    "inductive_views_have_no_cross_split_edges": true
+  }
+}

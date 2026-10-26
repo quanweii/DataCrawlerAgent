@@ -1,0 +1,36 @@
+{
+  "framework_one_time_changes": {
+    "agents/schema_discovery.py": {
+      "added_lines": 19,
+      "removed_lines": 0
+    },
+    "crawlers/config_driven.py": {
+      "added_lines": 26,
+      "removed_lines": 62
+    }
+  },
+  "framework_new_module": "agents/schema_contract.py",
+  "comparison_source_adapters": [
+    "source_pipelines.steam",
+    "source_pipelines.tmdb",
+    "source_pipelines.wikiart"
+  ],
+  "comparison_source_packager": "source_pipelines.package",
+  "shared_tool_driver": "infrastructure_study.run_one(shared_tools)",
+  "per_formal_task_post_freeze_core_edits": {
+    "source_pipeline": 0,
+    "shared_tools": 0
+  },
+  "configuration_scope": {
+    "field_paths": [
+      "id_field",
+      "label_field",
+      "relations[0].group_by"
+    ],
+    "image_availability": "13 entity eligibility flags, no code edits",
+    "relation_change": "one group_by source-field binding",
+    "combined": "three nested paths including the new relation binding"
+  },
+  "human_adaptation_time": "not measured",
+  "scope": "Fresh adapters and generic path/gate fixes are one-time development, not measured user labor or a claim of zero framework engineering."
+}

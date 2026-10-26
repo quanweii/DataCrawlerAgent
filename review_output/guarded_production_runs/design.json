@@ -1,0 +1,77 @@
+{
+  "created_client_date": "2026-10-15",
+  "dataset": "Cleveland previously collected 900 CC0 text/image objects",
+  "methods": [
+    "multi_guarded"
+  ],
+  "conditions": [
+    "clean",
+    "write_retry",
+    "partial_edges",
+    "combined"
+  ],
+  "repetitions": [
+    0,
+    1,
+    2
+  ],
+  "episodes": 12,
+  "hypothesis": "Secondary engineering check of error propagation, valid mandatory dependencies, and the same phase guidance already available to the monolithic baseline; retain all original comparisons.",
+  "reference_study": "/PKG_ROOT/benchmark/results/cleveland_coordination_20261015",
+  "change_scope": "Preserve real exception text, normalize five mandatory stage dependencies, and expose existing deterministic phase defaults. No altered tools, model, budget, faults or outcome gate.",
+  "exposure": "All controllers have identical cached records, images, frozen CLIP features, confirmed schema, action handlers, audits and model endpoint.",
+  "method_definitions": {
+    "multi_guarded": "full role policies with retained exception context, acyclic mandatory dependencies and phase guidance; same handlers, model and budgets",
+    "multi": "original archived full controller",
+    "single": "one production ReAct policy over qualified union actions, shared observations, same phase hints/defaults and bounded restart tool",
+    "script": "mandatory forward action schedule; two retries of transient tool errors; no backward feedback scheduling",
+    "script_feedback": "same script plus bounded upstream restart and descendant invalidation"
+  },
+  "faults": {
+    "clean": "none",
+    "write_retry": "one OSError at first formatter save, then normal writes",
+    "partial_edges": "first saved builder output retains a fixed 5% edge slice; later builds use full normal output",
+    "combined": "the same edge truncation plus the same one-time save error"
+  },
+  "caps": {
+    "llm_calls": 64,
+    "reported_total_tokens": 100000,
+    "tool_actions": 64,
+    "wall_seconds": 600,
+    "feedback_rounds": 2
+  },
+  "settings": {
+    "model": "qwen-plus",
+    "temperature": 0.2,
+    "thinking": false,
+    "python_hash_seed": 0,
+    "requested_seeds": [
+      0,
+      1,
+      2
+    ],
+    "seed_caveat": "Requested model seeds do not guarantee service determinism.",
+    "endpoint": "production 300-epoch-max fused MLP classifier; hidden 256, layers 2, dropout .5, projection 768; initialization equals repetition"
+  },
+  "success": "Independent fresh healthy-build identity/edge/label checks under hash seed 0, all three protocol bundles, real classifier checkpoint, and reloaded test prediction CSV.",
+  "assistance": "After failed autonomous attempt, one standardized reset-and-script-feedback continuation. This is an assistance proxy, not observed human editing or a user study.",
+  "accounting": "All initial failures retained. Primary success/time/tokens refer to the autonomous attempt. Assisted time is separate.",
+  "latency": "CPU evaluation; sequential within rotated matched blocks; no repeated crawling or re-encoding; excludes cold network acquisition.",
+  "information_control": "Opaque working-directory IDs; condition/method names are absent from request paths seen by policy LLMs. Two matched blocks may run concurrently.",
+  "cost": {
+    "currency": "RMB",
+    "input_per_million": 0.8,
+    "output_per_million": 2,
+    "source": "https://help.aliyun.com/zh/model-studio/model-pricing",
+    "verified_client_date": "2026-10-14",
+    "scope": "qwen-plus non-thinking <=128K reference API price, no batch/cache discounts; not an invoice or compute cost"
+  },
+  "protocol_seed": 1,
+  "predeclared_condition_order": [
+    "clean",
+    "write_retry",
+    "partial_edges",
+    "combined"
+  ],
+  "pilot": "one clean episode per controller, excluded from main campaign; interface fixes allowed before design freeze"
+}

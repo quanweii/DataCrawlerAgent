@@ -1,48 +1,43 @@
-# Dataset Licensing & Distribution Strategy (English)
+# Research resource distribution
 
-> P0 deliverable. Reviewers evaluating "releasing N datasets" must see an actionable acquisition path per domain.
+The code is MIT-licensed. Dataset resources retain the source-specific terms
+and attributions of arXiv, Steam, TMDB and WikiArt. This release distributes
+structural IDs/labels/edges, frozen representations and evaluation artifacts;
+it does not redistribute source descriptions, paper full text, raw API
+responses or artwork/storefront image files.
 
-## 1. Source & copyright classification
+## Obtain the actual resources
 
-| Domain | Raw data | Copyright | Redistributable |
-|---|---|---|---|
-| **arxiv** | Open-access papers (arXiv.org) | CC/BY licenses, no obstruction | ✅ Full set: nodes/edges/text/images/formula/embeddings |
-| **steam** | Steam game metadata (Steamworks API + public pages) | Valve, raw text NOT redistributable | ⚠️ Graph structure + embeddings + labels + build scripts |
-| **tmdb** | TMDb movie metadata (TMDb API v3) | TMDb, raw text/images NOT redistributable | ⚠️ Graph structure + embeddings + labels + build scripts |
-| **wikiart** | WikiArt artwork metadata (public scrape) | Artwork images © owners; metadata debatable | ⚠️ Graph structure + embeddings + labels + build scripts |
-| **spotify** | Tidy Tuesday "Spotify Songs" public CSV | Tidy Tuesday open data; derived from Spotify | ✅ Graph structure + text embeddings + labels (metadata only; no audio) |
+All four datasets are included in the archive parts listed in
+[`artifacts/README.md`](../artifacts/README.md), with the complete
+[`manifest.json`](../artifacts/manifest.json). From the repository root run:
 
-## 2. Release tiers
+```bash
+python scripts/install_artifacts.py --group datasets
+python scripts/install_artifacts.py --group evidence
+python scripts/verify_release.py
+```
 
-### Tier 1 — Full release (arxiv)
-- Full `arxiv_multimodal_graph_agent.json`
-- Nodes: 45,672 paper IDs + labels + features
-- Edges: 57,045 citation relations
-- Text/image/formula embeddings (CLIP-ViT-L/14, 768-d)
-- Raw `.md` + `images/` (open-access → redistributable)
+The archive contains the graph, labels, 768-dimensional frozen modality vectors,
+saved protocols, time/group metadata and integrity provenance for each dataset.
+Raw media acquisition is optional for using these fixed features. Re-encoding
+or collecting a fresh snapshot requires the appropriate source access and any
+API credentials in the user's own environment. Do not infer uniform reuse rights
+for all arXiv papers or artwork images from their public availability.
 
-### Tier 2 — Structure + embeddings (Steam / TMDb / WikiArt)
-- `*_multimodal_graph_agent.json` (graph structure only: node IDs, labels, edge lists)
-- Pre-computed CLIP embeddings (`.pt`, N×768 float matrices; not invertible to raw text/image)
-- Graph statistics and protocol manifests (node masks, cross-split edge counts, group overlap) with integrity cards
-- Evaluation splits and exposure definitions (LP message-edge and negative-sampling rules per protocol view)
-- **Excluded**: raw `.md` text, raw image files, raw API responses
+This product uses the TMDB API but is not endorsed or certified by TMDB.
 
-### Tier 2-lite — spotify (zero-code exhibit)
-- `spotify_multimodal_graph_agent.json` + text embeddings + LP splits
-- Source CSV is public (Tidy Tuesday) → fully reproducible from `domains/spotify/domain.yaml`
+## Official source references
 
-### Tier 3 — Build scripts (all domains)
-- `python main.py --domain-config domains/<name>/domain.yaml` fully reproducible
-- Domain YAML configs + `crawlers/` + `benchmark/` pipeline
-- New-domain authoring guide: `domains/README.md`
-
-## 3. Reproducibility statement (paper text)
-
-> **Reproducibility.** The multi-agent framework and all benchmark code are released under the MIT License at [URL]. The arxiv and spotify datasets are released in full (open-access / public metadata). For Steam, TMDb, and WikiArt, we release the graph structure (node IDs, labels, edge lists), pre-computed CLIP embeddings, protocol view manifests, and evaluation splits. Raw text and images are not redistributable due to copyright; however, the complete datasets can be reproduced by running `python main.py --domain-config domains/<name>/domain.yaml`. Exact pinned dependencies, encoder hashes, and SHA-256 checksums of every released artifact and frozen split are provided in `REPRODUCIBILITY.md`.
-
-## 4. Per-source attribution
-- **TMDb**: "This product uses the TMDB API but is not endorsed or certified by TMDB." (required by TMDb ToS)
-- **arxiv**: arXiv metadata under CC0.
-- **WikiArt**: artwork images © respective artists/estates; metadata used for research.
-- **Spotify/Tidy Tuesday**: data derived from Spotify via the Tidy Tuesday project.
+- [arXiv licenses](https://info.arxiv.org/help/license/index.html): metadata
+  and article content have different licensing rules; article versions retain
+  their individual licenses.
+- [Steam Subscriber Agreement](https://store.steampowered.com/subscriber_agreement/)
+  and the applicable API terms govern source access and content use. This
+  repository does not assert a general research redistribution exception.
+- [TMDB API terms](https://www.themoviedb.org/api-terms-of-use) and
+  [official FAQ](https://developer.themoviedb.org/docs/faq) govern API content,
+  attribution and use restrictions, including machine-learning uses. This
+  repository does not grant independent rights to that content.
+- [WikiArt](https://www.wikiart.org/): artwork and page content retain the
+  respective rights; omitting raw images does not create a blanket license.

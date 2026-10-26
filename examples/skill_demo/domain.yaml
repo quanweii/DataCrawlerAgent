@@ -1,0 +1,20 @@
+domain: skill_demo
+graph_mode: homogeneous
+data:
+  id_field: id
+  label_field: category
+  min_class_size: 2
+  max_items: 40
+  data_source: file
+  data_file: examples/skill_demo/items.json
+relations:
+  - name: same_creator
+    group_by: creators
+    cap: 10
+output_dirs:
+  raw: data/skill_demo_raw
+  items: data/skill_demo_items
+  graphs: data/skill_demo_graphs
+  datasets: data/skill_demo_datasets
+protocol:
+  protocols: [transductive, split_disjoint]

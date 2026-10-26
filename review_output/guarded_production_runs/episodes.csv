@@ -1,0 +1,13 @@
+method,condition,repetition,success,assistance_rounds,assisted_success,seconds,llm_calls,input_tokens,output_tokens,estimated_api_rmb,tool_actions
+multi_guarded,clean,0,True,0,True,81.36780670657754,25,18979,3096,0.0213752,22
+multi_guarded,clean,1,True,0,True,79.32030192390084,25,18979,3057,0.021297200000000002,22
+multi_guarded,clean,2,True,0,True,81.53680661320686,25,18930,3140,0.021424,22
+multi_guarded,write_retry,0,True,0,True,98.44287694990635,32,22927,3734,0.025809600000000002,26
+multi_guarded,write_retry,1,True,0,True,100.94803452119231,32,22908,3836,0.0259984,26
+multi_guarded,write_retry,2,True,0,True,102.14474848285317,32,22876,3912,0.0261248,26
+multi_guarded,partial_edges,0,True,0,True,124.83112864941359,40,30170,4857,0.03385,35
+multi_guarded,partial_edges,1,True,0,True,125.67235058918595,40,30246,4871,0.033938800000000005,35
+multi_guarded,partial_edges,2,True,0,True,126.4315666668117,40,30402,4811,0.033943600000000004,35
+multi_guarded,combined,0,True,0,True,144.403194822371,47,34221,5558,0.0384928,39
+multi_guarded,combined,1,True,0,True,146.65116611123085,47,34098,5482,0.0382424,39
+multi_guarded,combined,2,True,0,True,142.77074741572142,47,34178,5509,0.0383604,39

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "checks": 1176,
+  "episodes": 12,
+  "primary_successes": 12,
+  "assisted_releases": 0,
+  "classifiers_reloaded": 12,
+  "bundles_reloaded": 36,
+  "source_snapshots_verified": true,
+  "current_core_guards_recorded": true,
+  "summary": {
+    "multi_guarded": {
+      "n": 12,
+      "success": 12,
+      "fault_n": 9,
+      "fault_success": 9,
+      "assistance_rounds": 0,
+      "assisted_success": 12,
+      "seconds_mean": 112.8767274543643,
+      "seconds_std": 24.299338423237128,
+      "input_tokens": 318914,
+      "output_tokens": 51863,
+      "total_tokens_mean": 30898.083333333332,
+      "estimated_api_rmb_mean": 0.02990476666666667,
+      "calls_mean": 36
+    }
+  },
+  "inference_scope": "one cached source; known injected faults; assistance proxy, not human effort; architecture prompts differ; no assumed superiority"
+}

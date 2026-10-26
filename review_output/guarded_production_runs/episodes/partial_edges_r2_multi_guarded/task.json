@@ -1,0 +1,71 @@
+{
+  "domain": "cleveland",
+  "graph_mode": "homogeneous",
+  "data_source": "file",
+  "data_file": "/PKG_ROOT/benchmark/results/cleveland_coordination_guarded_20261015/frozen/records.json",
+  "id_field": "id",
+  "id_sanitize": null,
+  "max_items": 900,
+  "min_class_size": 20,
+  "load_from_files": false,
+  "output_dirs": {
+    "raw": "/PKG_ROOT/benchmark/results/cleveland_coordination_guarded_20261015/workspaces/f8f281b9e18d5b50/raw",
+    "graphs": "/PKG_ROOT/benchmark/results/cleveland_coordination_guarded_20261015/workspaces/f8f281b9e18d5b50/graphs",
+    "datasets": "/PKG_ROOT/benchmark/results/cleveland_coordination_guarded_20261015/workspaces/f8f281b9e18d5b50/datasets",
+    "items": "/PKG_ROOT/data/cleveland_cslo"
+  },
+  "dataset_name": "coordination_graph",
+  "output_format": "json",
+  "include_metadata": true,
+  "schema_mode": "confirm",
+  "schema_hint": {
+    "id_field": "id",
+    "label_field": "type",
+    "min_class": 20,
+    "build_order": "filter-then-build",
+    "node_type": "item",
+    "relations": [
+      {
+        "name": "same_creator",
+        "group_by": "creator_ids",
+        "cap": 30
+      },
+      {
+        "name": "shared_culture",
+        "group_by": "culture",
+        "cap": 20,
+        "freq_filter": 0.3
+      }
+    ]
+  },
+  "integrity": {
+    "entity_key": "id",
+    "relation_lineage": {
+      "same_creator": {
+        "source_fields": [
+          "creator_ids"
+        ],
+        "target_derived": false
+      },
+      "shared_culture": {
+        "source_fields": [
+          "culture"
+        ],
+        "target_derived": false
+      }
+    }
+  },
+  "protocol": {
+    "protocols": [
+      "transductive",
+      "split_disjoint",
+      "group_inductive"
+    ],
+    "time_field": "",
+    "group_field": "creator_ids",
+    "group_semantics": "primary creator ID; missing values use entity-specific singleton keys"
+  },
+  "split_seed": 1,
+  "domain_config": "/PKG_ROOT/domains/cleveland/domain.yaml",
+  "user_request": "Use the confirmed Cleveland schema to build the complete 900-object graph, audit it, create three views, and export a validation-selected model and predictions."
+}

@@ -1,0 +1,102 @@
+{
+  "status": "EXECUTED",
+  "episodes": 12,
+  "results": [
+    {
+      "condition": "clean",
+      "repetition": 1,
+      "returncode": 0,
+      "success": true,
+      "seconds": 79.32030192390084,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "clean",
+      "repetition": 0,
+      "returncode": 0,
+      "success": true,
+      "seconds": 81.36780670657754,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "clean",
+      "repetition": 2,
+      "returncode": 0,
+      "success": true,
+      "seconds": 81.53680661320686,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "write_retry",
+      "repetition": 0,
+      "returncode": 0,
+      "success": true,
+      "seconds": 98.44287694990635,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "write_retry",
+      "repetition": 1,
+      "returncode": 0,
+      "success": true,
+      "seconds": 100.94803452119231,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "write_retry",
+      "repetition": 2,
+      "returncode": 0,
+      "success": true,
+      "seconds": 102.14474848285317,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "partial_edges",
+      "repetition": 0,
+      "returncode": 0,
+      "success": true,
+      "seconds": 124.83112864941359,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "partial_edges",
+      "repetition": 1,
+      "returncode": 0,
+      "success": true,
+      "seconds": 125.67235058918595,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "partial_edges",
+      "repetition": 2,
+      "returncode": 0,
+      "success": true,
+      "seconds": 126.4315666668117,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "combined",
+      "repetition": 0,
+      "returncode": 0,
+      "success": true,
+      "seconds": 144.403194822371,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "combined",
+      "repetition": 1,
+      "returncode": 0,
+      "success": true,
+      "seconds": 146.65116611123085,
+      "assistance_rounds": 0
+    },
+    {
+      "condition": "combined",
+      "repetition": 2,
+      "returncode": 0,
+      "success": true,
+      "seconds": 142.77074741572142,
+      "assistance_rounds": 0
+    }
+  ]
+}

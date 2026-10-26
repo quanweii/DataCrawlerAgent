@@ -1,0 +1,20 @@
+[
+  {
+    "source": "steam",
+    "n": 2760,
+    "multiple_genres": 2141,
+    "empty_genres": 0,
+    "mean_genres": 2.877536231884058,
+    "label_equals_first_listed": true,
+    "source_order_semantics": "No priority guarantee established; list order, not primary genre ground truth."
+  },
+  {
+    "source": "tmdb",
+    "n": 13037,
+    "multiple_genres": 11200,
+    "empty_genres": 0,
+    "mean_genres": 2.6147119736135616,
+    "label_equals_first_listed": true,
+    "source_order_semantics": "No priority guarantee established; list order, not primary genre ground truth."
+  }
+]

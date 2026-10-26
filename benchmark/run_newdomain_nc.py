@@ -36,7 +36,7 @@ _pre.add_argument("--layers", type=int, default=2)
 _pre.add_argument("--dropout", type=float, default=0.5)
 _pre.add_argument("--lr", type=float, default=0.01)
 # leak-free 头条参数
-_pre.add_argument("--init-seeds", type=int, default=10,
+_pre.add_argument("--init-seeds", type=int, default=5,
                   help="leak-free 路径的初始化 seed 数(固定切分下变初始化)")
 _pre.add_argument("--split-seed", type=int, default=1,
                   help="leak-free 路径的固定分层切分 seed(所有模型共用)")

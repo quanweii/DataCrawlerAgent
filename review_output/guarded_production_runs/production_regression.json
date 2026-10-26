@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "cases": [
+    "phase guidance visible",
+    "actual tool exception retained",
+    "LLM dependency cycle normalized",
+    "untrusted task override removed"
+  ]
+}
